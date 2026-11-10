@@ -1,0 +1,54 @@
+name: Publicar build e avisar o Poke
+
+# On every push to main: build the static site, push the output to the
+# `publicacao` branch (plain HTML/CSS/JS, ready to serve) and ask the Poke
+# assistant to republish gus.poke.site from it.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          SITE_URL: https://gus.poke.site
+          BASE_PATH: /
+
+      - name: Enviar build para a branch publicacao
+        run: |
+          cd dist
+          git init -q -b publicacao
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "build: ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" publicacao
+
+      - name: Avisar o Poke
+        env:
+          POKE_API_KEY: ${{ secrets.POKE_API_KEY }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -z "$POKE_API_KEY" ]; then
+            echo "::warning::Secret POKE_API_KEY não configurado; avise o Poke manualmente."
+            exit 0
+          fi
+          ./scripts/notify-poke.sh

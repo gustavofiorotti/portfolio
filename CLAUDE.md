@@ -1,7 +1,7 @@
 # Portfólio — Gustavo Fiorotti
 
-Site estático em Astro + Tailwind CSS v4, publicado no GitHub Pages. O endereço público
-`gus.poke.site` é um redirect configurado pelo assistente Poke para a URL do Pages.
+Site estático em Astro + Tailwind CSS v4, hospedado em `gus.poke.site` pelo assistente Poke,
+que publica o conteúdo da branch `publicacao` deste repositório.
 
 Veja também `AGENTS.md` (instruções do Astro).
 
@@ -13,10 +13,16 @@ Veja também `AGENTS.md` (instruções do Astro).
 
 ## Deploy
 
-- Push em `main` dispara `.github/workflows/deploy.yml`, que publica no GitHub Pages.
-- O workflow injeta `SITE_URL` e `BASE_PATH`; por isso **nunca** escrever caminhos absolutos
-  fixos (`/img.png`). Usar `import.meta.env.BASE_URL` ou importar assets de `src/`.
+- Push em `main` dispara `.github/workflows/publish.yml`: gera o build, força o push de `dist/`
+  na branch `publicacao` (HTML pronto, sem build) e chama a Poke API pedindo a republicação.
+- O secret `POKE_API_KEY` (chave V2 criada em https://poke.com/kitchen) fica no GitHub. Sem ele,
+  o workflow só avisa e o Poke precisa ser avisado manualmente (`scripts/notify-poke.sh`).
+- A Poke API é só de ida: a resposta do Poke chega no app/mensagens do Gustavo, não aqui.
+- Depois de cada merge em `main`, lembrar o Gustavo de conferir no Poke se o site foi republicado.
+- Nunca escrever caminhos absolutos fixos (`/img.png`); usar `import.meta.env.BASE_URL` ou
+  importar assets de `src/`.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.
+- Nunca editar a branch `publicacao` à mão: ela é sobrescrita a cada publicação.
 
 ## Convenções
 

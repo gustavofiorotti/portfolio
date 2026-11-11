@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # graphify
 graphify-out/
+
+# Maestri (pastas dos papéis dos agentes)
+.maestri/

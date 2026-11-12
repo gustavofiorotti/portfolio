@@ -1,28 +1,23 @@
 # Portfólio — Gustavo Fiorotti
 
-Site estático em Astro + Tailwind CSS v4, hospedado em `gus.poke.site` pelo assistente Poke,
-que publica o conteúdo da branch `publicacao` deste repositório.
+Site estático em Astro + Tailwind CSS v4, hospedado na Vercel em https://gufi.vercel.app.
+O `gus.poke.site` (assistente Poke) é só um redirect para lá.
 
 Veja também `AGENTS.md` (instruções do Astro).
 
 ## Comandos
 
 - `pnpm dev` — servidor local em http://localhost:4321
-- `pnpm build` — gera `dist/` (é o que o CI publica)
+- `pnpm build` — gera `dist/` (é o que a Vercel publica)
 - `pnpm preview` — serve o build localmente
 
 ## Deploy
 
-- Push em `main` dispara `.github/workflows/publish.yml`: gera o build, força o push de `dist/`
-  na branch `publicacao` (HTML pronto, sem build) e chama a Poke API pedindo a republicação.
-- O secret `POKE_API_KEY` (chave V2 criada em https://poke.com/kitchen) fica no GitHub. Sem ele,
-  o workflow só avisa e o Poke precisa ser avisado manualmente (`scripts/notify-poke.sh`).
-- A Poke API é só de ida: a resposta do Poke chega no app/mensagens do Gustavo, não aqui.
-- Depois de cada merge em `main`, lembrar o Gustavo de conferir no Poke se o site foi republicado.
-- Nunca escrever caminhos absolutos fixos (`/img.png`); usar `import.meta.env.BASE_URL` ou
-  importar assets de `src/`.
+- A Vercel está ligada ao repositório: push em `main` publica em produção (https://gufi.vercel.app)
+  e cada PR ganha uma URL de prévia. Não há workflow de deploy no GitHub Actions.
+- Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend
+  (confirmado pelo próprio Poke em 12/11/2026). O `gus.poke.site` só redireciona para a Vercel.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.
-- Nunca editar a branch `publicacao` à mão: ela é sobrescrita a cada publicação.
 
 ## Convenções
 

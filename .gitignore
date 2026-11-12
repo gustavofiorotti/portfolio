@@ -28,3 +28,5 @@ graphify-out/
 
 # Maestri (pastas dos papéis dos agentes)
 .maestri/
+.vercel
+.env*

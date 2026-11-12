@@ -2,11 +2,9 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// SITE_URL and BASE_PATH are injected by the GitHub Pages workflow.
-// Locally they fall back to root so `pnpm dev` works without extra setup.
+// Production runs on Vercel at https://gufi.vercel.app (gus.poke.site only redirects there).
 export default defineConfig({
-  site: process.env.SITE_URL ?? 'http://localhost:4321',
-  base: process.env.BASE_PATH ?? '/',
+  site: process.env.SITE_URL ?? 'https://gufi.vercel.app',
   vite: {
     plugins: [tailwindcss()],
   },

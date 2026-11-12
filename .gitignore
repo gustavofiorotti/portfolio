@@ -25,3 +25,10 @@ pnpm-debug.log*
 
 # graphify
 graphify-out/
+
+# Maestri (pastas dos papéis dos agentes)
+.maestri/
+
+# Vercel (link local e variáveis puxadas pelo CLI)
+.vercel
+.env*

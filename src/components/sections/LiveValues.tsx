@@ -5,33 +5,30 @@ import { useTranslations } from "next-intl";
 import { courseProgress } from "@/lib/course";
 
 // The site is a static export: values that depend on "now" are rendered at build time
-// (server snapshot) and refreshed on the client after hydration.
-const BUILD_DAY = new Date().toISOString().slice(0, 10);
+// (server snapshot, passed down from the server) and refreshed on the client after hydration.
 const today = () => new Date().toISOString().slice(0, 10);
 const noopSubscribe = () => () => {};
 
-function useToday() {
-  return useSyncExternalStore(noopSubscribe, today, () => BUILD_DAY);
-}
-
 const brtFormat = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
 const brtNow = () => brtFormat.format(new Date());
+// polls every second so the minute flips on time; React only re-renders when the text changes
 function subscribeEverySecond(onChange: () => void) {
   const id = setInterval(onChange, 1000);
   return () => clearInterval(id);
 }
 
-/** Current time in Brasília (UTC−3), ticking every minute. */
+/** Current time in Brasília (UTC−3), HH:MM. */
 export function BrtClock() {
   const t = useTranslations("about");
   const time = useSyncExternalStore(subscribeEverySecond, brtNow, () => "--:--");
   return <span>{t("now", { time })}</span>;
 }
 
-/** Semester label and progress bar, computed from today's date. */
-export function CourseProgress() {
+/** Semester label and progress bar, computed from today's date (YYYY-MM-DD). */
+export function CourseProgress({ buildDay }: { buildDay: string }) {
   const t = useTranslations("about");
-  const { pct, semester, semesters } = courseProgress(new Date(`${useToday()}T12:00:00Z`));
+  const day = useSyncExternalStore(noopSubscribe, today, () => buildDay);
+  const { pct, semester, semesters } = courseProgress(new Date(`${day}T12:00:00Z`));
   return (
     <>
       <div className="mb-1 flex items-baseline justify-between gap-3">

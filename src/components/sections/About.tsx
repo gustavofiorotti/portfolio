@@ -13,9 +13,11 @@ function Tile({ className = "", children }: { className?: string; children: Reac
 /** About: short bio plus a bento with education, English, certification, base and skills. */
 export async function About({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "about" });
+  // rendered at build time; the client swaps in today's date after hydration
+  const buildDay = new Date().toISOString().slice(0, 10);
   return (
     <section id="sobre" className="mx-auto max-w-[1120px] px-6 pt-12 pb-24">
-      <div className="reveal flex flex-wrap gap-12 rounded-[32px] bg-(--card) p-[clamp(22px,5vw,56px)] transition-colors duration-500">
+      <div className="reveal flex flex-wrap gap-12 rounded-[32px] bg-card p-[clamp(22px,5vw,56px)] transition-colors duration-500">
         <div className="flex-[1_1_420px] max-sm:flex-[1_1_100%]">
           <h2 className="m-0 mb-5 font-display text-[44px] leading-[1.05] font-semibold tracking-[-0.04em]">{t("title")}</h2>
           <p className="m-0 mb-3.5 text-[17px] leading-[1.65] text-muted">{t("p1")}</p>
@@ -24,7 +26,7 @@ export async function About({ locale }: { locale: Locale }) {
 
         <div className="grid flex-[1.4_1_480px] grid-cols-2 gap-3 max-sm:flex-[1_1_100%]">
           <Tile className="col-span-2">
-            <CourseProgress />
+            <CourseProgress buildDay={buildDay} />
           </Tile>
 
           <Tile className="flex flex-col gap-3 max-[420px]:col-span-2">

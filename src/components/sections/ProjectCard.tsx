@@ -6,6 +6,7 @@ import { motion, useReducedMotion, useSpring, useTransform } from "motion/react"
 import { useTranslations } from "next-intl";
 import type { Project } from "@/lib/projects";
 import { BrandLogo } from "@/components/header/BrandLogo";
+import { MorphIcon, MORPHS } from "@/components/ui/MorphIcon";
 
 // back-to-rest spring with a little overshoot, like the mockup's cubic-bezier(.34,1.56,.64,1)
 const SPRING = { stiffness: 260, damping: 20, mass: 0.6 };
@@ -40,17 +41,27 @@ function ProjectMedia({ project, alt }: { project: Project; alt: string }) {
   return <Image src={image.src} alt={alt} fill sizes={sizes} className={fit} />;
 }
 
-const ArrowIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M7 17 17 7M8 7h9v9" />
-  </svg>
-);
-
-const CodeIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="m8 7-5 5 5 5M16 7l5 5-5 5" />
-  </svg>
-);
+/** Card button whose icon morphs while it is hovered or focused. */
+function MorphLink({ href, className, morph, iconFirst, children }: { href: string; className: string; morph: keyof typeof MORPHS; iconFirst?: boolean; children: React.ReactNode }) {
+  const [on, setOn] = useState(false);
+  const icon = <MorphIcon {...MORPHS[morph]} active={on} size={morph === "arrow" ? 13 : 14} strokeWidth={morph === "arrow" ? 2.4 : 2.2} />;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      className={className}
+      onMouseEnter={() => setOn(true)}
+      onMouseLeave={() => setOn(false)}
+      onFocus={() => setOn(true)}
+      onBlur={() => setOn(false)}
+    >
+      {iconFirst && icon}
+      {children}
+      {!iconFirst && icon}
+    </a>
+  );
+}
 
 /** Large project card: 3D tilt following the mouse, scale 1.025, image parallax and a one-shot sheen. */
 export function ProjectCard({ project }: { project: Project }) {
@@ -129,14 +140,14 @@ export function ProjectCard({ project }: { project: Project }) {
           </ul>
           <div className="relative z-[4] mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold">
             {project.online && (
-              <a href={project.online} target="_blank" rel="noopener" className="soft-btn flex h-9 items-center gap-1.5 rounded-full bg-fg px-3.5 text-bg">
-                {t("seeOnline")} <ArrowIcon />
-              </a>
+              <MorphLink href={project.online} morph="arrow" className="soft-btn flex h-9 items-center gap-1.5 rounded-full bg-fg px-3.5 text-bg">
+                {t("seeOnline")}
+              </MorphLink>
             )}
             {project.code && (
-              <a href={project.code} target="_blank" rel="noopener" className="soft-btn flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5">
-                <CodeIcon /> {t("code")}
-              </a>
+              <MorphLink href={project.code} morph="code" iconFirst className="soft-btn flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5">
+                {t("code")}
+              </MorphLink>
             )}
             {note && <span className="ml-1 font-normal text-muted">{note}</span>}
           </div>

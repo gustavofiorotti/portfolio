@@ -21,7 +21,9 @@ dependências vêm do próprio script:
 uv run scripts/build_cv.py              # grava public/curriculo-gustavo-fiorotti.pdf
 ```
 
-Sem uv: `pip install reportlab` e `python3 scripts/build_cv.py`. O PDF publicado não traz telefone
+Para conferir (1 página, sem telefone, extraindo o texto com pypdf): `uv run scripts/check_cv.py`.
+
+Sem uv: `pip install reportlab pypdf`, depois `python3 scripts/build_cv.py` e `python3 scripts/check_cv.py`. O PDF publicado não traz telefone
 e precisa caber em 1 página. O texto segue o contexto de carreira mantido fora do repositório.
 
 ## Atividade do GitHub

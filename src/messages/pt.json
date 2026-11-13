@@ -22,5 +22,29 @@
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
     "turnOn": "Acender a luz (tema claro)"
+  },
+  "cmd": {
+    "open": "Abrir menu de comandos (⌘K)",
+    "label": "Menu de comandos",
+    "placeholder": "O que você procura?",
+    "empty": "Nada encontrado.",
+    "goTo": "Ir para {section}",
+    "copyEmail": "Copiar e-mail",
+    "emailCopied": "E-mail copiado",
+    "downloadResume": "Baixar currículo (PDF)",
+    "lightOn": "Acender a luz (tema claro)",
+    "lightOff": "Apagar a luz (tema escuro)",
+    "openGithub": "Abrir GitHub",
+    "openLinkedin": "Abrir LinkedIn",
+    "otherLanguage": "English version",
+    "hintNavigate": "navegar",
+    "hintOpen": "abrir",
+    "hintClose": "fechar",
+    "groups": {
+      "navigate": "navegar",
+      "action": "ação",
+      "link": "link",
+      "language": "idioma"
+    }
   }
 }

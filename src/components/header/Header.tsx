@@ -7,6 +7,7 @@ import { lerpPath, smoothScrollTo } from "@/lib/motion-utils";
 import { useTween } from "@/lib/use-tween";
 import { BrandLogo } from "./BrandLogo";
 import { BrtClock } from "./BrtClock";
+import { CommandMenu } from "./CommandMenu";
 import { ResumeButton } from "./ResumeButton";
 import { activeSection, SECTION_IDS, type SectionId } from "./sections";
 
@@ -119,6 +120,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2 justify-self-end">
+          <CommandMenu />
           <Link
             href={homePath(other)}
             hrefLang={other}

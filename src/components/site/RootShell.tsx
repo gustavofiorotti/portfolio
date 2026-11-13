@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { themeInitScript } from "@/lib/theme";
+import { ToastHost } from "@/components/ui/Toast";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const interTight = Inter_Tight({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-inter-tight" });
@@ -24,6 +25,7 @@ export async function RootShell({ locale, children }: { locale: Locale; children
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <ToastHost />
         </NextIntlClientProvider>
       </body>
     </html>

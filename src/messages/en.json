@@ -22,5 +22,29 @@
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
     "turnOn": "Turn the light on (light theme)"
+  },
+  "cmd": {
+    "open": "Open command menu (⌘K)",
+    "label": "Command menu",
+    "placeholder": "What are you looking for?",
+    "empty": "Nothing found.",
+    "goTo": "Go to {section}",
+    "copyEmail": "Copy e-mail",
+    "emailCopied": "E-mail copied",
+    "downloadResume": "Download résumé (PDF)",
+    "lightOn": "Turn the light on (light theme)",
+    "lightOff": "Turn the light off (dark theme)",
+    "openGithub": "Open GitHub",
+    "openLinkedin": "Open LinkedIn",
+    "otherLanguage": "Versão em português",
+    "hintNavigate": "navigate",
+    "hintOpen": "open",
+    "hintClose": "close",
+    "groups": {
+      "navigate": "navigate",
+      "action": "action",
+      "link": "link",
+      "language": "language"
+    }
   }
 }

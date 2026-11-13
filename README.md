@@ -23,3 +23,14 @@ uv run scripts/build_cv.py              # grava public/curriculo-gustavo-fiorott
 
 Sem uv: `pip install reportlab` e `python3 scripts/build_cv.py`. O PDF publicado não traz telefone
 e precisa caber em 1 página. O texto segue o contexto de carreira mantido fora do repositório.
+
+## Atividade do GitHub
+
+`src/data/github-contributions.json` (total, data da coleta e 53 semanas × 7 dias com nível 0–4) é
+atualizado por `scripts/fetch-github-contributions.mjs`, que roda sozinho antes do `pnpm build`
+(`prebuild`) e consulta a API GraphQL do GitHub com a variável `GITHUB_TOKEN`. Sem token ou com erro
+de rede, o script mantém o JSON versionado e o build segue normalmente.
+
+- Local: `GITHUB_TOKEN=$(gh auth token) pnpm fetch:github` atualiza o snapshot (versione o resultado).
+- Vercel: para o site atualizar a cada deploy, cadastre `GITHUB_TOKEN` nas variáveis de ambiente do
+  projeto (token sem escopos extras basta para ler contribuições públicas; ainda não configurado).

@@ -34,8 +34,13 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           <span className="text-xs text-muted">{t("total", { total })}</span>
         </div>
         {/* rtl container: on narrow screens the scroll starts at the latest weeks */}
-        <div className="overflow-x-auto [direction:rtl]" role="img" aria-label={t("total", { total })}>
-          <div className="flex w-max gap-[3px] [direction:ltr]">
+        <div
+          className="overflow-x-auto rounded-md [direction:rtl] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg"
+          tabIndex={0}
+          role="group"
+          aria-label={t("total", { total })}
+        >
+          <div className="flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
             {weeks.map((week, w) => (
               <div key={w} className="flex flex-col gap-[3px]">
                 {week.map((level, d) => (

@@ -87,7 +87,8 @@
         "desc": "Painel de consulta de clientes, contas e agências para um processo seletivo, com dados fictícios.",
         "alt": "Banner do painel Banestes"
       }
-    }
+    },
+    "stack": "Tecnologias"
   },
   "experience": {
     "title": "Experiência",

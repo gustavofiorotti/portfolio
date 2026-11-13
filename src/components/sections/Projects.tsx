@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { counterValues, filterProjects, projects, techs, toggleTech } from "@/lib/projects";
@@ -25,6 +25,7 @@ export function Projects() {
   const [selected, setSelected] = useState<string[]>([]);
   // bumps on every filter change so the cards remount and replay the staggered entry
   const [version, setVersion] = useState(0);
+  const firstChip = useRef<HTMLButtonElement>(null);
 
   const shown = filterProjects(projects, selected);
   const filtering = selected.length > 0;
@@ -33,6 +34,12 @@ export function Projects() {
   function update(next: string[]) {
     setSelected(next);
     setVersion((v) => v + 1);
+  }
+
+  // the clear buttons disappear once clicked: move focus to the first chip instead of <body>
+  function clear() {
+    update([]);
+    firstChip.current?.focus();
   }
 
   const animateEntry = version > 0 && !reduce;
@@ -47,11 +54,12 @@ export function Projects() {
       </div>
 
       <div className="reveal mb-8 flex flex-wrap items-center gap-2" role="group" aria-label={t("filterLabel")}>
-        {techs.map((tech) => {
+        {techs.map((tech, i) => {
           const on = selected.includes(tech);
           return (
             <button
               key={tech}
+              ref={i === 0 ? firstChip : undefined}
               type="button"
               aria-pressed={on}
               onClick={() => update(toggleTech(selected, tech))}
@@ -64,7 +72,7 @@ export function Projects() {
         {filtering && (
           <button
             type="button"
-            onClick={() => update([])}
+            onClick={clear}
             className="soft-btn flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-line bg-transparent pr-3 pl-3.5 text-sm font-medium text-muted"
           >
             {t("clearFilters")} <CloseIcon />
@@ -98,7 +106,7 @@ export function Projects() {
           <p className="m-0 mb-[18px] text-[15px]">{t("emptyText")}</p>
           <button
             type="button"
-            onClick={() => update([])}
+            onClick={clear}
             className="soft-btn h-[38px] cursor-pointer rounded-full border-0 bg-fg px-4 text-sm font-medium text-bg"
           >
             {t("clearFilters")}

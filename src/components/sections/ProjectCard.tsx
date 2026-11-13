@@ -8,12 +8,12 @@ import type { Project } from "@/lib/projects";
 
 // back-to-rest spring with a little overshoot, like the mockup's cubic-bezier(.34,1.56,.64,1)
 const SPRING = { stiffness: 260, damping: 20, mass: 0.6 };
-const HOVER_SHADOW = "0 34px 70px -34px rgb(0 0 0 / 0.45)";
+const HOVER_SHADOW = "0 34px 70px -34px var(--shadow-lift)";
 
 function LogoWithEyes() {
   return (
     <svg width="76" height="76" viewBox="0 0 32 32" aria-hidden="true" className="overflow-visible">
-      <image href="/projects/portfolio-logo.png" x="-2.2" y="-2.2" width="36.4" height="36.4" />
+      <image href="/projects/portfolio-logo.webp" x="-2.2" y="-2.2" width="36.4" height="36.4" />
       <g className="logo-glance">
         <g className="logo-blink">
           <ellipse cx="12.6" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />
@@ -107,12 +107,12 @@ export function ProjectCard({ project }: { project: Project }) {
     >
       <span className="project-sheen" aria-hidden="true" />
       <div className="flex h-full flex-col overflow-hidden rounded-[27px]">
-        <div className="relative aspect-video overflow-hidden bg-(--card)">
+        <div className="relative aspect-video overflow-hidden bg-card">
           <motion.div className="absolute -inset-3" style={{ x: imgX, y: imgY }}>
             <ProjectMedia project={project} alt={t(`${key}.alt`)} />
           </motion.div>
           {project.image.kind === "self" && (
-            <span className="absolute top-4 left-4 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-(--on-accent)">
+            <span className="absolute top-4 left-4 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-on-accent">
               {t("youAreHere")}
             </span>
           )}
@@ -133,7 +133,7 @@ export function ProjectCard({ project }: { project: Project }) {
             <span className="font-mono text-xs whitespace-nowrap text-muted">{t(`${key}.period`)}</span>
           </div>
           <p className="m-0 text-[15px] leading-relaxed text-muted">{t(`${key}.desc`)}</p>
-          <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label="Stack">
+          <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0" aria-label={t("stack")}>
             {project.tags.map((tag) => (
               <li key={tag} className="rounded-full border border-line px-2.5 py-1 text-xs text-muted">
                 {tag}

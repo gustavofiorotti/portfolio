@@ -46,5 +46,121 @@
       "link": "link",
       "language": "language"
     }
+  },
+  "projects": {
+    "title": "Projects",
+    "counterAll": "{total} projects",
+    "counterSome": "{shown} of {total} projects",
+    "filterLabel": "Filter projects by technology (you can pick more than one)",
+    "clearFilters": "Clear filters",
+    "emptyTitle": "No project with this combination",
+    "emptyText": "Remove a filter to see more projects.",
+    "seeOnline": "See it live",
+    "code": "Code",
+    "youAreHere": "You are here",
+    "ariaOnline": "{name}: see it live",
+    "ariaCode": "{name}: see the code",
+    "items": {
+      "portfolio": {
+        "period": "Nov 2026 – now",
+        "desc": "This site: Next.js with static export, PT/EN, a 3D character, a ⌘K menu and animations with Motion.",
+        "alt": "Portfolio logo"
+      },
+      "juridique": {
+        "period": "May–Jul 2026",
+        "desc": "Web app that turns legal documents in PDF into plain language with generative AI. It has sign-up and login.",
+        "alt": "juridiQue banner",
+        "note": "Coming soon"
+      },
+      "maonaobra": {
+        "period": "Sep–Dec 2025",
+        "desc": "Connects clients to local service professionals, with role-based login. Group project at UVV: I proposed the idea and built it.",
+        "alt": "Mão na Obra banner"
+      },
+      "uvvendas": {
+        "period": "Aug–Dec 2025",
+        "desc": "E-commerce with catalog, cart and seller dashboard, built as a group at UVV. I worked on the interface and the visual identity.",
+        "alt": "UVVendas logo"
+      },
+      "banestes": {
+        "period": "Apr–May 2025",
+        "desc": "Dashboard to look up clients, accounts and branches, built for a hiring process, with fictional data.",
+        "alt": "Banestes dashboard banner"
+      }
+    }
+  },
+  "experience": {
+    "title": "Experience",
+    "company": "Globalsys, Vila Velha, Brazil",
+    "span": "Nov 2025 to Aug 2026 · 10 months",
+    "jobs": {
+      "fullstack": {
+        "role": "Full-stack Intern",
+        "period": "Jun 2026 to Aug 2026",
+        "summary": "Worked on Gnexum, a platform to build and manage APIs and integrate databases and systems.",
+        "items": {
+          "a": "API with NestJS and PostgreSQL: improvements and fixes",
+          "b": "Integration routes between systems, including via MCP",
+          "c": "Screens redesigned in React and Next.js, focused on UI and contrast",
+          "d": "Deploys with Docker, Nginx and Cloudflare"
+        }
+      },
+      "support": {
+        "role": "IT Support Intern (Tier 1)",
+        "period": "Nov 2025 to Jun 2026",
+        "summary": "Helped employees through a ticket portal, e-mail and chat.",
+        "items": {
+          "a": "Remote access, VPN and software installation",
+          "b": "Access management with Active Directory and Google Workspace",
+          "c": "Kept the team’s technical documentation up to date"
+        }
+      }
+    }
+  },
+  "about": {
+    "title": "About",
+    "p1": "I worked on evolving a systems integration platform, from the frontend to deploys on client servers with Docker and Nginx.",
+    "p2": "I also know Python, C# and Git, hold the Oracle Database Foundations certificate and speak advanced English. Expected graduation: Dec 2027.",
+    "education": "Education",
+    "semester": "Semester {semester} of {semesters} · {pct}%",
+    "course": "Computer Science · UVV",
+    "courseStart": "Jan 2024",
+    "courseEnd": "expected graduation: Dec 2027",
+    "english": "Advanced English",
+    "efset": "EF SET · 70/100",
+    "toeic": "TOEIC Bridge · out of 100",
+    "oracle": "Oracle certification",
+    "oracleName": "Database Foundations",
+    "base": "Based in",
+    "place": "Cariacica, ES, Brazil",
+    "now": "UTC−3 · now {time}",
+    "skills": {
+      "languages": {
+        "k": "languages",
+        "v": "TypeScript, JavaScript, Python, C#, SQL"
+      },
+      "frontend": {
+        "k": "frontend",
+        "v": "React, Next.js, Tailwind CSS, HTML, CSS"
+      },
+      "backend": {
+        "k": "backend & data",
+        "v": "NestJS, Flask, REST APIs, PostgreSQL, SQL Server, MySQL"
+      },
+      "infra": {
+        "k": "infra",
+        "v": "Docker, Nginx, Cloudflare, SSH, Git, Azure DevOps"
+      },
+      "ai": {
+        "k": "ai",
+        "v": "AI in development: Claude Code, AI agents and MCP"
+      }
+    },
+    "github": {
+      "title": "GitHub activity",
+      "total": "{total, plural, one {# contribution} other {# contributions}} in the last year",
+      "less": "Less",
+      "more": "More"
+    }
   }
 }

@@ -7,7 +7,7 @@ import { homePath, type Locale } from "@/i18n/locales";
 import { CONTACT } from "@/lib/contact";
 import { copyText } from "@/lib/copy";
 import { smoothScrollTo } from "@/lib/motion-utils";
-import { currentTheme, toggleTheme } from "@/lib/theme-client";
+import { toggleTheme, useTheme } from "@/lib/theme-client";
 import { showToast } from "@/components/ui/Toast";
 import { RESUME_URL } from "./ResumeButton";
 import { SECTION_IDS } from "./sections";
@@ -19,13 +19,13 @@ export function CommandMenu() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  // read live from html[data-theme], so the label is right however the menu was opened
+  const dark = useTheme() === "dark";
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setDark(currentTheme() === "dark");
         setOpen((o) => !o);
       }
     };
@@ -43,10 +43,7 @@ export function CommandMenu() {
     <>
       <button
         type="button"
-        onClick={() => {
-          setDark(currentTheme() === "dark");
-          setOpen(true);
-        }}
+        onClick={() => setOpen(true)}
         aria-label={t("open")}
         title={t("open")}
         className="btn btn-ghost hidden h-9 rounded-full border border-line px-2.5 font-mono text-xs font-medium text-muted sm:block"
@@ -55,10 +52,7 @@ export function CommandMenu() {
       </button>
       <Command.Dialog
         open={open}
-        onOpenChange={(o) => {
-          if (o) setDark(currentTheme() === "dark");
-          setOpen(o);
-        }}
+        onOpenChange={setOpen}
         label={t("label")}
         overlayClassName="cmd-overlay"
         contentClassName="cmd-content"

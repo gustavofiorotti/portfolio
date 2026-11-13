@@ -4,12 +4,15 @@
     "description": "Full-stack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
   },
   "nav": {
-    "projects": "Projects",
-    "experience": "Experience",
-    "about": "About",
-    "contact": "Contact",
     "resume": "Résumé",
-    "switchLanguage": "Português"
+    "switchLanguage": "Português",
+    "backToTop": "Back to top",
+    "brasiliaTime": "Brasília time",
+    "sections": "Sections",
+    "projetos": "Projects",
+    "experiencia": "Experience",
+    "sobre": "About",
+    "contato": "Contact"
   },
   "hero": {
     "lead": "Full-stack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",

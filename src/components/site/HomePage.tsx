@@ -1,6 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { Header } from "@/components/header/Header";
+import { About } from "@/components/sections/About";
+import { Experience } from "@/components/sections/Experience";
+import { GithubActivity } from "@/components/sections/GithubActivity";
+import { Projects } from "@/components/sections/Projects";
 import { HeroActions } from "./HeroActions";
 
 export async function HomePage({ locale }: { locale: Locale }) {
@@ -21,6 +25,10 @@ export async function HomePage({ locale }: { locale: Locale }) {
           </p>
           <HeroActions />
         </section>
+        <Projects />
+        <GithubActivity locale={locale} />
+        <Experience locale={locale} />
+        <About locale={locale} />
       </main>
     </>
   );

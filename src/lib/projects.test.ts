@@ -35,7 +35,7 @@ describe("toggleTech", () => {
 
 describe("counterValues", () => {
   it("pads numbers to two digits", () => {
-    expect(counterValues(2, 5, true)).toEqual({ filtering: true, shown: "02", total: "05" });
-    expect(counterValues(12, 12, false)).toEqual({ filtering: false, shown: "12", total: "12" });
+    expect(counterValues(2, 5)).toEqual({ shown: "02", total: "05" });
+    expect(counterValues(12, 12)).toEqual({ shown: "12", total: "12" });
   });
 });

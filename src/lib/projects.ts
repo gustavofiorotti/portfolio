@@ -86,6 +86,6 @@ export function toggleTech(selected: readonly string[], tech: string): string[] 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /** Values for the counter message: "05 projetos" or "02 de 05 projetos". */
-export function counterValues(shown: number, total: number, filtering: boolean) {
-  return { filtering, shown: pad2(shown), total: pad2(total) };
+export function counterValues(shown: number, total: number) {
+  return { shown: pad2(shown), total: pad2(total) };
 }

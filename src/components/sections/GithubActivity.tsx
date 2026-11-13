@@ -40,7 +40,7 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           role="group"
           aria-label={t("total", { total })}
         >
-          <div className="flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
+          <div className="mr-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
             {weeks.map((week, w) => (
               <div key={w} className="flex flex-col gap-[3px]">
                 {week.map((level, d) => (

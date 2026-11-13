@@ -1,12 +1,12 @@
 "use client";
 /* eslint-disable react-hooks/immutability -- three.js frame loop: refs and shared request objects are mutated per frame by design, outside React rendering */
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useMemo, useRef, type MutableRefObject } from "react";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { Strands } from "./Strands";
 
-export type PressRequest = { pending: boolean };
+export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 
 const BODY = "#D97757"; // Claude Code orange, chosen by Gustavo
@@ -77,7 +77,9 @@ type State = {
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean;
 };
 
-function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onToggle: () => void; press: MutableRefObject<PressRequest>; pointer: MutableRefObject<Pointer>; still: boolean }) {
+type SceneProps = { onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>; pointer: MutableRefObject<Pointer>; still: boolean };
+
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: SceneProps) {
   const float = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
   const eyesPivot = useRef<THREE.Group>(null);
@@ -110,6 +112,7 @@ function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onTog
     // light switch: 1 s timeline (look, reach, press, come back); the theme flips at the press
     if (press.current.pending) {
       press.current.pending = false;
+      press.current.at = performance.now();
       if (t - s.pressT0 > 1.05) {
         s.pressT0 = t;
         s.pressed = false;
@@ -234,7 +237,7 @@ function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onTog
     <group>
       <ambientLight intensity={1.7} />
       <directionalLight position={[-2, 3, 4]} intensity={1.4} />
-      <LightSwitch dark={dark} rocker={rocker} onPress={() => (press.current.pending = true)} />
+      <LightSwitch dark={dark} rocker={rocker} onPress={onSwitchClick} />
       <group position={[-0.45, 0, 0]}>
         <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>
           <planeGeometry args={[1.25, 1.25]} />
@@ -242,7 +245,7 @@ function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onTog
         </mesh>
         <group ref={float}>
           <group ref={body}>
-            <Strands radius={0.92} count={30000} length={0.2} width={0.011} color={BODY} faceTrim={0.3} onClick={poke} onPointerMove={petMove} />
+            <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} />
             <group ref={eyesPivot}>
               <group position={[0, 0.08, 1.0]}>
                 {[-1, 1].map((sd) => (
@@ -254,7 +257,7 @@ function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onTog
             </group>
             {[-1, 1].map((sd, i) => (
               <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
-                <Strands radius={0.17} count={2200} length={0.09} width={0.008} color={BODY} seed={sd > 0 ? 11 : 13} />
+                <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} seed={sd > 0 ? 11 : 13} still={still} />
               </group>
             ))}
           </group>
@@ -264,17 +267,49 @@ function Plush({ dark, onToggle, press, pointer, still }: { dark: boolean; onTog
   );
 }
 
-/** The canvas: low-power GPU, capped resolution, paused while the tab or the stage is hidden. */
-export default function MascotScene(props: { dark: boolean; onToggle: () => void; press: MutableRefObject<PressRequest>; pointer: MutableRefObject<Pointer>; still: boolean; running: boolean }) {
+/**
+ * Drives rendering on demand: 60 fps while something happens (pointer moving, a press, a
+ * mood), about 24 fps when he just floats, nothing with reduced motion except reactions.
+ */
+function FrameDriver({ pointer, press, still }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    let raf = 0;
+    let last = 0;
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      const busy = now - pointer.current.lastMove < 2500 || press.current.pending || now - press.current.at < 4000;
+      const gap = busy ? 0 : still ? 1000 : 1000 / 24;
+      if (now - last >= gap) {
+        last = now;
+        invalidate();
+      }
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [invalidate, pointer, press, still]);
+  return null;
+}
+
+/**
+ * The canvas: low-power GPU, capped resolution, renders on demand and stops with the tab
+ * hidden. Pointer events come from the page, so the canvas never blocks the content under it.
+ */
+export default function MascotScene(props: SceneProps & { running: boolean }) {
+  const { running, ...scene } = props;
   return (
     <Canvas
-      frameloop={props.running ? "always" : "never"}
+      frameloop={running ? "demand" : "never"}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       camera={{ position: [0, 0.35, 4.6], fov: 36 }}
+      eventSource={document.body}
+      eventPrefix="client"
       flat
+      onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", (e) => (e.preventDefault(), props.onContextLost?.()))}
     >
-      <Plush {...props} />
+      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} />
+      <Plush {...scene} />
     </Canvas>
   );
 }

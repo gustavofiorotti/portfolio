@@ -147,9 +147,11 @@ type StrandsProps = ThreeElements['group'] & {
   squash?: MutableRefObject<number>
   seed?: number
   faceTrim?: number
+  /** reduced motion: the coat stops swaying */
+  still?: boolean
 }
 
-export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.012, color = '#C41E1A', tipColor, rimColor, squash, seed = 7, faceTrim = 1, ...props }: StrandsProps) {
+export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.012, color = '#C41E1A', tipColor, rimColor, squash, seed = 7, faceTrim = 1, still = false, ...props }: StrandsProps) {
   const mat = useRef<THREE.ShaderMaterial>(null)
   const geo = useMemo(() => buildGeometry(count, seed), [count, seed])
   const uniforms = useMemo(
@@ -170,13 +172,18 @@ export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.01
     [],
   )
   // the uniforms prop is copied on mount, so live values go to the material's own uniforms
+  // colors are computed once per prop change, not every frame
+  const colors = useMemo(() => {
+    const base = new THREE.Color(color)
+    return { base, tip: tipColor ? new THREE.Color(tipColor) : base.clone().lerp(new THREE.Color('#fafaf9'), 0.06) }
+  }, [color, tipColor])
   useFrame((state) => {
     const u = mat.current?.uniforms
     if (!u) return
-    u.uTime.value = state.clock.elapsedTime
+    if (!still) u.uTime.value = state.clock.elapsedTime
     u.uLength.value = length
-    u.uColor.value.set(color)
-    u.uTipColor.value.set(tipColor || new THREE.Color(color).lerp(new THREE.Color('#fafaf9'), 0.06))
+    u.uColor.value.copy(colors.base)
+    u.uTipColor.value.copy(colors.tip)
     if (squash) u.uSquash.value = squash.current
   })
   return (

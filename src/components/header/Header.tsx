@@ -71,7 +71,7 @@ export function Header() {
   const pill = hover ?? activePill;
   const go = (id: SectionId) => (e: React.MouseEvent) => {
     e.preventDefault();
-    smoothScrollTo(id === "topo" ? null : id, 72);
+    smoothScrollTo(id, 72);
     history.replaceState(null, "", id === "topo" ? location.pathname : `#${id}`);
   };
 

@@ -53,7 +53,7 @@ function MorphLink({ href, className, morph, iconFirst, children }: { href: stri
       className={className}
       onMouseEnter={() => setOn(true)}
       onMouseLeave={() => setOn(false)}
-      onFocus={() => setOn(true)}
+      onFocus={(e) => e.currentTarget.matches(":focus-visible") && setOn(true)}
       onBlur={() => setOn(false)}
     >
       {iconFirst && icon}

@@ -52,7 +52,9 @@ export function smoothScrollTo(id: string | null, offset = 0) {
   const dur = scrollDuration(to - from);
   const t0 = performance.now();
   let raf = 0;
-  const stop = () => {
+  // ignore the event that started the scroll (e.g. Enter in the ⌘K menu still bubbling up)
+  const stop = (e?: Event) => {
+    if (e && e.timeStamp <= t0) return;
     cancelAnimationFrame(raf);
     ["wheel", "touchstart", "keydown"].forEach((ev) => window.removeEventListener(ev, stop));
   };

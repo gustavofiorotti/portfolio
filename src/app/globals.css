@@ -274,3 +274,8 @@ html[data-intro="play"] .brand-logo { animation: intro-hide 2.2s steps(1, end) b
   35% { opacity: 1; }
 }
 @keyframes intro-hide { from { opacity: 0; } }
+
+/* sections receive focus after a menu jump; the scroll already shows where you are */
+section[tabindex="-1"]:focus {
+  outline: none;
+}

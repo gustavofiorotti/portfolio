@@ -50,7 +50,7 @@ export function Intro() {
     <div ref={ref} aria-hidden="true" className={`intro-fly ${playing ? "is-playing" : ""}`}>
       <div className="intro-hop">
         <svg width="120" height="120" viewBox="0 0 32 32" className="block overflow-visible">
-          <image href="/brand/logo-3d.png" x="-2.2" y="-2.2" width="36.4" height="36.4" />
+          <image href="/brand/logo-3d.webp" x="-2.2" y="-2.2" width="36.4" height="36.4" />
           <g className="intro-look">
             <g className="intro-eyes">
               <ellipse cx="12.6" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />

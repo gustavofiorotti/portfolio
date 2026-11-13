@@ -51,9 +51,9 @@ export function CourseProgress() {
           <span className="course-shine" />
         </div>
       </div>
-      <div className="mt-2 flex justify-between font-mono text-xs text-muted">
-        <span>{t("courseStart")}</span>
-        <span>{t("courseEnd")}</span>
+      <div className="mt-2 flex justify-between gap-3 font-mono text-xs text-muted">
+        <span className="shrink-0">{t("courseStart")}</span>
+        <span className="text-right">{t("courseEnd")}</span>
       </div>
     </>
   );

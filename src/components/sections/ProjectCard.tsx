@@ -5,31 +5,18 @@ import { useState, type PointerEvent } from "react";
 import { motion, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { useTranslations } from "next-intl";
 import type { Project } from "@/lib/projects";
+import { BrandLogo } from "@/components/header/BrandLogo";
 
 // back-to-rest spring with a little overshoot, like the mockup's cubic-bezier(.34,1.56,.64,1)
 const SPRING = { stiffness: 260, damping: 20, mass: 0.6 };
 const HOVER_SHADOW = "0 34px 70px -34px var(--shadow-lift)";
-
-function LogoWithEyes() {
-  return (
-    <svg width="76" height="76" viewBox="0 0 32 32" aria-hidden="true" className="overflow-visible">
-      <image href="/projects/portfolio-logo.webp" x="-2.2" y="-2.2" width="36.4" height="36.4" />
-      <g className="logo-glance">
-        <g className="logo-blink">
-          <ellipse cx="12.6" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />
-          <ellipse cx="19.4" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />
-        </g>
-      </g>
-    </svg>
-  );
-}
 
 function ProjectMedia({ project, alt }: { project: Project; alt: string }) {
   const { image } = project;
   if (image.kind === "self") {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <LogoWithEyes />
+        <BrandLogo size={76} />
         <span className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 font-mono text-[15px] font-medium text-fg">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             <rect x="5" y="11" width="14" height="10" rx="2" />

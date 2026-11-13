@@ -29,18 +29,42 @@ export function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Animated scroll to an element id (or to the top), with the kit's timing. */
+/** Moves keyboard and screen-reader focus to the section the page scrolled to. */
+function focusSection(el: HTMLElement | null) {
+  if (!el) return;
+  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+  el.focus({ preventScroll: true });
+}
+
+/**
+ * Animated scroll to an element id (or to the top), with the kit's timing. It stops as soon
+ * as the visitor scrolls, touches or presses a key, and then moves focus to the target.
+ */
 export function smoothScrollTo(id: string | null, offset = 0) {
   const target = id ? document.getElementById(id) : null;
   const to = target ? target.getBoundingClientRect().top + window.scrollY - offset : 0;
   const from = window.scrollY;
-  if (prefersReducedMotion()) return window.scrollTo(0, to);
+  if (prefersReducedMotion()) {
+    window.scrollTo(0, to);
+    focusSection(target);
+    return;
+  }
   const dur = scrollDuration(to - from);
   const t0 = performance.now();
+  let raf = 0;
+  const stop = () => {
+    cancelAnimationFrame(raf);
+    ["wheel", "touchstart", "keydown"].forEach((ev) => window.removeEventListener(ev, stop));
+  };
+  ["wheel", "touchstart", "keydown"].forEach((ev) => window.addEventListener(ev, stop, { passive: true }));
   const step = (now: number) => {
     const t = Math.min(1, (now - t0) / dur);
     window.scrollTo(0, from + (to - from) * easeOutQuart(t));
-    if (t < 1) requestAnimationFrame(step);
+    if (t < 1) raf = requestAnimationFrame(step);
+    else {
+      stop();
+      focusSection(target);
+    }
   };
-  requestAnimationFrame(step);
+  raf = requestAnimationFrame(step);
 }

@@ -7,8 +7,10 @@ const DURATION = 2900; // ms: logo stares 1 s, floats to the header, the page fo
 /**
  * Opening: the plush logo stares at the visitor in the middle of the screen, blinks twice,
  * looks at the header and floats there while the page comes into focus behind it.
- * The inline script in <body> decides before paint whether it plays (once per session,
- * never with reduced motion) by setting html[data-intro].
+ * The inline script decides before paint whether it plays (once per session, never with
+ * reduced motion) and sets html[data-intro=wait], which only hides the page. After hydration
+ * this measures the header logo (nothing is transformed yet) and switches to "play"; if
+ * hydration never comes, the script drops the flag after 4 s so the page still shows.
  */
 export function Intro() {
   const ref = useRef<HTMLDivElement>(null);
@@ -16,7 +18,7 @@ export function Intro() {
 
   useLayoutEffect(() => {
     const html = document.documentElement;
-    if (!html.dataset.intro) return;
+    if (html.dataset.intro !== "wait") return;
     const target = document.querySelector(".brand-logo")?.getBoundingClientRect();
     const el = ref.current;
     if (el && target) {
@@ -29,6 +31,7 @@ export function Intro() {
       el.style.setProperty("--ex", `${(dx / len) * 2.6}px`);
       el.style.setProperty("--ey", `${(dy / len) * 2}px`);
     }
+    html.dataset.intro = "play";
     // eslint-disable-next-line react-hooks/set-state-in-effect -- start once, after measuring
     setPlaying(true);
     // ?introHold keeps the opening on screen, for reviewing it frame by frame
@@ -50,8 +53,8 @@ export function Intro() {
           <image href="/brand/logo-3d.png" x="-2.2" y="-2.2" width="36.4" height="36.4" />
           <g className="intro-look">
             <g className="intro-eyes">
-              <ellipse cx="12.6" cy="15" rx="2.5" ry="3.6" fill="#FAFAF9" />
-              <ellipse cx="19.4" cy="15" rx="2.5" ry="3.6" fill="#FAFAF9" />
+              <ellipse cx="12.6" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />
+              <ellipse cx="19.4" cy="15" rx="2.5" ry="3.6" fill="var(--logo-eye)" />
             </g>
           </g>
         </svg>

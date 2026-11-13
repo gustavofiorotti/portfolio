@@ -45,7 +45,7 @@ describe("opening flag", () => {
   it("plays the opening on the first visit of the session", () => {
     vi.stubGlobal("matchMedia", () => ({ matches: false }));
     run();
-    expect(document.documentElement.dataset.intro).toBe("1");
+    expect(document.documentElement.dataset.intro).toBe("wait");
   });
 
   it("skips it when it was already seen or with reduced motion", () => {

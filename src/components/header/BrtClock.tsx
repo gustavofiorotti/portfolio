@@ -30,7 +30,8 @@ export function BrtClock({ label }: { label: string }) {
         <line className="clock-hand" x1="12" y1="12" x2="12" y2="5.4" strokeWidth="1.6" style={{ transform: `rotate(${minute}deg)` }} />
       </svg>
       <span>BRT</span>
-      <span className="inline-flex [perspective:160px]" aria-label={time ?? undefined}>
+      <span className="sr-only">{time ?? ""}</span>
+      <span className="inline-flex [perspective:160px]" aria-hidden="true">
         {[...shown].map((ch, i) => (
           <span key={`${i}-${flips[i]}`} className={flips[i] ? "clock-flip inline-block origin-top" : "inline-block"} aria-hidden="true">
             {ch}

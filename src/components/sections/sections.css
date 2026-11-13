@@ -127,51 +127,6 @@
   }
 }
 
-/* Logo eyes on the portfolio card. */
-.logo-glance {
-  animation: logo-glance 7s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes logo-glance {
-  0%,
-  14% {
-    transform: translateX(0);
-  }
-  18%,
-  34% {
-    transform: translateX(-2.4px);
-  }
-  38%,
-  52% {
-    transform: translateX(2.4px);
-  }
-  56%,
-  70% {
-    transform: translate(1px, 1.2px);
-  }
-  74%,
-  100% {
-    transform: translateX(0);
-  }
-}
-.logo-blink {
-  animation: logo-blink 7s infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes logo-blink {
-  0%,
-  86%,
-  90%,
-  100% {
-    transform: scaleY(1);
-  }
-  88% {
-    transform: scaleY(0.1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .course-grow,

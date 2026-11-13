@@ -25,6 +25,7 @@ export function CommandMenu() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        setDark(currentTheme() === "dark");
         setOpen((o) => !o);
       }
     };

@@ -28,7 +28,10 @@ export function Header() {
   const arrowK = useTween(active === "topo" ? 0 : 1);
 
   useEffect(() => {
-    const onScroll = () => {
+    // measure once per frame at most: reading 4 section positions forces layout
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
       const y = window.scrollY;
       setScrolled(y > 40);
       const tops: Record<string, number> = {};
@@ -39,10 +42,14 @@ export function Header() {
       const atBottom = y + window.innerHeight >= document.documentElement.scrollHeight - 8;
       setActive(activeSection(tops, atBottom && y > 0));
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
@@ -50,8 +57,15 @@ export function Header() {
 
   // the glass pill rests on the current section when the mouse is not over the menu
   useEffect(() => {
-    const el = navRef.current?.querySelector<HTMLElement>(`[data-nav="${active}"]`);
-    setActivePill(el ? { left: el.offsetLeft, width: el.offsetWidth } : null);
+    const place = () => {
+      const el = navRef.current?.querySelector<HTMLElement>(`[data-nav="${active}"]`);
+      setActivePill(el ? { left: el.offsetLeft, width: el.offsetWidth } : null);
+    };
+    place();
+    // fonts and resizes change the menu widths, so the pill is placed again
+    document.fonts?.ready.then(place);
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
   }, [active, scrolled]);
 
   const pill = hover ?? activePill;

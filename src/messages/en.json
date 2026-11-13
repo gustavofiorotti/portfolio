@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "title": "Gustavo Fiorotti · Full-stack developer",
+    "description": "Full-stack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
+  },
+  "nav": {
+    "projects": "Projects",
+    "experience": "Experience",
+    "about": "About",
+    "contact": "Contact",
+    "resume": "Résumé",
+    "switchLanguage": "Português"
+  },
+  "hero": {
+    "lead": "Full-stack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
+    "seeProjects": "See projects",
+    "seeResume": "See résumé"
+  },
+  "theme": {
+    "turnOff": "Turn the light off (dark theme)",
+    "turnOn": "Turn the light on (light theme)"
+  }
+}

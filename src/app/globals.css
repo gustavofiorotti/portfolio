@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Design tokens from the approved direction A (kit-gustavo): never pure black or white. */
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --fg: #18181b;
+  --muted: #5d5d66;
+  --line: #e7e7ea;
+  --chip: #efefee;
+  --accent: #c41e1a;
+  --accent-dark: #7a0e0a;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #141416;
+  --surface: #1a1a1d;
+  --fg: #ececee;
+  --muted: #a1a1aa;
+  --line: rgb(255 255 255 / 0.09);
+  --chip: #26262a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-chip: var(--chip);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

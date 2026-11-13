@@ -1,34 +1,34 @@
-# build output
-dist/
-# generated types
-.astro/
-
 # dependencies
-node_modules/
+/node_modules
 
-# logs
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# misc
+.DS_Store
+*.pem
+.idea/
+
+# debug
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
+# env files
+.env*
 
-# environment variables
-.env
-.env.production
+# vercel (link local e variáveis puxadas pelo CLI)
+.vercel
 
-# macOS-specific files
-.DS_Store
-
-# jetbrains setting folder
-.idea/
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
 # graphify
 graphify-out/
 
 # Maestri (pastas dos papéis dos agentes)
 .maestri/
-
-# Vercel (link local e variáveis puxadas pelo CLI)
-.vercel
-.env*

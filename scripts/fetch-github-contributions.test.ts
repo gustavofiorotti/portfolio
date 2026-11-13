@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
-import { levelFromGitHub, run, toContributions } from "./fetch-github-contributions.mjs";
+import { levelFromGitHub, run, sameData, toContributions } from "./fetch-github-contributions.mjs";
 
 type Day = { weekday: number; contributionLevel: string };
 
@@ -92,6 +92,19 @@ describe("toContributions", () => {
   });
 });
 
+describe("sameData", () => {
+  const weeks = [[0, 1, 2, 3, 4, 0, 0]];
+
+  it("ignores fetchedAt", () => {
+    expect(sameData({ total: 1, fetchedAt: "a", weeks }, { total: 1, fetchedAt: "b", weeks })).toBe(true);
+  });
+
+  it("detects a different total or calendar", () => {
+    expect(sameData({ total: 1, weeks }, { total: 2, weeks })).toBe(false);
+    expect(sameData({ total: 1, weeks }, { total: 1, weeks: [[0, 0, 0, 0, 0, 0, 0]] })).toBe(false);
+  });
+});
+
 describe("run (fallback)", () => {
   const okFetch = vi.fn(async () =>
     new Response(JSON.stringify(response(Array.from({ length: 53 }, () => fullWeek()), 7))),
@@ -132,11 +145,34 @@ describe("run (fallback)", () => {
     expect(write).not.toHaveBeenCalled();
   });
 
+  const missingFile = vi.fn(async () => {
+    throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+  });
+
+  it("does not rewrite the file when total and weeks are unchanged", async () => {
+    const write = vi.fn();
+    const current = { total: 7, fetchedAt: "2026-01-01T00:00:00.000Z", weeks: Array.from({ length: 53 }, () => [0, 0, 0, 0, 0, 0, 0]) };
+    const read = vi.fn(async () => JSON.stringify(current));
+
+    await expect(run({ token: "t", write, read, fetchImpl: okFetch, log: silentLog })).resolves.toBe("unchanged");
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it("rewrites the file when the calendar changes", async () => {
+    const write = vi.fn();
+    const weeks = Array.from({ length: 53 }, () => [0, 0, 0, 0, 0, 0, 0]);
+    weeks[52][3] = 2;
+    const read = vi.fn(async () => JSON.stringify({ total: 7, fetchedAt: "x", weeks }));
+
+    await expect(run({ token: "t", write, read, fetchImpl: okFetch, log: silentLog })).resolves.toBe("updated");
+    expect(write).toHaveBeenCalledOnce();
+  });
+
   it("writes the converted JSON when the request succeeds", async () => {
     const write = vi.fn();
 
     await expect(
-      run({ token: "t", outputPath: "/tmp/out.json", write, fetchImpl: okFetch, log: silentLog }),
+      run({ token: "t", outputPath: "/tmp/out.json", write, read: missingFile, fetchImpl: okFetch, log: silentLog }),
     ).resolves.toBe("updated");
     expect(write).toHaveBeenCalledOnce();
     const [path, content] = write.mock.calls[0];

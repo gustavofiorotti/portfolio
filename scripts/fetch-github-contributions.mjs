@@ -88,23 +88,40 @@ export async function fetchContributions({ token, login = GITHUB_LOGIN, fetchImp
   return toContributions(await res.json());
 }
 
+/** True when two snapshots have the same total and calendar (fetchedAt is ignored). */
+export function sameData(a, b) {
+  return a.total === b.total && JSON.stringify(a.weeks) === JSON.stringify(b.weeks);
+}
+
+/** Reads the current snapshot, or null if it is missing or not valid JSON. */
+async function readSnapshot(path, read) {
+  try {
+    return JSON.parse(await read(path, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Refreshes the JSON file. Returns "updated", "skipped" (no token) or "kept" (error); never throws,
- * so a missing token or a network failure leaves the committed snapshot in place.
+ * Refreshes the JSON file. Returns "updated", "unchanged" (same total and weeks, file untouched so
+ * builds do not produce a diff), "skipped" (no token) or "kept" (error); never throws, so a missing
+ * token or a network failure leaves the committed snapshot in place.
  * @param {{
  *   token?: string,
  *   outputPath?: string,
  *   fetchImpl?: typeof fetch,
  *   write?: (path: string, content: string) => Promise<void>,
+ *   read?: (path: string, encoding: "utf8") => Promise<string>,
  *   log?: Pick<Console, "info" | "warn">,
  * }} [options]
- * @returns {Promise<"updated" | "skipped" | "kept">}
+ * @returns {Promise<"updated" | "unchanged" | "skipped" | "kept">}
  */
 export async function run({
   token = process.env.GITHUB_TOKEN,
   outputPath = OUTPUT_PATH,
   fetchImpl = fetch,
   write = writeFile,
+  read = readFile,
   log = console,
 } = {}) {
   if (!token) {
@@ -113,6 +130,11 @@ export async function run({
   }
   try {
     const data = await fetchContributions({ token, fetchImpl });
+    const current = await readSnapshot(outputPath, read);
+    if (current && sameData(current, data)) {
+      log.info(`[github-contributions] ${data.total} contributions, no changes; file kept as is.`);
+      return "unchanged";
+    }
     await write(outputPath, `${JSON.stringify(data)}\n`);
     log.info(`[github-contributions] ${data.total} contributions saved.`);
     return "updated";

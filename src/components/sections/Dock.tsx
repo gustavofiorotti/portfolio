@@ -24,7 +24,7 @@ const LINKS = [
 const COUNT = LINKS.length + 1;
 
 const ICON_CLASS =
-  "dock-icon block flex-none rounded-[12px] outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg";
+  "dock-icon block flex-none rounded-[12px] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-4 focus-visible:outline-fg";
 
 type Pointer = { x: number; y: number } | null;
 type DockState = { pointer: Pointer; sizes: number[] };

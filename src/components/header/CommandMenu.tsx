@@ -1,7 +1,7 @@
 "use client";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { homePath, type Locale } from "@/i18n/locales";
 import { CONTACT } from "@/lib/contact";
@@ -18,7 +18,16 @@ export function CommandMenu() {
   const nav = useTranslations("nav");
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
+  const opener = useRef<HTMLElement | null>(null);
+  // remember who opened the menu and give focus back to it when it closes (Esc included)
+  const setOpen = (next: boolean | ((o: boolean) => boolean)) =>
+    setOpenState((o) => {
+      const value = typeof next === "function" ? next(o) : next;
+      if (value && !o) opener.current = document.activeElement as HTMLElement | null;
+      if (!value && o) requestAnimationFrame(() => opener.current?.focus?.());
+      return value;
+    });
   // read live from html[data-theme], so the label is right however the menu was opened
   const dark = useTheme() === "dark";
 
@@ -46,9 +55,13 @@ export function CommandMenu() {
         onClick={() => setOpen(true)}
         aria-label={t("open")}
         title={t("open")}
-        className="btn btn-ghost hidden h-9 rounded-full border border-line px-2.5 font-mono text-xs font-medium text-muted sm:block"
+        className="btn btn-ghost flex h-11 min-w-11 items-center justify-center rounded-full border border-line px-2.5 font-mono text-xs font-medium text-muted sm:h-9 sm:min-w-0"
       >
-        ⌘K
+        {/* phones get a menu icon (sections live here on small screens); desktops see the shortcut */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="lg:hidden">
+          <path d="M4 7h16M4 12h16M4 17h10" />
+        </svg>
+        <span className="hidden lg:inline">⌘K</span>
       </button>
       <Command.Dialog
         open={open}

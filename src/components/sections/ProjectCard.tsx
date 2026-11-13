@@ -140,12 +140,12 @@ export function ProjectCard({ project }: { project: Project }) {
           </ul>
           <div className="relative z-[4] mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold">
             {project.online && (
-              <MorphLink href={project.online} morph="arrow" className="soft-btn flex h-9 items-center gap-1.5 rounded-full bg-fg px-3.5 text-bg">
+              <MorphLink href={project.online} morph="arrow" className="soft-btn flex h-11 items-center gap-1.5 rounded-full bg-fg px-3.5 text-bg sm:h-9">
                 {t("seeOnline")}
               </MorphLink>
             )}
             {project.code && (
-              <MorphLink href={project.code} morph="code" iconFirst className="soft-btn flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5">
+              <MorphLink href={project.code} morph="code" iconFirst className="soft-btn flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 sm:h-9">
                 {t("code")}
               </MorphLink>
             )}

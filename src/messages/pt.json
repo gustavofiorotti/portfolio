@@ -46,5 +46,122 @@
       "link": "link",
       "language": "idioma"
     }
+  },
+  "projects": {
+    "title": "Projetos",
+    "counterAll": "{total} projetos",
+    "counterSome": "{shown} de {total} projetos",
+    "filterLabel": "Filtrar projetos por tecnologia (pode escolher mais de uma)",
+    "clearFilters": "Limpar filtros",
+    "emptyTitle": "Nenhum projeto com essa combinação",
+    "emptyText": "Tire algum filtro para ver mais projetos.",
+    "seeOnline": "Ver online",
+    "code": "Código",
+    "youAreHere": "Você está aqui",
+    "ariaOnline": "{name}: ver online",
+    "ariaCode": "{name}: ver código",
+    "items": {
+      "portfolio": {
+        "period": "nov/2026 – hoje",
+        "desc": "Este site: Next.js com export estático, PT/EN, personagem 3D, menu ⌘K e animações com Motion.",
+        "alt": "Logo do portfólio"
+      },
+      "juridique": {
+        "period": "mai–jul/2026",
+        "desc": "Aplicação web que traduz documentos jurídicos em PDF para linguagem simples com IA generativa. Tem cadastro e login.",
+        "alt": "Banner do juridiQue",
+        "note": "Publicação em breve"
+      },
+      "maonaobra": {
+        "period": "set–dez/2025",
+        "desc": "Conecta clientes a profissionais de serviços locais, com login por perfil. Projeto de grupo na UVV: propus a ideia e fiz o desenvolvimento.",
+        "alt": "Banner do Mão na Obra"
+      },
+      "uvvendas": {
+        "period": "ago–dez/2025",
+        "desc": "E-commerce com catálogo, carrinho e painel do vendedor, feito em grupo na UVV. Contribuí na interface e na identidade visual.",
+        "alt": "Logo do UVVendas"
+      },
+      "banestes": {
+        "period": "abr–mai/2025",
+        "desc": "Painel de consulta de clientes, contas e agências para um processo seletivo, com dados fictícios.",
+        "alt": "Banner do painel Banestes"
+      }
+    },
+    "stack": "Tecnologias"
+  },
+  "experience": {
+    "title": "Experiência",
+    "company": "Globalsys, Vila Velha/ES",
+    "span": "nov/2025 a ago/2026 · 10 meses",
+    "jobs": {
+      "fullstack": {
+        "role": "Estagiário Fullstack",
+        "period": "jun/2026 a ago/2026",
+        "summary": "Evolução do Gnexum, plataforma para criar e controlar APIs e integrar bancos de dados e sistemas.",
+        "items": {
+          "a": "API com NestJS e PostgreSQL: melhorias e correções",
+          "b": "Rotas de integração entre sistemas, inclusive via MCP",
+          "c": "Telas reformuladas em React e Next.js, com foco em UI e contraste",
+          "d": "Deploy com Docker, Nginx e Cloudflare"
+        }
+      },
+      "support": {
+        "role": "Estagiário de Suporte N1",
+        "period": "nov/2025 a jun/2026",
+        "summary": "Atendimento a colaboradores por portal de chamados, e-mail e chat.",
+        "items": {
+          "a": "Acesso remoto, VPN e instalação de softwares",
+          "b": "Gestão de acessos com Active Directory e Google Workspace",
+          "c": "Atualização da documentação técnica da equipe"
+        }
+      }
+    }
+  },
+  "about": {
+    "title": "Sobre",
+    "p1": "Atuei na evolução de uma plataforma de integração de sistemas, do frontend ao deploy em servidores de clientes, com Docker e Nginx.",
+    "p2": "Também tenho conhecimentos em Python, C# e Git, certificado Database Foundations (Oracle) e inglês avançado. Conclusão do curso prevista para dez/2027.",
+    "education": "Formação",
+    "semester": "{semester}º de {semesters} períodos · {pct}%",
+    "course": "Ciência da Computação · UVV",
+    "courseStart": "jan/2024",
+    "courseEnd": "conclusão prevista: dez/2027",
+    "english": "Inglês avançado",
+    "efset": "EF SET · 70/100",
+    "toeic": "TOEIC Bridge · de 100",
+    "oracle": "Certificação Oracle",
+    "oracleName": "Database Foundations",
+    "base": "Base",
+    "place": "Cariacica/ES, Brasil",
+    "now": "UTC−3 · agora {time}",
+    "skills": {
+      "languages": {
+        "k": "linguagens",
+        "v": "TypeScript, JavaScript, Python, C#, SQL"
+      },
+      "frontend": {
+        "k": "frontend",
+        "v": "React, Next.js, Tailwind CSS, HTML, CSS"
+      },
+      "backend": {
+        "k": "backend e dados",
+        "v": "NestJS, Flask, APIs REST, PostgreSQL, SQL Server, MySQL"
+      },
+      "infra": {
+        "k": "infra",
+        "v": "Docker, Nginx, Cloudflare, SSH, Git, Azure DevOps"
+      },
+      "ai": {
+        "k": "ia",
+        "v": "IA no desenvolvimento: Claude Code, agentes de IA e MCP"
+      }
+    },
+    "github": {
+      "title": "Atividade no GitHub",
+      "total": "{total, plural, one {# contribuição} other {# contribuições}} no último ano",
+      "less": "Menos",
+      "more": "Mais"
+    }
   }
 }

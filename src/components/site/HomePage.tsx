@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { Header } from "@/components/header/Header";
 import { About } from "@/components/sections/About";
+import { Contact, SiteFooter } from "@/components/sections/Contact";
 import { Experience } from "@/components/sections/Experience";
 import { GithubActivity } from "@/components/sections/GithubActivity";
 import { Projects } from "@/components/sections/Projects";
@@ -31,7 +32,9 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <GithubActivity locale={locale} />
         <Experience locale={locale} />
         <About locale={locale} />
+        <Contact locale={locale} />
       </main>
+      <SiteFooter locale={locale} />
     </>
   );
 }

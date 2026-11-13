@@ -15,16 +15,18 @@ export function ResumeButton({ label }: { label: string }) {
     <a
       href={RESUME_URL}
       download
+      aria-label={label}
       onClick={() => {
         setDone(true);
         setTimeout(() => setDone(false), 2200);
       }}
-      className="btn btn-solid flex h-9 items-center gap-2 rounded-full bg-fg px-3.5 text-sm font-medium whitespace-nowrap text-bg"
+      className="btn btn-solid flex h-9 items-center gap-2 rounded-full bg-fg px-2.5 text-sm font-medium whitespace-nowrap text-bg sm:px-3.5"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d={lerpPath(DOWNLOAD, CHECK, k)} />
       </svg>
-      {label}
+      {/* icon only on small phones, so the header never overflows */}
+      <span className="hidden sm:inline">{label}</span>
     </a>
   );
 }

@@ -163,5 +163,18 @@
       "less": "Less",
       "more": "More"
     }
+  },
+  "contact": {
+    "title": "Let’s talk?",
+    "dockLabel": "Contact and social links",
+    "email": "Copy e-mail",
+    "emailCopied": "E-mail copied",
+    "linkedin": "LinkedIn",
+    "x": "X (@gufiorotti)",
+    "github": "GitHub",
+    "instagram": "Instagram (@gufiorotti)",
+    "newTab": "{name} (opens in a new tab)",
+    "copyright": "© {year} Gustavo Fiorotti",
+    "madeWith": "Made with Next.js some time past midnight"
   }
 }

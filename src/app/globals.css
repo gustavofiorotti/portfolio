@@ -91,6 +91,14 @@ body {
   --pill: rgb(250 250 249 / 0.75);
   --pill-border: rgb(24 24 27 / 0.06);
   --shadow: rgb(24 24 27 / 0.22);
+  /* dock glass glyphs: the light theme mirrors the dark one (dark glyph, dark highlight, light inner shade) */
+  --dock-border: rgb(24 24 27 / 0.09);
+  --glyph-fill: rgb(24 24 27 / 0.42);
+  --glyph-rim: rgb(24 24 27 / 0.6);
+  --glyph-light: #18181b;
+  --glyph-inner: #fafaf9;
+  --glyph-inner-opacity: 0.2;
+  --glyph-glow: rgb(24 24 27 / 0.28);
 }
 :root[data-theme="dark"] {
   --glass: rgb(28 28 31 / 0.55);
@@ -99,6 +107,13 @@ body {
   --pill: rgb(236 236 238 / 0.1);
   --pill-border: rgb(236 236 238 / 0.12);
   --shadow: rgb(10 10 12 / 0.5);
+  --dock-border: rgb(236 236 238 / 0.1);
+  --glyph-fill: rgb(236 236 238 / 0.26);
+  --glyph-rim: rgb(250 250 249 / 0.5);
+  --glyph-light: #fafaf9;
+  --glyph-inner: #0a0a0c;
+  --glyph-inner-opacity: 0.38;
+  --glyph-glow: rgb(250 250 249 / 0.35);
 }
 
 @layer components {

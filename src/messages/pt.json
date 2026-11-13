@@ -163,5 +163,18 @@
       "less": "Menos",
       "more": "Mais"
     }
+  },
+  "contact": {
+    "title": "Vamos conversar?",
+    "dockLabel": "Contato e redes sociais",
+    "email": "Copiar e-mail",
+    "emailCopied": "E-mail copiado",
+    "linkedin": "LinkedIn",
+    "x": "X (@gufiorotti)",
+    "github": "GitHub",
+    "instagram": "Instagram (@gufiorotti)",
+    "newTab": "{name} (abre em nova aba)",
+    "copyright": "© {year} Gustavo Fiorotti",
+    "madeWith": "Feito com Next.js em alguma madrugada aí"
   }
 }

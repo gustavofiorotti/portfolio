@@ -34,3 +34,27 @@ describe("themeInitScript", () => {
     expect(document.documentElement.dataset.theme).toBe("light");
   });
 });
+
+describe("opening flag", () => {
+  afterEach(() => {
+    sessionStorage.clear();
+    delete document.documentElement.dataset.intro;
+    vi.unstubAllGlobals();
+  });
+
+  it("plays the opening on the first visit of the session", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    run();
+    expect(document.documentElement.dataset.intro).toBe("1");
+  });
+
+  it("skips it when it was already seen or with reduced motion", () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("reduce") }));
+    run();
+    expect(document.documentElement.dataset.intro).toBeUndefined();
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    sessionStorage.setItem("intro-seen", "1");
+    run();
+    expect(document.documentElement.dataset.intro).toBeUndefined();
+  });
+});

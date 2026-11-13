@@ -62,7 +62,7 @@ export function Header() {
   };
 
   return (
-    <div className={`sticky z-20 flex justify-center px-4 transition-[top] duration-300 sm:px-6 ${scrolled ? "top-2.5" : "top-5"}`}>
+    <div className={`site-header sticky z-20 flex justify-center px-4 transition-[top] duration-300 sm:px-6 ${scrolled ? "top-2.5" : "top-5"}`}>
       <header
         className={`glass grid w-full grid-cols-[1fr_auto] items-center rounded-full transition-[max-width,padding] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] lg:grid-cols-[1fr_auto_1fr] ${
           scrolled ? "max-w-[1040px] py-1.5 pr-1.5 pl-3" : "max-w-[1120px] py-2.5 pr-2.5 pl-4"

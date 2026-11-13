@@ -141,3 +141,10 @@
     opacity: 0;
   }
 }
+
+/* Dock: icons grow taking real space (width/height), quick and smooth. */
+.dock-icon {
+  transition:
+    width 0.16s ease-out,
+    height 0.16s ease-out;
+}

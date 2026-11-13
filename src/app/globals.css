@@ -279,3 +279,68 @@ html[data-intro="play"] .brand-logo { animation: intro-hide 2.2s steps(1, end) b
 section[tabindex="-1"]:focus {
   outline: none;
 }
+
+/* ---- character + wall switch ---- */
+.mascot-stage {
+  position: fixed;
+  right: 12px;
+  bottom: 18px;
+  z-index: 16;
+  width: 64px;
+  height: 92px;
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .mascot-stage {
+    right: 4px;
+    top: 120px;
+    bottom: auto;
+    width: 200px;
+    height: 150px;
+  }
+}
+.mascot-stage > * { pointer-events: auto; }
+/* plain switch (small screens, before the 3D loads, or without WebGL) */
+.mascot-switch {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 52px;
+  height: 80px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 10px 24px -14px var(--shadow-lift);
+  cursor: pointer;
+}
+.mascot-rocker {
+  position: absolute;
+  inset: 22px 14px;
+  border-radius: 6px;
+  background: var(--chip);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.mascot-rocker::after {
+  content: "";
+  position: absolute;
+  inset: 3px 3px 50% 3px;
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: 0 2px 3px var(--shadow-lift);
+  transition: inset 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.mascot-rocker[data-on="true"]::after { inset: 50% 3px 3px 3px; }
+/* with the 3D switch on screen, the HTML button stays as an invisible hit area over it */
+.mascot-switch.is-3d {
+  right: 26px;
+  top: 50%;
+  bottom: auto;
+  width: 34px;
+  height: 52px;
+  transform: translateY(-58%);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.mascot-switch.is-3d .mascot-rocker { display: none; }
+.mascot-switch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }

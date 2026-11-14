@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Gustavo Fiorotti · Desenvolvedor fullstack",
-    "description": "Desenvolvedor fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
+    "title": "Gustavo Fiorotti · Desenvolvedor Fullstack",
+    "description": "Desenvolvedor Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
   },
   "nav": {
     "resume": "Currículo",
@@ -15,7 +15,7 @@
     "contato": "Contato"
   },
   "hero": {
-    "lead": "Desenvolvedor fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
+    "lead": "Desenvolvedor Fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
     "seeProjects": "Ver projetos",
     "seeResume": "Ver currículo"
   },

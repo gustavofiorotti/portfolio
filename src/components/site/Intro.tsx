@@ -18,20 +18,24 @@ export function Intro() {
 
   useLayoutEffect(() => {
     const html = document.documentElement;
-    if (html.dataset.intro !== "wait") return;
-    const target = document.querySelector(".brand-logo")?.getBoundingClientRect();
-    const el = ref.current;
-    if (el && target) {
-      const dx = target.left + target.width / 2 - window.innerWidth / 2;
-      const dy = target.top + target.height / 2 - window.innerHeight / 2;
-      const len = Math.max(1, Math.hypot(dx, dy));
-      el.style.setProperty("--lx", `${dx}px`);
-      el.style.setProperty("--ly", `${dy}px`);
-      el.style.setProperty("--ls", String(target.width / 120));
-      el.style.setProperty("--ex", `${(dx / len) * 2.6}px`);
-      el.style.setProperty("--ey", `${(dy / len) * 2}px`);
+    // "play" here means the effect ran before and was cleaned up (React StrictMode in dev, or a
+    // remount): skip measuring but still schedule the end, or the page would wait forever
+    if (html.dataset.intro !== "wait" && html.dataset.intro !== "play") return;
+    if (html.dataset.intro === "wait") {
+      const target = document.querySelector(".brand-logo")?.getBoundingClientRect();
+      const el = ref.current;
+      if (el && target) {
+        const dx = target.left + target.width / 2 - window.innerWidth / 2;
+        const dy = target.top + target.height / 2 - window.innerHeight / 2;
+        const len = Math.max(1, Math.hypot(dx, dy));
+        el.style.setProperty("--lx", `${dx}px`);
+        el.style.setProperty("--ly", `${dy}px`);
+        el.style.setProperty("--ls", String(target.width / 120));
+        el.style.setProperty("--ex", `${(dx / len) * 2.6}px`);
+        el.style.setProperty("--ey", `${(dy / len) * 2}px`);
+      }
+      html.dataset.intro = "play";
     }
-    html.dataset.intro = "play";
     // eslint-disable-next-line react-hooks/set-state-in-effect -- start once, after measuring
     setPlaying(true);
     // ?introHold keeps the opening on screen, for reviewing it frame by frame

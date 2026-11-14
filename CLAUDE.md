@@ -43,6 +43,7 @@ de usar uma API.
 - Cores só pelos tokens de `src/app/globals.css` (nunca preto ou branco puros).
 - Não expor clientes, ERPs, produtos internos, endpoints ou arquitetura (contrato de
   confidencialidade). O produto se escreve "Gnexum".
+- Ao trocar de branch, apagar `.next` antes do `pnpm build` (e reiniciar o `pnpm dev`): o cache reaproveita o CSS da branch anterior e o resultado engana.
 - Layout precisa funcionar em celular (sem scroll horizontal) e respeitar `prefers-reduced-motion`.
 - Antes de mexer em UI, carregar a skill `kit-gustavo`. Mockups aprovados: canvas da direção A em
   https://claude.ai/artifact/3M4R5sjCV7gbGUNmcqsZoY. Protótipo do personagem e logo 3D em

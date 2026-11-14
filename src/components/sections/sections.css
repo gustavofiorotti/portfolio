@@ -97,7 +97,9 @@
 .course-shine {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--shine), transparent);
+  /* the bar is dark on light and light on dark: the core is bright on both, and on dark the
+     soft shade at its sides gives the light something to stand out from */
+  background: linear-gradient(90deg, transparent, var(--course-shine-edge) 30%, var(--course-shine) 50%, var(--course-shine-edge) 70%, transparent);
   background-size: 35% 100%;
   background-repeat: no-repeat;
   animation: course-shine 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;

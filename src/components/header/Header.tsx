@@ -1,13 +1,13 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { homePath, type Locale } from "@/i18n/locales";
+import type { Locale } from "@/i18n/locales";
 import { lerpPath, smoothScrollTo } from "@/lib/motion-utils";
 import { useTween } from "@/lib/use-tween";
 import { BrandLogo } from "./BrandLogo";
 import { BrtClock } from "./BrtClock";
 import { CommandMenu } from "./CommandMenu";
+import { LocaleSwitch } from "./LocaleSwitch";
 import { ResumeButton } from "./ResumeButton";
 import { activeSection, SECTION_IDS, type SectionId } from "./sections";
 
@@ -19,7 +19,6 @@ type Pill = { left: number; width: number } | null;
 export function Header() {
   const t = useTranslations("nav");
   const locale = useLocale() as Locale;
-  const other: Locale = locale === "pt" ? "en" : "pt";
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<SectionId>("topo");
   const [hover, setHover] = useState<Pill>(null);
@@ -136,20 +135,7 @@ export function Header() {
 
         <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
           <CommandMenu />
-          <Link
-            href={homePath(other)}
-            hrefLang={other}
-            aria-label={t("switchLanguage")}
-            className="btn btn-ghost flex h-11 min-w-11 items-center justify-center rounded-full border border-line px-2 text-[13px] font-medium whitespace-nowrap sm:h-9 sm:px-3"
-          >
-            {/* phones show only the language it switches to */}
-            <span className="sm:hidden">{other.toUpperCase()}</span>
-            <span className="hidden sm:inline">
-              <span className={locale === "pt" ? "text-fg" : "text-muted"}>PT</span>
-              <span className="text-muted">&nbsp;/&nbsp;</span>
-              <span className={locale === "en" ? "text-fg" : "text-muted"}>EN</span>
-            </span>
-          </Link>
+          <LocaleSwitch locale={locale} label={t("switchLanguage")} />
           <ResumeButton label={t("resume")} />
         </div>
       </header>

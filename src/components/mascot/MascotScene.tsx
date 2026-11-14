@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { Strands } from "./Strands";
+import { move, press as pressOn, release, step, type Throw } from "./throw";
+import { toOffset, ViewRig, type Anchor, type Layout } from "./ViewRig";
 
 export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
@@ -74,12 +76,19 @@ function LightSwitch({ dark, rocker, onPress }: { dark: boolean; rocker: Mutable
 type State = {
   squash: number; vel: number; hurtT: number; pet: number; pokes: number[]; angryT: number; surpriseT: number;
   lastX: number; dir: number; glanceT: number; glance: [number, number]; mood: Mood; shake: number;
-  pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean;
+  pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
 };
 
-type SceneProps = { onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>; pointer: MutableRefObject<Pointer>; still: boolean };
+type SceneProps = {
+  onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>;
+  pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
+  layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void;
+};
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind }: SceneProps) {
+  const carrier = useRef<THREE.Group>(null);
+  const clock = useThree((s) => s.clock);
+  const endDrag = useRef<() => void>(() => {});
   const float = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
   const eyesPivot = useRef<THREE.Group>(null);
@@ -91,14 +100,32 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, pokes: [], angryT: 0, surpriseT: 0, lastX: 0, dir: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1,
   });
+  useEffect(() => () => endDrag.current(), []);
 
   useFrame((state, delta) => {
     const s = st.current;
     const p = pointer.current;
     const t = state.clock.elapsedTime;
-    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !rocker.current) return;
+    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !rocker.current || !carrier.current) return;
+
+    // drag and throw: physics in throw.ts; hits squash him, and he runs home behind the cards
+    const f = th.current;
+    step(f, delta, t, layout.current.bounds);
+    if (f.impact > 0) {
+      s.vel -= Math.min(4, f.impact * 0.12);
+      s.shake = Math.min(1, f.impact / 20);
+      if (f.impact > 12) s.hurtT = t + 0.9;
+      f.impact = 0;
+    }
+    carrier.current.position.set(f.x, f.y, 0);
+    const away = f.mode !== "home" && f.mode !== "pending";
+    const behind = f.mode === "running";
+    if (behind !== s.behind) {
+      s.behind = behind;
+      onBehind(behind);
+    }
 
     // pokes resolve here so every timer shares the frame clock
     if (s.pokeAt) {
@@ -113,7 +140,11 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
     if (press.current.pending) {
       press.current.pending = false;
       press.current.at = performance.now();
-      if (t - s.pressT0 > 1.05) {
+      if (away) {
+        // away from the switch: the theme flips at once, no reach
+        onToggle();
+        s.happyT = t + 2.4;
+      } else if (t - s.pressT0 > 1.05) {
         s.pressT0 = t;
         s.pressed = false;
       }
@@ -131,6 +162,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
     if (s.mood === "sono" && idleFor < 0.2 && p.speed > 0.02) s.surpriseT = t + 1.1;
     let mood: Mood = "normal";
     if (pressing) mood = "normal";
+    else if (f.mode === "held" || f.mode === "flying") mood = "susto";
+    else if (f.mode === "dizzy") mood = "dor";
     else if (t < s.angryT) mood = "bravo";
     else if (t < s.hurtT) mood = "dor";
     else if (t < s.surpriseT) mood = "susto";
@@ -152,7 +185,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
     // body language (no idle motion when the visitor asked for less motion)
     const motion = still ? 0 : 1;
     const bob = Math.sin(t * 1.6 * (mood === "sono" ? 0.55 : 1)) * (mood === "sono" ? 0.03 : 0.06) * motion;
-    const hop = mood === "feliz" ? Math.abs(Math.sin(t * 7)) * 0.07 * motion : 0;
+    const hop = f.mode === "running" ? Math.abs(Math.sin(t * 16)) * 0.1 : mood === "feliz" ? Math.abs(Math.sin(t * 7)) * 0.07 * motion : 0;
     float.current.position.y = 0.05 + bob + hop;
     s.vel += (1 - s.squash) * 170 * delta;
     s.vel *= Math.exp(-8 * delta);
@@ -165,11 +198,13 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
     const rz = mood === "feliz" ? Math.sin(t * 7) * 0.12 * motion : mood === "sono" ? 0.16 : 0;
     const rx = mood === "bravo" ? 0.14 : mood === "sono" ? 0.12 : 0;
     const lean = pressing && pp < 0.8;
-    body.current.rotation.z = damp(body.current.rotation.z, lean ? -0.13 : rz, 8, delta);
+    const tilt = away ? THREE.MathUtils.clamp(-f.vx * 0.015, -0.5, 0.5) : rz;
+    body.current.rotation.z = damp(body.current.rotation.z, lean ? -0.13 : tilt, 8, delta);
     float.current.position.x = damp(float.current.position.x, lean ? 0.22 : 0, 6, delta);
     body.current.rotation.x = damp(body.current.rotation.x, rx, 6, delta);
     shadow.current.scale.setScalar(1.3 - (bob + hop) * 1.4);
-    (shadow.current.material as THREE.MeshBasicMaterial).opacity = 0.9 - (bob + hop) * 2;
+    s.shade = damp(s.shade, away ? 0 : 1, 10, delta);
+    (shadow.current.material as THREE.MeshBasicMaterial).opacity = (0.9 - (bob + hop) * 2) * s.shade;
 
     // hands; the right one reaches for the raised half of the rocker during a press
     hands.current.forEach((h, i) => {
@@ -215,6 +250,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
 
   const poke = (ev: ThreeEvent<MouseEvent>) => {
     ev.stopPropagation();
+    if (ev.delta > 6) return; // that was a drag
     const s = st.current;
     const t = ev.nativeEvent.timeStamp / 1000;
     s.vel -= 3;
@@ -224,6 +260,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
   };
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
+    if (th.current.mode !== "home") return;
     const x = ev.pointer.x;
     const d = Math.sign(x - s.lastX);
     if (d !== 0 && d !== s.dir && Math.abs(x - s.lastX) > 0.008) {
@@ -233,33 +270,65 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
     s.lastX = x;
   };
 
+  // grab him: window listeners follow the pointer anywhere on the page until release
+  const grab = (ev: ThreeEvent<PointerEvent>) => {
+    if (still || ev.button !== 0) return;
+    ev.stopPropagation();
+    endDrag.current();
+    const at = (e: PointerEvent | MouseEvent) => toOffset(layout.current, e.clientX, e.clientY);
+    pressOn(th.current, ...at(ev.nativeEvent), clock.elapsedTime);
+    const html = document.documentElement;
+    const onMove = (e: PointerEvent) => {
+      if (move(th.current, ...at(e), clock.elapsedTime)) html.dataset.bobbyDrag = "";
+    };
+    const onUp = () => {
+      release(th.current, clock.elapsedTime);
+      endDrag.current();
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    endDrag.current = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      delete html.dataset.bobbyDrag;
+      endDrag.current = () => {};
+    };
+  };
+  const hover = (on: boolean) => () => {
+    if (!still) document.documentElement.dataset.bobbyHover = on ? "1" : "";
+  };
+
   return (
     <group>
       <ambientLight intensity={1.7} />
       <directionalLight position={[-2, 3, 4]} intensity={1.4} />
       <LightSwitch dark={dark} rocker={rocker} onPress={onSwitchClick} />
       <group position={[-0.45, 0, 0]}>
-        <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>
-          <planeGeometry args={[1.25, 1.25]} />
-          <meshBasicMaterial map={shadowTex} transparent depthWrite={false} />
-        </mesh>
-        <group ref={float}>
-          <group ref={body}>
-            <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} />
-            <group ref={eyesPivot}>
-              <group position={[0, 0.08, 1.0]}>
-                {[-1, 1].map((sd) => (
-                  <group key={sd} position={[sd * 0.215, 0, -0.025]} rotation={[0, sd * 0.13, 0]}>
-                    <Eye side={sd} color={EYES} expr={expr} />
-                  </group>
-                ))}
+        <group ref={carrier}>
+          <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>
+            <planeGeometry args={[1.25, 1.25]} />
+            <meshBasicMaterial map={shadowTex} transparent depthWrite={false} />
+          </mesh>
+          <group ref={float}>
+            <group ref={body}>
+              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={hover(false)} />
+              <group ref={eyesPivot}>
+                <group position={[0, 0.08, 1.0]}>
+                  {[-1, 1].map((sd) => (
+                    <group key={sd} position={[sd * 0.215, 0, -0.025]} rotation={[0, sd * 0.13, 0]}>
+                      <Eye side={sd} color={EYES} expr={expr} />
+                    </group>
+                  ))}
+                </group>
               </group>
+              {[-1, 1].map((sd, i) => (
+                <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
+                  <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} seed={sd > 0 ? 11 : 13} still={still} />
+                </group>
+              ))}
             </group>
-            {[-1, 1].map((sd, i) => (
-              <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
-                <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} seed={sd > 0 ? 11 : 13} still={still} />
-              </group>
-            ))}
           </group>
         </group>
       </group>
@@ -271,14 +340,14 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still }: ScenePr
  * Drives rendering on demand: 60 fps while something happens (pointer moving, a press, a
  * mood), about 24 fps when he just floats, nothing with reduced motion except reactions.
  */
-function FrameDriver({ pointer, press, still }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean }) {
+function FrameDriver({ pointer, press, still, th }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean; th: MutableRefObject<Throw> }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
     let raf = 0;
     let last = 0;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
-      const busy = now - pointer.current.lastMove < 2500 || press.current.pending || now - press.current.at < 4000;
+      const busy = th.current.mode !== "home" || now - pointer.current.lastMove < 2500 || press.current.pending || now - press.current.at < 4000;
       const gap = busy ? 0 : still ? 1000 : 1000 / 24;
       if (now - last >= gap) {
         last = now;
@@ -287,29 +356,34 @@ function FrameDriver({ pointer, press, still }: { pointer: MutableRefObject<Poin
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [invalidate, pointer, press, still]);
+  }, [invalidate, pointer, press, still, th]);
   return null;
 }
 
 /**
  * The canvas: low-power GPU, capped resolution, renders on demand and stops with the tab
- * hidden. Pointer events come from the page, so the canvas never blocks the content under it.
+ * hidden. It covers the viewport so Bobby can be thrown anywhere; pointer events come from the
+ * page, so the canvas never blocks the content under it.
  */
 export default function MascotScene(props: SceneProps & { running: boolean }) {
   const { running, ...scene } = props;
+  const root = useRef<THREE.Group>(null);
   return (
     <Canvas
       frameloop={running ? "demand" : "never"}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      camera={{ position: [0, 0.35, 4.6], fov: 36 }}
+      camera={{ manual: true, position: [0, 0.35, 4.6], fov: 36, near: 0.1, far: 60 }}
       eventSource={document.body}
       eventPrefix="client"
       flat
       onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", (e) => (e.preventDefault(), props.onContextLost?.()))}
     >
-      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} />
-      <Plush {...scene} />
+      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} />
+      <ViewRig anchor={scene.anchor} root={root} th={scene.th} layout={scene.layout} />
+      <group ref={root}>
+        <Plush {...scene} />
+      </group>
     </Canvas>
   );
 }

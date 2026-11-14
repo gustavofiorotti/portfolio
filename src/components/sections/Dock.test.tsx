@@ -65,4 +65,18 @@ describe("Dock", () => {
     expect(mail()).toBe(MORPHS.mail.from);
     window.removeEventListener("app-toast", onToast);
   });
+
+  it("updates the sizes once per animation frame and resets on leave", () => {
+    const { container } = renderDock();
+    const nav = screen.getByRole("navigation");
+    const widths = () => [...container.querySelectorAll<HTMLElement>(".dock-icon")].map((el) => el.style.width);
+    // jsdom has no layout: the bar's center sits at clientX 0, over the middle icon
+    for (const clientX of [-30, -10, 0]) fireEvent.pointerMove(nav, { pointerType: "mouse", clientX, clientY: 20 });
+    expect(widths()).toEqual(["42px", "42px", "42px", "42px", "42px"]);
+    act(() => vi.advanceTimersByTime(16));
+    expect(widths()[2]).toBe("60px");
+    fireEvent.pointerLeave(nav);
+    act(() => vi.advanceTimersByTime(16));
+    expect(widths()).toEqual(["42px", "42px", "42px", "42px", "42px"]);
+  });
 });

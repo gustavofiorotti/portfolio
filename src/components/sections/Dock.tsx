@@ -5,7 +5,7 @@ import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { CONTACT } from "@/lib/contact";
 import { copyText } from "@/lib/copy";
-import { DOCK, dockSizes, hoveredIcon } from "@/lib/dock";
+import { DOCK, dockSizes, dockWidth, hoveredIcon } from "@/lib/dock";
 import { showToast } from "@/components/ui/Toast";
 import { MORPHS, useMorphPath } from "@/components/ui/MorphIcon";
 import { FilledGlyph, GLYPHS, GlassGlyph, RESTING_LIGHT, StrokedGlyph, type Light } from "./DockIcon";
@@ -49,7 +49,17 @@ export function Dock() {
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mailPath = useMorphPath(MORPHS.mail.from, MORPHS.mail.to, copied);
 
-  useEffect(() => () => clearTimeout(copiedTimer.current), []);
+  // one state update per frame, however fast the pointer events arrive
+  const frame = useRef(0);
+  const latest = useRef<{ fromCenter: number; y: number } | null>(null);
+
+  useEffect(
+    () => () => {
+      clearTimeout(copiedTimer.current);
+      cancelAnimationFrame(frame.current);
+    },
+    [],
+  );
 
   const hovered = hoveredIcon(pointer?.x ?? null, sizes);
 
@@ -58,9 +68,27 @@ export function Dock() {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
     const k = rect.width ? el.offsetWidth / rect.width : 1;
-    const next = { x: (e.clientX - rect.left) * k, y: (e.clientY - rect.top) * k };
-    // with reduced motion the icons keep their size; the hover light still marks the icon
-    setDock((prev) => ({ pointer: next, sizes: reduce ? REST.sizes : dockSizes(next.x, COUNT, prev.sizes) }));
+    // measured from the bar's center (it stays put, the bar is centered), so x is placed in the
+    // layout of the sizes in state rather than in the DOM, which lags behind its transition
+    latest.current = { fromCenter: (e.clientX - rect.left - rect.width / 2) * k, y: (e.clientY - rect.top) * k };
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      const raw = latest.current;
+      if (!raw) return;
+      setDock((prev) => {
+        const next = { x: dockWidth(prev.sizes) / 2 + raw.fromCenter, y: raw.y };
+        // with reduced motion the icons keep their size; the hover light still marks the icon
+        return { pointer: next, sizes: reduce ? REST.sizes : dockSizes(next.x, COUNT, prev.sizes) };
+      });
+    });
+  }
+
+  function onLeave() {
+    cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    latest.current = null;
+    setDock(REST);
   }
 
   async function copyEmail() {
@@ -78,8 +106,9 @@ export function Dock() {
     <nav
       aria-label={t("dockLabel")}
       onPointerMove={onMove}
-      onPointerLeave={() => setDock(REST)}
-      className="glass flex items-end overflow-visible rounded-[24px] [border-color:var(--dock-border)]"
+      onPointerLeave={onLeave}
+      data-active={pointer ? "" : undefined}
+      className="dock glass flex items-end overflow-visible rounded-[24px] [border-color:var(--dock-border)]"
       style={{ height: BAR_HEIGHT, gap: DOCK.gap, padding: `0 ${DOCK.pad}px ${BAR_BOTTOM}px` }}
     >
       <button type="button" onClick={copyEmail} aria-label={t("email")} title={t("email")} className={`${ICON_CLASS} cursor-pointer border-0 bg-transparent p-0`} style={box(0)}>

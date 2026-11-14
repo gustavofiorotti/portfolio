@@ -174,7 +174,7 @@
     "github": "GitHub",
     "instagram": "Instagram (@gufiorotti)",
     "newTab": "{name} (opens in a new tab)",
-    "copyright": "© {year} Gustavo Fiorotti",
+    "copyright": "© <year></year> Gustavo Fiorotti",
     "madeWith": "Made with Next.js some time past midnight"
   }
 }

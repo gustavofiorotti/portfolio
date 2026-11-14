@@ -8,6 +8,7 @@ import { GithubActivity } from "@/components/sections/GithubActivity";
 import { Projects } from "@/components/sections/Projects";
 import { HeroActions } from "./HeroActions";
 import { Intro } from "./Intro";
+import { MascotStage } from "@/components/mascot/MascotStage";
 
 export async function HomePage({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale });
@@ -15,6 +16,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
     <>
       <Intro />
       <Header />
+      <MascotStage />
       <main>
         <section id="topo" className="mx-auto flex max-w-[1120px] flex-col items-center gap-7 px-6 pt-40 pb-24 text-center">
           <h1 className="font-display text-[clamp(56px,10vw,136px)] leading-[0.94] font-semibold tracking-[-0.055em]">

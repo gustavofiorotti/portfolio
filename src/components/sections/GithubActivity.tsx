@@ -26,7 +26,7 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
               href={PROFILE}
               target="_blank"
               rel="noopener"
-              className="font-mono text-[13px] font-medium text-muted underline decoration-line underline-offset-[3px] transition-colors hover:text-fg"
+              className="inline-block py-3 font-mono text-[13px] font-medium text-muted underline decoration-line underline-offset-[3px] transition-colors hover:text-fg"
             >
               @gustavofiorotti ↗
             </a>

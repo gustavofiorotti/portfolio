@@ -63,17 +63,18 @@ export function Projects() {
               type="button"
               aria-pressed={on}
               onClick={() => update(toggleTech(selected, tech))}
-              className={`soft-btn h-9 cursor-pointer rounded-full border-0 px-[15px] text-sm font-medium ${on ? "bg-fg text-bg" : "bg-chip text-fg"}`}
+              className={`soft-btn h-11 cursor-pointer rounded-full border-0 px-[15px] sm:h-9 text-sm font-medium ${on ? "bg-fg text-bg" : "bg-chip text-fg"}`}
             >
               {tech}
             </button>
           );
         })}
-        {filtering && (
+        {/* the empty state has its own button, so this one hides there (no duplicate) */}
+        {filtering && shown.length > 0 && (
           <button
             type="button"
             onClick={clear}
-            className="soft-btn flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-line bg-transparent pr-3 pl-3.5 text-sm font-medium text-muted"
+            className="soft-btn flex h-11 sm:h-9 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-line bg-transparent pr-3 pl-3.5 text-sm font-medium text-muted"
           >
             {t("clearFilters")} <CloseIcon />
           </button>
@@ -107,7 +108,7 @@ export function Projects() {
           <button
             type="button"
             onClick={clear}
-            className="soft-btn h-[38px] cursor-pointer rounded-full border-0 bg-fg px-4 text-sm font-medium text-bg"
+            className="soft-btn h-11 cursor-pointer rounded-full border-0 bg-fg px-4 text-sm font-medium text-bg"
           >
             {t("clearFilters")}
           </button>

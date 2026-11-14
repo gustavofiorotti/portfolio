@@ -79,7 +79,7 @@ export function Header() {
     <div className={`site-header sticky z-20 flex justify-center px-4 transition-[top] duration-300 sm:px-6 ${scrolled ? "top-2.5" : "top-5"}`}>
       <header
         className={`glass grid w-full grid-cols-[1fr_auto] items-center rounded-full transition-[max-width,padding] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] lg:grid-cols-[1fr_auto_1fr] ${
-          scrolled ? "max-w-[1040px] py-1.5 pr-1.5 pl-3" : "max-w-[1120px] py-2.5 pr-2.5 pl-4"
+          scrolled ? "max-w-[1040px] py-1.5 pr-1.5 pl-2 sm:pl-3" : "max-w-[1120px] py-2 pr-2 pl-2.5 sm:py-2.5 sm:pr-2.5 sm:pl-4"
         }`}
       >
         <div className="flex items-center gap-1.5 justify-self-start">
@@ -87,7 +87,7 @@ export function Header() {
             href="#topo"
             onClick={go("topo")}
             aria-label={t("backToTop")}
-            className={`brand flex items-center gap-2.5 rounded-full border py-[3px] pr-3 pl-[3px] font-display text-base font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors duration-300 ${
+            className={`brand flex min-h-11 items-center gap-2 rounded-full border py-[3px] pr-2.5 pl-[3px] sm:min-h-0 sm:gap-2.5 sm:pr-3 font-display text-base font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors duration-300 ${
               active === "topo" ? "border-transparent bg-transparent" : "border-[var(--pill-border)] bg-[var(--pill)]"
             }`}
           >
@@ -133,13 +133,13 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
           <CommandMenu />
           <Link
             href={homePath(other)}
             hrefLang={other}
             aria-label={t("switchLanguage")}
-            className="btn btn-ghost flex h-9 items-center rounded-full border border-line px-3 text-[13px] font-medium whitespace-nowrap"
+            className="btn btn-ghost flex h-11 items-center rounded-full border border-line px-3 text-[13px] font-medium whitespace-nowrap sm:h-9"
           >
             <span className={locale === "pt" ? "text-fg" : "text-muted"}>PT</span>
             <span className="text-muted">&nbsp;/&nbsp;</span>

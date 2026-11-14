@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/locales";
 import { themeInitScript } from "@/lib/theme";
 import { ToastHost } from "@/components/ui/Toast";
 import { Agentation } from "agentation";
+import { AnimatedFavicon } from "./AnimatedFavicon";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const interTight = Inter_Tight({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-inter-tight" });
@@ -27,6 +28,7 @@ export async function RootShell({ locale, children }: { locale: Locale; children
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
           <ToastHost />
+          <AnimatedFavicon />
           {/* visual feedback toolbar for the agent, local dev only */}
           {process.env.NODE_ENV === "development" && <Agentation endpoint="http://localhost:4747" />}
         </NextIntlClientProvider>

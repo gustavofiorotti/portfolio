@@ -9,14 +9,16 @@ import type { Bounds, Throw } from "./throw";
 export const PPU = 150 / (2 * 4.6 * Math.tan(THREE.MathUtils.degToRad(18)));
 const CAM_Z = 4.6;
 const RADIUS = 1.3; // Bobby's body, hands and fur, for the screen edges
-const STAGE = { w: 240, h: 180 }; // the stage box (200×150) plus room for hops
+const STAGE = { w: 220, h: 190 }; // box around Bobby, with room for hops and his hands
+const SWITCH_X = 1.05; // the wall switch, in scene units (MascotScene SW)
 export const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the scene group
 
 /** Screen point (px) of the stage center, where the original scene was framed. */
 export type Anchor = { x: number; y: number };
 
 /** World ↔ screen mapping that the pointer handlers need, refreshed every frame. */
-export type Layout = { rootX: number; rootY: number; bounds: Bounds };
+/** progress: page scroll 0..1 (set by the stage); walk: Bobby's current walk offset in world units (set by the scene). */
+export type Layout = { rootX: number; rootY: number; bounds: Bounds; progress: number; walk: number; moving: boolean };
 
 export function toOffset(layout: Layout, clientX: number, clientY: number): [number, number] {
   return [clientX / PPU - (layout.rootX + BOBBY_HOME.x), -clientY / PPU - (layout.rootY + BOBBY_HOME.y)];
@@ -37,6 +39,7 @@ export function ViewRig({ anchor, root, th, layout }: {
   const size = useThree((s) => s.size);
   const gl = useThree((s) => s.gl);
   const wasHome = useRef(false);
+  const lastBox = useRef("");
 
   useFrame(() => {
     const { width: W, height: H } = size;
@@ -46,7 +49,7 @@ export function ViewRig({ anchor, root, th, layout }: {
     root.current?.position.set(rootX, rootY, 0);
 
     const bx = rootX + BOBBY_HOME.x;
-    const by = rootY + BOBBY_HOME.y;
+    const by = rootY + BOBBY_HOME.y + layout.current.walk;
     const L = layout.current;
     L.rootX = rootX;
     L.rootY = rootY;
@@ -69,15 +72,27 @@ export function ViewRig({ anchor, root, th, layout }: {
 
     // at home only the old stage box is drawn (scissor), so a resting Bobby costs what the
     // 200×150 canvas did; the full viewport is drawn only while he is out
+    // the box covers Bobby (wherever he walked to) and the switch; when it moves, the whole
+    // canvas is wiped first so he leaves no trail
     const f = th.current;
     const home = (f.mode === "home" || f.mode === "pending") && f.x === 0 && f.y === 0;
-    if (home && !wasHome.current) {
+    if (home) {
+      const bobbyX = bx * PPU, bobbyY = -by * PPU;
+      const swX = (rootX + SWITCH_X) * PPU, swY = -(rootY + BOBBY_HOME.y) * PPU;
+      const x0 = Math.min(bobbyX - STAGE.w / 2, swX - 40), x1 = Math.max(bobbyX + STAGE.w / 2, swX + 40);
+      const y0 = Math.min(bobbyY - STAGE.h / 2, swY - 50), y1 = Math.max(bobbyY + STAGE.h / 2, swY + 50);
+      const key = `${Math.round(x0)},${Math.round(y0)},${Math.round(x1)},${Math.round(y1)}`;
+      if (!wasHome.current || key !== lastBox.current) {
+        gl.setScissorTest(false);
+        gl.clear();
+      }
+      lastBox.current = key;
+      gl.setScissorTest(true);
+      gl.setScissor(x0, H - y1, x1 - x0, y1 - y0);
+    } else {
       gl.setScissorTest(false);
-      gl.clear(); // wipe what he left around the page
     }
     wasHome.current = home;
-    gl.setScissorTest(home);
-    if (home) gl.setScissor(a.x - STAGE.w / 2, H - (a.y + STAGE.h / 2), STAGE.w, STAGE.h);
   }, -1);
 
   return null;

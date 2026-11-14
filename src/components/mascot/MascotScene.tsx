@@ -7,12 +7,14 @@ import { Eye, MOODS, type EyeShape } from "./Eye";
 import { Strands } from "./Strands";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
-import { ViewRig, type Anchor, type Layout } from "./ViewRig";
+import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
+import { walkOffsetPx } from "./walk";
 
 export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 
 const BODY = "#D97757"; // Claude Code orange, chosen by Gustavo
+const GAIN = 1.32; // the fur lighting reads darker than the chosen orange; this brings it back
 const EYES = "#1C1C20";
 const SW = new THREE.Vector3(1.05, 0.05, 0); // where the wall switch sits
 const damp = THREE.MathUtils.damp;
@@ -78,15 +80,16 @@ type State = {
   squash: number; vel: number; hurtT: number; pet: number; pokes: number[]; angryT: number; surpriseT: number;
   lastX: number; dir: number; glanceT: number; glance: [number, number]; mood: Mood; shake: number;
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
+  holdUntil: number; framed: boolean; walking: number;
 };
 
 type SceneProps = {
   onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>;
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
-  layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void;
+  layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
 };
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame }: SceneProps) {
   const carrier = useRef<THREE.Group>(null);
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
@@ -102,7 +105,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, pokes: [], angryT: 0, surpriseT: 0, lastX: 0, dir: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0,
   });
 
   useFrame((state, delta) => {
@@ -120,8 +123,21 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (f.impact > 12) s.hurtT = t + 0.9;
       f.impact = 0;
     }
-    carrier.current.position.set(f.x, f.y, 0);
     const away = f.mode !== "home" && f.mode !== "pending";
+    if (!s.framed) {
+      s.framed = true;
+      onFirstFrame?.();
+    }
+
+    // walk along the right edge with the scroll (walk.ts); stay at the switch while pressing it
+    const L = layout.current;
+    const wantsSwitch = (press.current.pending && !away) || t < s.holdUntil;
+    const walkTo = still || wantsSwitch ? 0 : -walkOffsetPx(L.progress, state.size.height) / PPU;
+    const before = L.walk;
+    L.walk = still ? 0 : damp(L.walk, walkTo, 4.5, delta);
+    L.moving = Math.abs(walkTo - L.walk) > 0.004;
+    s.walking = damp(s.walking, Math.min(1, Math.abs(L.walk - before) / Math.max(delta, 1e-3) / 2), 10, delta);
+    carrier.current.position.set(f.x, f.y + L.walk, 0);
     const behind = f.mode === "running";
     if (behind !== s.behind) {
       s.behind = behind;
@@ -138,9 +154,10 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       }
     }
     // light switch: 1 s timeline (look, reach, press, come back); the theme flips at the press
-    if (press.current.pending) {
+    if (press.current.pending && (away || Math.abs(L.walk) < 0.04)) {
       press.current.pending = false;
       press.current.at = performance.now();
+      s.holdUntil = t + 1.8; // stays by the switch for the press and a moment after
       if (away) {
         // away from the switch: the theme flips at once, no reach
         onToggle();
@@ -186,7 +203,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     // body language (no idle motion when the visitor asked for less motion)
     const motion = still ? 0 : 1;
     const bob = Math.sin(t * 1.6 * (mood === "sono" ? 0.55 : 1)) * (mood === "sono" ? 0.03 : 0.06) * motion;
-    const hop = f.mode === "running" ? Math.abs(Math.sin(t * 16)) * 0.1 : mood === "feliz" ? Math.abs(Math.sin(t * 7)) * 0.07 * motion : 0;
+    const hop = f.mode === "running" ? Math.abs(Math.sin(t * 16)) * 0.1 : s.walking > 0.15 ? Math.abs(Math.sin(t * 13)) * 0.07 * s.walking * motion : mood === "feliz" ? Math.abs(Math.sin(t * 7)) * 0.07 * motion : 0;
     float.current.position.y = 0.05 + bob + hop;
     s.vel += (1 - s.squash) * 170 * delta;
     s.vel *= Math.exp(-8 * delta);
@@ -291,7 +308,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
           </mesh>
           <group ref={float}>
             <group ref={body}>
-              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={hover(false)} />
+              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={hover(false)} />
               <group ref={eyesPivot}>
                 <group position={[0, 0.08, 1.0]}>
                   {[-1, 1].map((sd) => (
@@ -303,7 +320,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
               </group>
               {[-1, 1].map((sd, i) => (
                 <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
-                  <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} seed={sd > 0 ? 11 : 13} still={still} />
+                  <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} gain={GAIN} seed={sd > 0 ? 11 : 13} still={still} />
                 </group>
               ))}
             </group>
@@ -318,14 +335,14 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
  * Drives rendering on demand: 60 fps while something happens (pointer moving, a press, a
  * mood), about 24 fps when he just floats, nothing with reduced motion except reactions.
  */
-function FrameDriver({ pointer, press, still, th }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean; th: MutableRefObject<Throw> }) {
+function FrameDriver({ pointer, press, still, th, layout }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean; th: MutableRefObject<Throw>; layout: MutableRefObject<Layout> }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
     let raf = 0;
     let last = 0;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
-      const busy = th.current.mode !== "home" || now - pointer.current.lastMove < 2500 || press.current.pending || now - press.current.at < 4000;
+      const busy = th.current.mode !== "home" || layout.current.moving || now - pointer.current.lastMove < 2500 || press.current.pending || now - press.current.at < 4000;
       const gap = busy ? 0 : still ? 1000 : 1000 / 24;
       if (now - last >= gap) {
         last = now;
@@ -334,7 +351,7 @@ function FrameDriver({ pointer, press, still, th }: { pointer: MutableRefObject<
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [invalidate, pointer, press, still, th]);
+  }, [invalidate, pointer, press, still, th, layout]);
   return null;
 }
 
@@ -357,7 +374,7 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
       flat
       onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", (e) => (e.preventDefault(), props.onContextLost?.()))}
     >
-      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} />
+      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} layout={scene.layout} />
       <ViewRig anchor={scene.anchor} root={root} th={scene.th} layout={scene.layout} />
       <group ref={root}>
         <Plush {...scene} />

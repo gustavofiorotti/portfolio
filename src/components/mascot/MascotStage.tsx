@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer, PressRequest } from "./MascotScene";
 import { createThrow } from "./throw";
+import { scrollProgress } from "./walk";
 import type { Anchor, Layout } from "./ViewRig";
 
 // three.js loads only after the page is up, in its own chunk
@@ -63,11 +64,22 @@ export function MascotStage() {
   const pointer = useRef<Pointer>({ x: 0, y: 0, lastMove: 0, speed: 0 });
   const th = useRef(createThrow());
   const anchor = useRef<Anchor>({ x: 0, y: 0 });
-  const layout = useRef<Layout>({ rootX: 0, rootY: 0, bounds: { left: 0, right: 0, floor: 0 } });
+  const layout = useRef<Layout>({ rootX: 0, rootY: 0, bounds: { left: 0, right: 0, floor: 0 }, progress: 0, walk: 0, moving: false });
   const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(true);
   const [still, setStill] = useState(false);
-  const disable3d = useCallback(() => setReady(false), []);
+  // plain: show the drawn HTML switch (small screens, no WebGL, or the 3D failed). On a desktop
+  // that can run the 3D, the button stays an invisible hit area from the start, so the old
+  // switch never flashes before Bobby arrives
+  const [plain, setPlain] = useState(false);
+  // shown: the canvas fades in after its first frame, so there is never a dark empty box
+  const [shown, setShown] = useState(false);
+  const disable3d = useCallback(() => {
+    setReady(false);
+    setShown(false);
+    setPlain(true);
+  }, []);
+  const onFirstFrame = useCallback(() => setShown(true), []);
 
   // decide when (and whether) the 3D comes in: big screen, WebGL, after load and the opening
   useEffect(() => {
@@ -77,14 +89,16 @@ export function MascotStage() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let stopWaiting = () => {};
     const start = () => {
-      if (!big.matches || !hasWebGL()) return;
+      const can3d = big.matches && hasWebGL();
+      setPlain(!can3d);
+      if (!can3d) return;
       stopWaiting = afterIntro(() => {
         const run = () => setReady(true);
         if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(run, { timeout: 2500 });
         else timer = setTimeout(run, 1200);
       });
     };
-    const onSize = () => (big.matches ? start() : setReady(false));
+    const onSize = () => (big.matches ? start() : (setReady(false), setShown(false), setPlain(true)));
     const onReduce = () => setStill(reduce.matches);
     const onVisibility = () => setRunning(document.visibilityState === "visible");
     onReduce();
@@ -114,6 +128,13 @@ export function MascotStage() {
       if (rect) anchor.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     };
     onResize();
+    // scroll progress drives where Bobby walks along the right edge (walk.ts)
+    const onScroll = () => {
+      const el = document.documentElement;
+      layout.current.progress = scrollProgress(window.scrollY, el.scrollHeight, window.innerHeight);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     const onMove = (e: PointerEvent) => {
       if (!rect) return;
       const x = Math.max(-1, Math.min(1, ((e.clientX - (rect.left + rect.width * 0.35)) / window.innerWidth) * 2.4));
@@ -129,6 +150,7 @@ export function MascotStage() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
       const html = document.documentElement;
       delete html.dataset.bobby;
       delete html.dataset.bobbyHover;
@@ -152,7 +174,7 @@ export function MascotStage() {
         press.current.pending = false;
         toggleTheme();
       }
-    }, 1500);
+    }, 3000); // he may first have to walk to the switch
   }, []);
 
   const flip = () => (ready && !still ? requestPress() : toggleTheme());
@@ -161,7 +183,7 @@ export function MascotStage() {
   return (
     <>
       {ready && (
-        <div className="mascot-canvas" aria-hidden="true">
+        <div className={`mascot-canvas ${shown ? "is-shown" : ""}`} aria-hidden="true">
           <SceneBoundary onError={disable3d}>
             <MascotScene
               dark={dark}
@@ -176,12 +198,13 @@ export function MascotStage() {
               anchor={anchor}
               layout={layout}
               onBehind={onBehind}
+              onFirstFrame={onFirstFrame}
             />
           </SceneBoundary>
         </div>
       )}
       <div ref={stage} className="mascot-stage">
-        <button type="button" onClick={flip} aria-label={label} title={label} className={`mascot-switch ${ready ? "is-3d" : ""}`}>
+        <button type="button" onClick={flip} aria-label={label} title={label} className={`mascot-switch ${plain ? "is-plain" : ""}`}>
           <span className="mascot-rocker" data-on={dark} />
         </button>
       </div>

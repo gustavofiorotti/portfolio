@@ -41,8 +41,9 @@ export function useGrab({ th, layout, clock, still }: {
     const e = ev.nativeEvent;
     if (still || e.button !== 0 || e.pointerType === "touch" || !reachable(th.current, e.clientX, e.clientY)) return;
     ev.stopPropagation();
-    e.preventDefault(); // no text selection under him while dragging
     end.current();
+    // R3F listens passively, so no preventDefault: user-select goes off from the press on (CSS)
+    html().dataset.bobbyDrag = "";
     dragged.current = false;
     const id = e.pointerId;
     const at = (p: PointerEvent) => toOffset(layout.current, p.clientX, p.clientY);
@@ -50,7 +51,6 @@ export function useGrab({ th, layout, clock, still }: {
     const onMove = (p: PointerEvent) => {
       if (p.pointerId !== id || !move(th.current, ...at(p), clock.elapsedTime)) return;
       dragged.current = true;
-      html().dataset.bobbyDrag = "";
     };
     const onUp = (p: PointerEvent) => {
       if (p.pointerId !== id) return;

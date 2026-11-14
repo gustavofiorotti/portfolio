@@ -4,6 +4,8 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer, PressRequest } from "./MascotScene";
+import { createThrow } from "./throw";
+import type { Anchor, Layout } from "./ViewRig";
 
 // three.js loads only after the page is up, in its own chunk
 const MascotScene = dynamic(() => import("./MascotScene"), { ssr: false });
@@ -59,6 +61,9 @@ export function MascotStage() {
   const stage = useRef<HTMLDivElement>(null);
   const press = useRef<PressRequest>({ pending: false, at: 0 });
   const pointer = useRef<Pointer>({ x: 0, y: 0, lastMove: 0, speed: 0 });
+  const th = useRef(createThrow());
+  const anchor = useRef<Anchor>({ x: 0, y: 0 });
+  const layout = useRef<Layout>({ rootX: 0, rootY: 0, bounds: { left: 0, right: 0, floor: 0 } });
   const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(true);
   const [still, setStill] = useState(false);
@@ -102,8 +107,13 @@ export function MascotStage() {
   // the eyes follow the pointer, relative to the character (only while the 3D is on)
   useEffect(() => {
     if (!ready) return;
-    let rect = stage.current?.getBoundingClientRect();
-    const onResize = () => (rect = stage.current?.getBoundingClientRect());
+    let rect: DOMRect | undefined;
+    // the stage box is Bobby's home: the full-viewport scene is framed on its center
+    const onResize = () => {
+      rect = stage.current?.getBoundingClientRect();
+      if (rect) anchor.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    };
+    onResize();
     const onMove = (e: PointerEvent) => {
       if (!rect) return;
       const x = Math.max(-1, Math.min(1, ((e.clientX - (rect.left + rect.width * 0.35)) / window.innerWidth) * 2.4));
@@ -119,8 +129,19 @@ export function MascotStage() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
+      const html = document.documentElement;
+      delete html.dataset.bobby;
+      delete html.dataset.bobbyHover;
+      delete html.dataset.bobbyDrag;
+      th.current = createThrow(); // the scene went away mid-throw: next time he starts at home
     };
   }, [ready]);
+
+  // while he runs home he goes behind the page, and the cards turn to frosted glass
+  const onBehind = useCallback((behind: boolean) => {
+    if (behind) document.documentElement.dataset.bobby = "behind";
+    else delete document.documentElement.dataset.bobby;
+  }, []);
 
   const requestPress = useCallback(() => {
     press.current.pending = true;
@@ -138,7 +159,7 @@ export function MascotStage() {
   const label = dark ? t("turnOn") : t("turnOff");
 
   return (
-    <div ref={stage} className="mascot-stage">
+    <>
       {ready && (
         <div className="mascot-canvas" aria-hidden="true">
           <SceneBoundary onError={disable3d}>
@@ -151,13 +172,19 @@ export function MascotStage() {
               pointer={pointer}
               still={still}
               running={running}
+              th={th}
+              anchor={anchor}
+              layout={layout}
+              onBehind={onBehind}
             />
           </SceneBoundary>
         </div>
       )}
-      <button type="button" onClick={flip} aria-label={label} title={label} className={`mascot-switch ${ready ? "is-3d" : ""}`}>
-        <span className="mascot-rocker" data-on={dark} />
-      </button>
-    </div>
+      <div ref={stage} className="mascot-stage">
+        <button type="button" onClick={flip} aria-label={label} title={label} className={`mascot-switch ${ready ? "is-3d" : ""}`}>
+          <span className="mascot-rocker" data-on={dark} />
+        </button>
+      </div>
+    </>
   );
 }

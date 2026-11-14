@@ -321,8 +321,27 @@ section[tabindex="-1"]:focus {
   }
 }
 .mascot-switch { pointer-events: auto; }
-/* the canvas never blocks the page: its pointer events come from document.body */
-.mascot-canvas { position: absolute; inset: 0; pointer-events: none; }
+/* the canvas covers the viewport (Bobby can be thrown anywhere) and never blocks the page:
+   its pointer events come from document.body */
+.mascot-canvas { position: fixed; inset: 0; z-index: 16; pointer-events: none; }
+main { position: relative; z-index: 1; }
+html[data-bobby-hover="1"] body { cursor: grab; }
+html[data-bobby-drag] body { cursor: grabbing; user-select: none; -webkit-user-select: none; }
+/* running home, he goes behind the page and the surfaces turn to frosted glass over him */
+html[data-bobby="behind"] .mascot-canvas { z-index: 0; }
+/* the thumbnail (not just its background) goes translucent on purpose: that is what lets his
+   silhouette show through the banners. Transitions live in a layer so the card's own
+   Tailwind transition utilities still win */
+@layer components {
+  .project-card { transition: background-color 0.35s ease, backdrop-filter 0.35s ease; }
+  .project-card .bg-card { transition: opacity 0.35s ease; }
+}
+html[data-bobby="behind"] .project-card .bg-card { opacity: 0.72; }
+html[data-bobby="behind"] .project-card {
+  background-color: color-mix(in oklab, var(--surface) 55%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+}
 html[data-intro="wait"] .mascot-stage { opacity: 0; }
 html[data-intro="play"] .mascot-stage { animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards; }
 /* plain switch (small screens, before the 3D loads, or without WebGL) */

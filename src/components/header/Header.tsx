@@ -92,7 +92,8 @@ export function Header() {
             }`}
           >
             <BrandLogo className="brand-logo" />
-            gus.poke.site
+            {/* 320 px phones: the logo alone (the link keeps its accessible name) */}
+            <span className="max-[359px]:hidden">gus.poke.site</span>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -139,11 +140,15 @@ export function Header() {
             href={homePath(other)}
             hrefLang={other}
             aria-label={t("switchLanguage")}
-            className="btn btn-ghost flex h-11 items-center rounded-full border border-line px-3 text-[13px] font-medium whitespace-nowrap sm:h-9"
+            className="btn btn-ghost flex h-11 min-w-11 items-center justify-center rounded-full border border-line px-2 text-[13px] font-medium whitespace-nowrap sm:h-9 sm:px-3"
           >
-            <span className={locale === "pt" ? "text-fg" : "text-muted"}>PT</span>
-            <span className="text-muted">&nbsp;/&nbsp;</span>
-            <span className={locale === "en" ? "text-fg" : "text-muted"}>EN</span>
+            {/* phones show only the language it switches to */}
+            <span className="sm:hidden">{other.toUpperCase()}</span>
+            <span className="hidden sm:inline">
+              <span className={locale === "pt" ? "text-fg" : "text-muted"}>PT</span>
+              <span className="text-muted">&nbsp;/&nbsp;</span>
+              <span className={locale === "en" ? "text-fg" : "text-muted"}>EN</span>
+            </span>
           </Link>
           <ResumeButton label={t("resume")} />
         </div>

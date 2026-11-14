@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Gustavo Fiorotti · Full-stack developer",
-    "description": "Full-stack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
+    "title": "Gustavo Fiorotti · Fullstack developer",
+    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
   },
   "nav": {
     "resume": "Résumé",
@@ -15,7 +15,7 @@
     "contato": "Contact"
   },
   "hero": {
-    "lead": "Full-stack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
+    "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
     "seeResume": "See résumé"
   },
@@ -96,7 +96,7 @@
     "span": "Nov 2025 to Aug 2026 · 10 months",
     "jobs": {
       "fullstack": {
-        "role": "Full-stack Intern",
+        "role": "Fullstack Intern",
         "period": "Jun 2026 to Aug 2026",
         "summary": "Worked on Gnexum, a platform to build and manage APIs and integrate databases and systems.",
         "items": {

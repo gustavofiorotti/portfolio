@@ -5,8 +5,9 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { Strands } from "./Strands";
-import { move, press as pressOn, release, step, type Throw } from "./throw";
-import { toOffset, ViewRig, type Anchor, type Layout } from "./ViewRig";
+import { step, type Throw } from "./throw";
+import { reachable, useGrab } from "./useGrab";
+import { ViewRig, type Anchor, type Layout } from "./ViewRig";
 
 export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
@@ -88,7 +89,7 @@ type SceneProps = {
 function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind }: SceneProps) {
   const carrier = useRef<THREE.Group>(null);
   const clock = useThree((s) => s.clock);
-  const endDrag = useRef<() => void>(() => {});
+  const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
   const float = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
   const eyesPivot = useRef<THREE.Group>(null);
@@ -103,7 +104,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     squash: 1, vel: 0, hurtT: 0, pet: 0, pokes: [], angryT: 0, surpriseT: 0, lastX: 0, dir: 0, glanceT: 0,
     glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1,
   });
-  useEffect(() => () => endDrag.current(), []);
 
   useFrame((state, delta) => {
     const s = st.current;
@@ -258,7 +258,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
 
   const poke = (ev: ThreeEvent<MouseEvent>) => {
     ev.stopPropagation();
-    if (ev.delta > 6) return; // that was a drag
+    if (dragged.current || !reachable(th.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) return; // a drag, or a control on top
     const s = st.current;
     const t = ev.nativeEvent.timeStamp / 1000;
     s.vel -= 3;
@@ -276,36 +276,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       s.pet = Math.min(1.4, s.pet + 0.14);
     }
     s.lastX = x;
-  };
-
-  // grab him: window listeners follow the pointer anywhere on the page until release
-  const grab = (ev: ThreeEvent<PointerEvent>) => {
-    if (still || ev.button !== 0) return;
-    ev.stopPropagation();
-    endDrag.current();
-    const at = (e: PointerEvent | MouseEvent) => toOffset(layout.current, e.clientX, e.clientY);
-    pressOn(th.current, ...at(ev.nativeEvent), clock.elapsedTime);
-    const html = document.documentElement;
-    const onMove = (e: PointerEvent) => {
-      if (move(th.current, ...at(e), clock.elapsedTime)) html.dataset.bobbyDrag = "";
-    };
-    const onUp = () => {
-      release(th.current, clock.elapsedTime);
-      endDrag.current();
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    endDrag.current = () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-      delete html.dataset.bobbyDrag;
-      endDrag.current = () => {};
-    };
-  };
-  const hover = (on: boolean) => () => {
-    if (!still) document.documentElement.dataset.bobbyHover = on ? "1" : "";
   };
 
   return (
@@ -379,7 +349,7 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
   return (
     <Canvas
       frameloop={running ? "demand" : "never"}
-      dpr={[1, 1.5]}
+      dpr={[1, 1.25]}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       camera={{ manual: true, position: [0, 0.35, 4.6], fov: 36, near: 0.1, far: 60 }}
       eventSource={document.body}

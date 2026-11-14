@@ -1,14 +1,15 @@
 "use client";
 /* eslint-disable react-hooks/immutability -- three.js frame loop: camera, groups and shared refs are mutated per frame by design */
 import { useFrame, useThree } from "@react-three/fiber";
-import type { MutableRefObject, RefObject } from "react";
+import { useRef, type MutableRefObject, type RefObject } from "react";
 import * as THREE from "three";
 import type { Bounds, Throw } from "./throw";
 
 /** Pixels per world unit: the same scale the 200×150 stage canvas had (150 px for 2.99 units). */
 export const PPU = 150 / (2 * 4.6 * Math.tan(THREE.MathUtils.degToRad(18)));
 const CAM_Z = 4.6;
-const RADIUS = 1.1; // Bobby's body plus fur, for the screen edges
+const RADIUS = 1.3; // Bobby's body, hands and fur, for the screen edges
+const STAGE = { w: 240, h: 180 }; // the stage box (200×150) plus room for hops
 export const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the scene group
 
 /** Screen point (px) of the stage center, where the original scene was framed. */
@@ -34,6 +35,8 @@ export function ViewRig({ anchor, root, th, layout }: {
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
+  const gl = useThree((s) => s.gl);
+  const wasHome = useRef(false);
 
   useFrame(() => {
     const { width: W, height: H } = size;
@@ -63,6 +66,18 @@ export function ViewRig({ anchor, root, th, layout }: {
     camera.aspect = fullW / fullH;
     camera.setViewOffset(fullW, fullH, fullW / 2 - px, fullH / 2 - py, W, H);
     camera.updateProjectionMatrix();
+
+    // at home only the old stage box is drawn (scissor), so a resting Bobby costs what the
+    // 200×150 canvas did; the full viewport is drawn only while he is out
+    const f = th.current;
+    const home = (f.mode === "home" || f.mode === "pending") && f.x === 0 && f.y === 0;
+    if (home && !wasHome.current) {
+      gl.setScissorTest(false);
+      gl.clear(); // wipe what he left around the page
+    }
+    wasHome.current = home;
+    gl.setScissorTest(home);
+    if (home) gl.setScissor(a.x - STAGE.w / 2, H - (a.y + STAGE.h / 2), STAGE.w, STAGE.h);
   }, -1);
 
   return null;

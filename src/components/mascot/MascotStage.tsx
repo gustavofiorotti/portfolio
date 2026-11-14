@@ -129,7 +129,11 @@ export function MascotStage() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
-      delete document.documentElement.dataset.bobby;
+      const html = document.documentElement;
+      delete html.dataset.bobby;
+      delete html.dataset.bobbyHover;
+      delete html.dataset.bobbyDrag;
+      th.current = createThrow(); // the scene went away mid-throw: next time he starts at home
     };
   }, [ready]);
 

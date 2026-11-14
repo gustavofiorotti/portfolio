@@ -1,0 +1,143 @@
+/* Styles for the Projects, Experience and About sections (direction A mockup). Tokens live in globals.css. */
+/* Sections rise softly as they enter the viewport (scroll-driven, no JS). */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: section-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+}
+@keyframes section-rise {
+  from {
+    transform: translateY(48px);
+    opacity: 0.3;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Project card: one thin diagonal beam crosses once per hover. */
+.project-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 45%, var(--sheen) 49.5%, transparent 54%);
+  background-size: 300% 100%;
+  background-position: 120% 0;
+  opacity: 0;
+}
+.project-card:hover .project-sheen {
+  opacity: 1;
+  animation: project-sweep 1s cubic-bezier(0.4, 0, 0.2, 1) 1 forwards;
+}
+@keyframes project-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -20% 0;
+  }
+}
+
+/* The whole card is a link to "see it live": the title link stretches over it. */
+.project-stretch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 28px;
+}
+
+/* Themed images: show the variant that matches the current theme. */
+.theme-dark-only {
+  display: none;
+}
+:root[data-theme="dark"] .theme-light-only {
+  display: none;
+}
+:root[data-theme="dark"] .theme-dark-only {
+  display: block;
+}
+
+/* Soft button response: 1px lift, light shadow, 0.98 on press. */
+.soft-btn {
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.3s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+.soft-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px -7px var(--shadow-lift);
+}
+.soft-btn:active {
+  transform: scale(0.97);
+  box-shadow: none;
+  transition-duration: 0.1s;
+}
+
+/* Course bar: grows when it enters the view, with a quick shine every 6s. */
+@supports (animation-timeline: view()) {
+  .course-grow {
+    animation: course-grow 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 40%;
+  }
+}
+@keyframes course-grow {
+  from {
+    width: 0;
+  }
+}
+.course-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--shine), transparent);
+  background-size: 35% 100%;
+  background-repeat: no-repeat;
+  animation: course-shine 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@keyframes course-shine {
+  0% {
+    background-position: -60% 0;
+  }
+  20%,
+  100% {
+    background-position: 160% 0;
+  }
+}
+
+/* "Based in" dot. */
+.base-pulse {
+  animation: base-pulse 2.4s ease-out infinite;
+}
+@keyframes base-pulse {
+  from {
+    transform: scale(0.4);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .course-grow,
+  .course-shine,
+  .base-pulse,
+  .logo-glance,
+  .logo-blink,
+  .project-card:hover .project-sheen {
+    animation: none !important;
+  }
+  .project-card:hover .project-sheen {
+    opacity: 0;
+  }
+}

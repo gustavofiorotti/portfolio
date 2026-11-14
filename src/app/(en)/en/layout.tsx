@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 import { RootShell } from "@/components/site/RootShell";
 import "../../globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: "en", namespace: "meta" });
-  return { title: t("title"), description: t("description"), alternates: { languages: { "pt-BR": "/" } } };
+export function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("en");
 }
 
 export default function EnLayout({ children }: { children: React.ReactNode }) {

@@ -1,17 +1,28 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { homePath, type Locale } from "@/i18n/locales";
 import { MorphIcon, MORPHS } from "@/components/ui/MorphIcon";
 
 /**
  * PT / EN switch. The globe morphs into ⇄ on hover or focus, and spins half a turn on the
- * click, right before the page changes language.
+ * click while the other language loads. Coming back with the browser's back button restores
+ * the page from the back/forward cache, so the spin is undone on "pageshow".
  */
 export function LocaleSwitch({ locale, label }: { locale: Locale; label: string }) {
   const other: Locale = locale === "pt" ? "en" : "pt";
   const [hot, setHot] = useState(false);
   const [spun, setSpun] = useState(false);
+  useEffect(() => {
+    const reset = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setSpun(false);
+        setHot(false);
+      }
+    };
+    window.addEventListener("pageshow", reset);
+    return () => window.removeEventListener("pageshow", reset);
+  }, []);
   return (
     <Link
       href={homePath(other)}

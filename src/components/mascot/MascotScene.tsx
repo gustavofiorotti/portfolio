@@ -132,7 +132,9 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     // walk along the right edge with the scroll (walk.ts); stay at the switch while pressing it
     const L = layout.current;
     const wantsSwitch = (press.current.pending && !away) || t < s.holdUntil;
-    const walkTo = still || wantsSwitch ? 0 : -walkOffsetPx(L.progress, state.size.height) / PPU;
+    // while he is out (held, flying, dizzy, running home) the walk freezes, so scrolling the page
+    // does not drag him along; once home he walks on to where the scroll wants him
+    const walkTo = away ? L.walk : still || wantsSwitch ? 0 : -walkOffsetPx(L.progress, state.size.height) / PPU;
     const before = L.walk;
     L.walk = still ? 0 : damp(L.walk, walkTo, 4.5, delta);
     L.moving = Math.abs(walkTo - L.walk) > 0.004;

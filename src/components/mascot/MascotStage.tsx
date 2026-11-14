@@ -102,6 +102,11 @@ export function MascotStage() {
     const onReduce = () => setStill(reduce.matches);
     const onVisibility = () => setRunning(document.visibilityState === "visible");
     onReduce();
+    // decide right away whether the drawn switch is needed (both checks are synchronous), so
+    // without WebGL it shows immediately instead of after the load event. It cannot be the initial
+    // state: the server render has no window, and hydration must match it
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one sync decision after mount
+    setPlain(!(big.matches && hasWebGL()));
     if (document.readyState === "complete") start();
     else window.addEventListener("load", start, { once: true });
     big.addEventListener("change", onSize);
@@ -122,19 +127,22 @@ export function MascotStage() {
   useEffect(() => {
     if (!ready) return;
     let rect: DOMRect | undefined;
-    // the stage box is Bobby's home: the full-viewport scene is framed on its center
-    const onResize = () => {
-      rect = stage.current?.getBoundingClientRect();
-      if (rect) anchor.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    };
-    onResize();
     // scroll progress drives where Bobby walks along the right edge (walk.ts)
     const onScroll = () => {
       const el = document.documentElement;
       layout.current.progress = scrollProgress(window.scrollY, el.scrollHeight, window.innerHeight);
     };
-    onScroll();
+    // the stage box is Bobby's home: the full-viewport scene is framed on its center
+    const onResize = () => {
+      rect = stage.current?.getBoundingClientRect();
+      if (rect) anchor.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      onScroll();
+    };
+    onResize();
     window.addEventListener("scroll", onScroll, { passive: true });
+    // the page grows without scrolling (fonts, images, the GitHub chart): keep the progress right
+    const grow = new ResizeObserver(onScroll);
+    grow.observe(document.documentElement);
     const onMove = (e: PointerEvent) => {
       if (!rect) return;
       const x = Math.max(-1, Math.min(1, ((e.clientX - (rect.left + rect.width * 0.35)) / window.innerWidth) * 2.4));
@@ -151,6 +159,7 @@ export function MascotStage() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
+      grow.disconnect();
       const html = document.documentElement;
       delete html.dataset.bobby;
       delete html.dataset.bobbyHover;
@@ -204,7 +213,16 @@ export function MascotStage() {
         </div>
       )}
       <div ref={stage} className="mascot-stage">
-        <button type="button" onClick={flip} aria-label={label} title={label} className={`mascot-switch ${plain ? "is-plain" : ""}`}>
+        {/* on desktop the button is an invisible hit area over the 3D switch: it joins the tab order
+            only once the switch is visible (the theme is always reachable from the ⌘K menu) */}
+        <button
+          type="button"
+          onClick={flip}
+          aria-label={label}
+          title={label}
+          tabIndex={plain || shown ? 0 : -1}
+          className={`mascot-switch ${plain ? "is-plain" : ""}`}
+        >
           <span className="mascot-rocker" data-on={dark} />
         </button>
       </div>

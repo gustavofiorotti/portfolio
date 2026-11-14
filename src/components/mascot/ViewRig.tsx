@@ -16,8 +16,11 @@ export const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the
 /** Screen point (px) of the stage center, where the original scene was framed. */
 export type Anchor = { x: number; y: number };
 
-/** World ↔ screen mapping that the pointer handlers need, refreshed every frame. */
-/** progress: page scroll 0..1 (set by the stage); walk: Bobby's current walk offset in world units (set by the scene). */
+/**
+ * World ↔ screen mapping that the pointer handlers need, refreshed every frame. progress: page
+ * scroll 0..1 (set by the stage); walk: Bobby's walk offset in world units and moving: whether
+ * he is still walking (both set by the scene).
+ */
 export type Layout = { rootX: number; rootY: number; bounds: Bounds; progress: number; walk: number; moving: boolean };
 
 export function toOffset(layout: Layout, clientX: number, clientY: number): [number, number] {
@@ -39,7 +42,7 @@ export function ViewRig({ anchor, root, th, layout }: {
   const size = useThree((s) => s.size);
   const gl = useThree((s) => s.gl);
   const wasHome = useRef(false);
-  const lastBox = useRef("");
+  const lastBox = useRef<[number, number, number, number] | null>(null);
 
   useFrame(() => {
     const { width: W, height: H } = size;
@@ -81,12 +84,20 @@ export function ViewRig({ anchor, root, th, layout }: {
       const swX = (rootX + SWITCH_X) * PPU, swY = -(rootY + BOBBY_HOME.y) * PPU;
       const x0 = Math.min(bobbyX - STAGE.w / 2, swX - 40), x1 = Math.max(bobbyX + STAGE.w / 2, swX + 40);
       const y0 = Math.min(bobbyY - STAGE.h / 2, swY - 50), y1 = Math.max(bobbyY + STAGE.h / 2, swY + 50);
-      const key = `${Math.round(x0)},${Math.round(y0)},${Math.round(x1)},${Math.round(y1)}`;
-      if (!wasHome.current || key !== lastBox.current) {
+      const box = [x0, y0, x1, y1].map(Math.round) as [number, number, number, number];
+      const prev = lastBox.current;
+      if (!wasHome.current || !prev) {
         gl.setScissorTest(false);
+        gl.clear(); // back from a throw: wipe the whole canvas once
+      } else if (box.some((v, i) => v !== prev[i])) {
+        // walking: wipe only where he was and where he is now
+        const u0 = Math.min(prev[0], box[0]), v0 = Math.min(prev[1], box[1]);
+        const u1 = Math.max(prev[2], box[2]), v1 = Math.max(prev[3], box[3]);
+        gl.setScissorTest(true);
+        gl.setScissor(u0, H - v1, u1 - u0, v1 - v0);
         gl.clear();
       }
-      lastBox.current = key;
+      lastBox.current = box;
       gl.setScissorTest(true);
       gl.setScissor(x0, H - y1, x1 - x0, y1 - y0);
     } else {

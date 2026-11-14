@@ -14,7 +14,7 @@ export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 
 const BODY = "#D97757"; // Claude Code orange, chosen by Gustavo
-const GAIN = 1.32; // the fur lighting reads darker than the chosen orange; this brings it back
+const GAIN = 1.45; // the fur lighting reads darker than the chosen orange; this brings it back
 const EYES = "#1C1C20";
 const SW = new THREE.Vector3(1.05, 0.05, 0); // where the wall switch sits
 const damp = THREE.MathUtils.damp;
@@ -188,7 +188,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     else if (t < s.hurtT) mood = "dor";
     else if (t < s.surpriseT) mood = "susto";
     else if (s.pet > 0.35 || t < s.happyT) mood = "feliz";
-    else if (idleFor > 7) mood = "sono";
+    else if (idleFor > 7 && s.walking < 0.05 && !L.moving) mood = "sono"; // walking with the scroll wakes him up
     if (mood !== s.mood) {
       s.mood = mood;
       if (mood === "susto") s.vel += 2.2;

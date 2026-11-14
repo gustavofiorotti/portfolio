@@ -1,31 +1,52 @@
 # Portfólio — Gustavo Fiorotti
 
-Site estático em Astro + Tailwind CSS v4, hospedado na Vercel em https://gufi.vercel.app.
-O `gus.poke.site` (assistente Poke) é só um redirect para lá.
+Site estático em **Next.js (App Router) + TypeScript + Tailwind CSS v4 + next-intl + Motion**, exportado
+com `output: "export"` e hospedado na Vercel em https://gufi.vercel.app. O `gus.poke.site` (assistente Poke)
+é só um redirect para lá. Personagem 3D em React Three Fiber (entra nas próximas etapas).
 
-Veja também `AGENTS.md` (instruções do Astro).
+Leia também `AGENTS.md`: esta versão do Next.js tem mudanças; consulte `node_modules/next/dist/docs/` antes
+de usar uma API.
 
 ## Comandos
 
-- `pnpm dev` — servidor local em http://localhost:4321
-- `pnpm build` — gera `dist/` (é o que a Vercel publica)
-- `pnpm preview` — serve o build localmente
+- `pnpm dev` — servidor local em http://localhost:3000
+- `pnpm build` — gera `out/` (é o que a Vercel publica)
+- `pnpm test` — testes unitários (Vitest + jsdom)
+- `pnpm lint` e `pnpm typecheck`
+
+## Estrutura
+
+- `src/app/(pt)/` — layout raiz e página em português, servidos em `/`.
+- `src/app/(en)/en/` — layout raiz e página em inglês, servidos em `/en`.
+  São dois layouts raiz (route groups) para o PT ficar sem prefixo sem precisar de proxy, que a
+  exportação estática não suporta.
+- `src/messages/pt.json` e `en.json` — textos do site. As chaves precisam ser iguais nos dois
+  (há teste para isso).
+- `src/i18n/` — locales e configuração do next-intl (`setRequestLocale` em cada layout e página).
+- `src/components/site/` — componentes do site; `RootShell` monta `<html>`, fontes e tema.
+- `src/lib/theme.ts` — script inline que aplica o tema salvo (ou o do sistema) antes da primeira pintura.
 
 ## Deploy
 
-- A Vercel está ligada ao repositório: push em `main` publica em produção (https://gufi.vercel.app)
-  e cada PR ganha uma URL de prévia. Não há workflow de deploy no GitHub Actions.
-- Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend
-  (confirmado pelo próprio Poke em 12/11/2026). O `gus.poke.site` só redireciona para a Vercel.
+- A Vercel está ligada ao repositório: push em `main` publica em produção e cada PR ganha uma URL de
+  prévia. O `vercel.json` fixa o framework como Next.js. Não há workflow de deploy no GitHub Actions.
+- Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend. O `gus.poke.site`
+  só redireciona para a Vercel.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.
 
 ## Convenções
 
-- Texto do site em português (pt-BR); código e comentários em inglês.
-- Componentes em `src/components/`, layout base em `src/layouts/Layout.astro`.
+- Texto do site em português (pt-BR) e inglês, sempre pelas mensagens do next-intl; código e comentários
+  em inglês.
+- Exportação estática: nada de Server Actions, cookies, proxy, redirects/rewrites do Next ou rotas
+  dinâmicas sem `generateStaticParams`.
+- Cores só pelos tokens de `src/app/globals.css` (nunca preto ou branco puros).
 - Não expor clientes, ERPs, produtos internos, endpoints ou arquitetura (contrato de
   confidencialidade). O produto se escreve "Gnexum".
 - Layout precisa funcionar em celular (sem scroll horizontal) e respeitar `prefers-reduced-motion`.
+- Antes de mexer em UI, carregar a skill `kit-gustavo`. Mockups aprovados: canvas da direção A em
+  https://claude.ai/artifact/3M4R5sjCV7gbGUNmcqsZoY. Protótipo do personagem e logo 3D em
+  `~/projetos/portfolio-materiais/` (fora do repo).
 
 ## graphify
 

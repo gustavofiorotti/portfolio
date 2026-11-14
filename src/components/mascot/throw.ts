@@ -77,7 +77,7 @@ export function release(s: Throw, t: number) {
 
 export function step(s: Throw, dt: number, t: number, b: Bounds) {
   if (dt <= 0) return;
-  dt = Math.min(dt, 1 / 20); // a stalled tab must not teleport him through the floor
+  dt = Math.min(dt, 1 / 15); // a stalled tab must not teleport him through the floor
   switch (s.mode) {
     case "held": {
       // follows the hand with a short lag; the speed it picks up becomes the throw

@@ -330,6 +330,8 @@ html[data-bobby-drag] body { cursor: grabbing; user-select: none; -webkit-user-s
 /* running home, he goes behind the page and the surfaces turn to frosted glass over him */
 html[data-bobby="behind"] .mascot-canvas { z-index: 0; }
 main .bg-surface { transition: background-color 0.35s ease, backdrop-filter 0.35s ease; }
+.project-card .bg-card { transition: opacity 0.35s ease; }
+html[data-bobby="behind"] .project-card .bg-card { opacity: 0.72; }
 html[data-bobby="behind"] main .bg-surface {
   background-color: color-mix(in oklab, var(--surface) 55%, transparent);
   -webkit-backdrop-filter: blur(14px) saturate(1.5);

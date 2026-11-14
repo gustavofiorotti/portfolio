@@ -47,14 +47,14 @@ function useShadowTexture() {
 }
 
 /** Wall switch: a plate and a rocker that tips to show which half is up. */
-function LightSwitch({ dark, rocker, onPress }: { dark: boolean; rocker: MutableRefObject<THREE.Group | null>; onPress: () => void }) {
+function LightSwitch({ dark, rocker, plate, onPress }: { dark: boolean; rocker: MutableRefObject<THREE.Group | null>; plate: MutableRefObject<THREE.Group | null>; onPress: () => void }) {
   const geo = useMemo(() => {
     const ex = (w: number, h: number, r: number, depth: number, bevel: boolean) =>
       new THREE.ExtrudeGeometry(roundedRect(w, h, r), { depth, bevelEnabled: bevel, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 3, curveSegments: 10 });
     return { plate: ex(0.5, 0.78, 0.11, 0.05, true), well: ex(0.26, 0.46, 0.07, 0.02, false), key: ex(0.22, 0.2, 0.06, 0.07, true) };
   }, []);
   return (
-    <group position={SW} onClick={(e) => (e.stopPropagation(), onPress())}>
+    <group ref={plate} position={SW} onClick={(e) => (e.stopPropagation(), onPress())}>
       <mesh geometry={geo.plate}>
         <meshStandardMaterial color={dark ? "#26262B" : "#FAFAF9"} roughness={0.6} />
       </mesh>
@@ -95,6 +95,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const hands = useRef<(THREE.Group | null)[]>([]);
   const shadow = useRef<THREE.Mesh>(null);
   const rocker = useRef<THREE.Group | null>(null);
+  const plate = useRef<THREE.Group | null>(null);
   const shadowTex = useShadowTexture();
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const expr = useRef<EyeShape>({ ...MOODS.normal });
@@ -245,6 +246,13 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const look = pressing && pp < 0.75;
     eyesPivot.current.rotation.y = damp(eyesPivot.current.rotation.y, look ? 0.34 : tx, look ? 14 : 8, delta);
     eyesPivot.current.rotation.x = damp(eyesPivot.current.rotation.x, look ? 0.02 : -ty, 8, delta);
+    // the camera follows Bobby, so with him far away the switch is seen at a steep angle and its
+    // depth would smear: flatten it in z as the angle grows (it is a flat plate from the front)
+    if (plate.current) {
+      plate.current.getWorldPosition(tmp);
+      const tan = Math.hypot(tmp.x - state.camera.position.x, tmp.y - state.camera.position.y) / state.camera.position.z;
+      plate.current.scale.z = Math.min(1, 0.3 / Math.max(tan, 1e-3));
+    }
     rocker.current.rotation.x = damp(rocker.current.rotation.x, dark ? -0.3 : 0.3, 18, delta);
   });
 
@@ -304,7 +312,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     <group>
       <ambientLight intensity={1.7} />
       <directionalLight position={[-2, 3, 4]} intensity={1.4} />
-      <LightSwitch dark={dark} rocker={rocker} onPress={onSwitchClick} />
+      <LightSwitch dark={dark} rocker={rocker} plate={plate} onPress={onSwitchClick} />
       <group position={[-0.45, 0, 0]}>
         <group ref={carrier}>
           <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>

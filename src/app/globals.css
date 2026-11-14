@@ -69,7 +69,18 @@ html {
 
 body {
   margin: 0;
-  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* theme switch: no element fades on its own; the page crossfades as one (theme-client.ts) */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

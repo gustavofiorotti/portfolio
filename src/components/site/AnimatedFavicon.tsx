@@ -37,9 +37,10 @@ export function AnimatedFavicon() {
         g.clearRect(0, 0, SIZE, SIZE);
         g.drawImage(img, 0, 0, SIZE, SIZE);
         g.fillStyle = "#FAFAF9";
-        for (const cx of [12.6, 19.4]) {
+        // eye spots on the tightly cropped base image (it fills the whole icon edge to edge)
+        for (const cx of [12.85, 19.17]) {
           g.beginPath();
-          g.ellipse((cx + e.dx) * S, (15 + e.dy) * S, 2.5 * S, 3.6 * S * e.open, 0, 0, Math.PI * 2);
+          g.ellipse((cx + e.dx) * S, (13.85 + e.dy) * S, 2.33 * S, 3.35 * S * e.open, 0, 0, Math.PI * 2);
           g.fill();
         }
         const url = canvas.toDataURL("image/png");

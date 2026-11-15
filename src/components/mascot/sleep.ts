@@ -4,7 +4,7 @@
 // dips) each ending in a jolt awake, then he drops off for good: eyes shut, slow breathing,
 // a drop of drool and "Zzz" bubbles.
 
-export const SLEEPY_AFTER = 25; // s without pointer movement before the yawn (was 7: he slept too soon)
+export const SLEEPY_AFTER = 25; // s without pointer movement before the yawn
 
 const YAWN_END = 1.8;
 const NODS: [number, number][] = [

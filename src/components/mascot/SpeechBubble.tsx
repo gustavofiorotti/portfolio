@@ -11,8 +11,8 @@ const REACT_GAP_MS = 900; // reactions (a poke, a stroke, a throw, his naps) can
 const REACTIONS: Say[] = ["poke", "angry", "pet", "thrown", "landed", "yawn", "doze", "jolt", "asleep", "wake"];
 // "soothed" is the first happy stroke after the pokes: it answers at once, with the pet lines
 const URGENT: Say[] = ["hello", "angry", "egg", "eggStep", "wake", "soothed"]; // always replace what he was saying
-const SPIN = "✻ ";
-const CROSS: Say[] = ["poke", "angry", "egg"]; // lines that belong to the angry face // lines starting with it get Claude Code's spinner in front
+const SPIN = "✻ "; // lines starting with it get Claude Code's spinner in front
+const CROSS: Say[] = ["poke", "angry", "egg"]; // lines that belong to the angry face
 
 /**
  * Small, quiet speech bubble above Bobby. It follows his head (the scene writes the screen

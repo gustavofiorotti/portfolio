@@ -5,7 +5,7 @@ export const HEART_GAP_S = 0.7; // at most one burst this often, however fast th
 export const HEART_LIFE_MS = 1200; // one heart floats up and fades in this long
 export const MAX_BURSTS = 3; // bursts on screen at once
 
-export type Heart = { glyph: string; dx: number; delay: number; size: number };
+type Heart = { glyph: string; dx: number; delay: number; size: number };
 export type Burst = { id: number; hearts: Heart[] };
 
 /** Whether a stroke at time t (s) may send a new burst, given the last one. */

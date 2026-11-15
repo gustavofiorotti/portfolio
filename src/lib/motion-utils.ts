@@ -53,14 +53,20 @@ export function smoothScrollTo(id: string | null, offset = 0) {
     return;
   }
   window.scrollTo({ top: to, behavior: "smooth" });
-  // focus once it arrives: scrollend where supported, a timer otherwise
+  // focus once it arrives: scrollend where supported, a timer otherwise. WebKit on touch devices
+  // can fire an early scrollend, and focusing mid-way (even with preventScroll) cancels its smooth
+  // scroll, so a scrollend only counts when the page is really there.
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const dest = max > 0 ? Math.min(to, max) : to; // near the bottom the page stops short of `to`
+  const arrived = () => Math.abs(window.scrollY - dest) <= 2;
   let done = false;
-  const finish = () => {
-    if (done) return;
+  const finish = (force: boolean) => {
+    if (done || (!force && !arrived())) return;
     done = true;
-    window.removeEventListener("scrollend", finish);
+    window.removeEventListener("scrollend", onEnd);
     if (call === scrollCall) focusSection(target); // a newer jump took over: leave focus to it
   };
-  window.addEventListener("scrollend", finish, { once: true });
-  setTimeout(finish, scrollDuration(to - window.scrollY) + 400);
+  const onEnd = () => finish(false);
+  window.addEventListener("scrollend", onEnd);
+  setTimeout(() => finish(true), scrollDuration(to - window.scrollY) + 400);
 }

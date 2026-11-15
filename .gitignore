@@ -35,3 +35,7 @@ graphify-out/
 
 # python
 __pycache__/
+
+# configurações locais do Claude Code (caminhos da máquina)
+.claude/settings.json
+.claude/launch.json

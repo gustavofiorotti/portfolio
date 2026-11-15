@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type PointerEvent } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { motion, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { useTranslations } from "next-intl";
 import type { Project } from "@/lib/projects";
 import { BrandLogo } from "@/components/header/BrandLogo";
 import { MorphIcon, MORPHS } from "@/components/ui/MorphIcon";
+import { useTouchTilt } from "./useTouchTilt";
 
 // back-to-rest spring with a little overshoot, like the mockup's cubic-bezier(.34,1.56,.64,1)
 const SPRING = { stiffness: 260, damping: 20, mass: 0.6 };
@@ -73,6 +74,8 @@ export function ProjectCard({ project }: { project: Project }) {
   const scale = useSpring(1, SPRING);
   const imgX = useTransform(rotateY, (v) => -v * 1.2);
   const imgY = useTransform(rotateX, (v) => v * 1.2);
+  const card = useRef<HTMLElement>(null);
+  const featured = useTouchTilt(card, { rotateX, rotateY, scale }, reduce);
 
   const key = `items.${project.id}` as const;
   const href = project.online ?? project.code;
@@ -98,10 +101,11 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     <motion.article
+      ref={card}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      style={{ rotateX, rotateY, scale, transformPerspective: 1100, boxShadow: hover ? HOVER_SHADOW : "0 0 0 transparent" }}
-      className="project-card relative isolate h-full cursor-pointer rounded-[28px] border border-line bg-surface transition-[box-shadow] duration-[450ms] will-change-transform has-[.project-stretch:focus-visible]:outline-2 has-[.project-stretch:focus-visible]:outline-offset-4 has-[.project-stretch:focus-visible]:outline-fg"
+      style={{ rotateX, rotateY, scale, transformPerspective: 1100, boxShadow: hover || featured ? HOVER_SHADOW : "0 0 0 transparent" }}
+      className={`project-card ${featured ? "is-featured" : ""} relative isolate h-full cursor-pointer rounded-[28px] border border-line bg-surface transition-[box-shadow] duration-[450ms] will-change-transform has-[.project-stretch:focus-visible]:outline-2 has-[.project-stretch:focus-visible]:outline-offset-4 has-[.project-stretch:focus-visible]:outline-fg`}
     >
       <span className="project-sheen" aria-hidden="true" />
       <div className="flex h-full flex-col overflow-hidden rounded-[27px]">

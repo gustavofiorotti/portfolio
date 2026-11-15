@@ -30,7 +30,8 @@
   background-position: 120% 0;
   opacity: 0;
 }
-.project-card:hover .project-sheen {
+.project-card:hover .project-sheen,
+.project-card.is-featured .project-sheen {
   opacity: 1;
   animation: project-sweep 1s cubic-bezier(0.4, 0, 0.2, 1) 1 forwards;
 }

@@ -9,24 +9,25 @@ const S = SIZE / 32; // the eye keys are in the logo's 32×32 box
  * The tab icon blinks and glances like the header logo. SVG favicons do not animate in Chrome
  * or Safari, so frames are drawn on a canvas and swapped into the <link rel="icon">.
  * Hidden tabs throttle timers to about 1/s, which still shows the glances.
+ * Safari keeps the first icon it loads and never repaints the tab after that (WebKit bug
+ * 266426, still open), so there the static icon stays and nothing runs.
  */
 export function AnimatedFavicon() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (/^((?!chrome|chromium|android).)*safari/i.test(navigator.userAgent)) return;
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = SIZE;
     const g = canvas.getContext("2d");
     if (!g) return;
     const img = new Image();
     img.src = "/brand/favicon-base.png";
-    // animate the icon links Next.js renders (a link of our own can end up before them and lose,
+    // animate the icon links Next.js renders (a link of our own could end up before them and lose,
     // and streamed metadata can add more later, so they are looked up on every frame); their
     // original hrefs come back on unmount
     const original = new Map<HTMLLinkElement, string>();
-    let own: HTMLLinkElement | null = null;
     const cache = new Map<string, string>();
-    const safari = /^((?!chrome|chromium|android).)*safari/i.test(navigator.userAgent);
-    const links = () => [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')].filter((l) => l !== own);
+    const links = () => [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')];
     let cancelled = false;
     let last = "";
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -57,16 +58,6 @@ export function AnimatedFavicon() {
           l.href = url;
           l.type = "image/png";
         }
-        // Safari ignores href changes on an existing icon link: a fresh link, added last, is
-        // the only thing it may pick up (it still may not animate; then the static icon stays)
-        if (safari) {
-          own?.remove();
-          own = document.createElement("link");
-          own.rel = "icon";
-          own.type = "image/png";
-          own.href = url;
-          document.head.appendChild(own);
-        }
       }
       timer = setTimeout(draw, 66);
     };
@@ -76,7 +67,6 @@ export function AnimatedFavicon() {
     return () => {
       cancelled = true;
       clearTimeout(timer);
-      own?.remove();
       original.forEach((href, l) => (l.href = href));
     };
   }, []);

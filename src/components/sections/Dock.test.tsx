@@ -111,4 +111,21 @@ describe("Dock", () => {
     fireEvent.click(github);
     expect(opened).toHaveBeenCalledTimes(1);
   });
+
+  it("a new tap right after a slide opens the link (the slide's click guard is cleared)", () => {
+    renderDock();
+    const nav = screen.getByRole("navigation");
+    const github = screen.getByRole("link", { name: /GitHub/ });
+    const opened = vi.fn((e: Event) => e.preventDefault());
+    github.addEventListener("click", opened);
+    fireEvent.pointerDown(nav, { pointerType: "touch", clientX: -40, clientY: 20 });
+    fireEvent.pointerMove(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    fireEvent.pointerUp(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    // no click followed the slide; 100 ms later the visitor taps
+    act(() => vi.advanceTimersByTime(100));
+    fireEvent.pointerDown(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    fireEvent.pointerUp(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    fireEvent.click(github);
+    expect(opened).toHaveBeenCalledTimes(1);
+  });
 });

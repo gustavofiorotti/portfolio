@@ -51,6 +51,7 @@ export function Dock() {
   const navRef = useRef<HTMLElement>(null);
   const touch = useRef<{ x: number; y: number; scrub: boolean } | null>(null);
   const swallowClick = useRef(false);
+  const swallowTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mailPath = useMorphPath(MORPHS.mail.from, MORPHS.mail.to, copied);
@@ -62,6 +63,7 @@ export function Dock() {
   useEffect(
     () => () => {
       clearTimeout(copiedTimer.current);
+      clearTimeout(swallowTimer.current);
       cancelAnimationFrame(frame.current);
     },
     [],
@@ -73,12 +75,16 @@ export function Dock() {
     // would feed its own size back into the fit
     const host = navRef.current?.closest("section");
     if (!host) return;
+    let last: Geometry | null = null;
     const fit = () => {
       const cs = getComputedStyle(host);
       const room = host.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       if (!(room > 0)) return; // not laid out (yet)
       const g = fitDock(room, COUNT);
-      setGeo((prev) => (prev.base === g.base && prev.max === g.max ? prev : g));
+      // ResizeObserver also fires for changes that keep the same fit: then leave the dock alone
+      if (last && last.base === g.base && last.max === g.max) return;
+      last = g;
+      setGeo(g);
       setDock(restFor(g));
     };
     fit();
@@ -135,6 +141,9 @@ export function Dock() {
 
   function onDown(e: PointerEvent<HTMLElement>) {
     if (e.pointerType === "mouse") return;
+    // a new touch starts clean, even if the last slide's click never came
+    clearTimeout(swallowTimer.current);
+    swallowClick.current = false;
     touch.current = { x: e.clientX, y: e.clientY, scrub: false };
     const rect = e.currentTarget.getBoundingClientRect();
     const x = dockWidth(sizes, geo) / 2 + (e.clientX - rect.left - rect.width / 2);
@@ -147,7 +156,8 @@ export function Dock() {
     // a scrub only magnifies: lifting the finger must not open whatever icon is under it
     if (touch.current?.scrub) {
       swallowClick.current = true;
-      setTimeout(() => (swallowClick.current = false), 400);
+      clearTimeout(swallowTimer.current);
+      swallowTimer.current = setTimeout(() => (swallowClick.current = false), 400);
     }
     touch.current = null;
     setPressed(-1);

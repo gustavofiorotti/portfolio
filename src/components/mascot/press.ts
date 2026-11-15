@@ -25,3 +25,18 @@ export function askPress(r: PressRequest, now: number): boolean {
   r.pending += 1;
   return true;
 }
+
+export type ClickResult = "flipped" | "queued" | "ignored";
+
+/**
+ * The single door for a click on the switch, from the HTML button or from the 3D switch, in any
+ * mode. `direct` (no 3D, or reduced motion): the theme flips at once through `flip`; otherwise the
+ * press is queued for Bobby. Either way, the second handler of the same click is ignored.
+ */
+export function clickSwitch(r: PressRequest, now: number, direct: boolean, flip: () => void): ClickResult {
+  if (now - r.lastAsk < DEDUPE_MS) return "ignored";
+  if (!direct) return askPress(r, now) ? "queued" : "ignored";
+  r.lastAsk = now;
+  flip();
+  return "flipped";
+}

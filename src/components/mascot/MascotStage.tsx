@@ -4,7 +4,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer } from "./MascotScene";
-import { askPress, createPressRequest, type PressRequest } from "./press";
+import { clickSwitch, createPressRequest, type PressRequest } from "./press";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
 import { SpeechBubble, useSpeech } from "./SpeechBubble";
@@ -235,10 +235,12 @@ export function MascotStage() {
     else delete document.documentElement.dataset.bobby;
   }, []);
 
-  const requestPress = useCallback(() => {
-    // one physical click = one request (the button and the 3D switch both hear it), at most two
-    // queued (enough to undo a mistaken click); the rule lives in press.ts
-    if (!askPress(press.current, performance.now())) return;
+  // every click on the switch, from the HTML button or from the 3D switch, goes through this one
+  // door (press.ts): one physical click = one flip, in any mode. With Bobby on (and motion allowed)
+  // he presses it; otherwise (no 3D, reduced motion) the theme flips at once
+  const direct = !ready || still;
+  const clickSwitchNow = useCallback(() => {
+    if (clickSwitch(press.current, performance.now(), direct, toggleTheme) !== "queued") return;
     // safety net: if the scene stops taking requests (stalled GPU), flip for whatever is left
     const asked = performance.now();
     setTimeout(() => {
@@ -246,9 +248,8 @@ export function MascotStage() {
         for (; press.current.pending > 0; press.current.pending--) toggleTheme();
       }
     }, 3000); // he may first have to walk to the switch
-  }, []);
+  }, [direct]);
 
-  const flip = () => (ready && !still ? requestPress() : toggleTheme());
   const label = dark ? t("turnOn") : t("turnOff");
 
   return (
@@ -259,7 +260,7 @@ export function MascotStage() {
             <MascotScene
               dark={dark}
               onToggle={toggleTheme}
-              onSwitchClick={requestPress}
+              onSwitchClick={clickSwitchNow}
               onContextLost={disable3d}
               press={press}
               pointer={pointer}
@@ -282,7 +283,7 @@ export function MascotStage() {
             only once the switch is visible (the theme is always reachable from the ⌘K menu) */}
         <button
           type="button"
-          onClick={flip}
+          onClick={clickSwitchNow}
           // holding Enter/Space repeats the click: only the first press counts
           onKeyDown={(e) => e.repeat && (e.key === "Enter" || e.key === " ") && e.preventDefault()}
           aria-label={label}

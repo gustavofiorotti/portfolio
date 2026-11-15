@@ -63,7 +63,7 @@ export function MobileNav({ label, active, names, onGo }: Props) {
     };
   }, [active]);
 
-  const fade = `linear-gradient(to right, ${edges.start ? "black" : "transparent"} 0, black 16px, black calc(100% - 28px), ${edges.end ? "black" : "transparent"} 100%)`;
+  const fade = `linear-gradient(to right, ${edges.start ? "black" : "transparent"} 0, black 12px, black calc(100% - 18px), ${edges.end ? "black" : "transparent"} 100%)`;
 
   return (
     <nav
@@ -80,7 +80,7 @@ export function MobileNav({ label, active, names, onGo }: Props) {
           data-nav={id}
           onClick={onGo(id)}
           aria-current={active === id ? "location" : undefined}
-          className={`flex h-11 shrink-0 snap-start items-center rounded-full border px-3.5 whitespace-nowrap transition-colors duration-200 ${
+          className={`flex h-11 shrink-0 snap-start items-center rounded-full border px-3 whitespace-nowrap transition-colors duration-200 ${
             active === id ? "border-[var(--pill-border)] bg-[var(--pill)] font-semibold text-fg" : "border-transparent font-medium text-muted"
           }`}
         >

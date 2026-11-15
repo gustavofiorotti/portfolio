@@ -31,4 +31,23 @@ describe("stable share image", () => {
     expect(existsSync("public/og.png")).toBe(true);
     expect(existsSync("public/og.jpg")).toBe(true);
   });
+
+  it("og.jpg is 1200x630 and under 300 KB (WhatsApp skips heavier previews)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const jpg = readFileSync("public/og.jpg");
+    expect(jpg.length).toBeLessThan(300 * 1024);
+    // walk the JPEG markers to the frame header (SOF0-SOF15, except DHT/JPG/DAC)
+    let i = 2;
+    let size: { width: number; height: number } | null = null;
+    while (i < jpg.length) {
+      const marker = jpg[i + 1];
+      const len = jpg.readUInt16BE(i + 2);
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+        size = { height: jpg.readUInt16BE(i + 5), width: jpg.readUInt16BE(i + 7) };
+        break;
+      }
+      i += 2 + len;
+    }
+    expect(size).toEqual({ width: 1200, height: 630 });
+  });
 });

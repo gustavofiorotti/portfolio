@@ -18,16 +18,25 @@ let switchId = 0; // only the latest switch may turn element transitions back on
 
 function applyTheme(theme: Theme) {
   const html = document.documentElement;
+  html.classList.remove("theme-settling");
   html.classList.add("theme-switching");
   html.dataset.theme = theme;
   void html.offsetHeight; // commit the new colors while transitions are off
   window.dispatchEvent(new CustomEvent<Theme>(THEME_EVENT, { detail: theme }));
 }
 
+const SETTLE_MS = 900;
+
 function endSwitch(id: number) {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
-      if (id === switchId) document.documentElement.classList.remove("theme-switching");
+      if (id !== switchId) return;
+      const html = document.documentElement;
+      html.classList.remove("theme-switching");
+      // Safari takes a moment to repaint backdrop-filter after the crossfade and the glass showed
+      // see-through: it stays dense a little longer
+      html.classList.add("theme-settling");
+      setTimeout(() => id === switchId && html.classList.remove("theme-settling"), SETTLE_MS);
     }),
   );
 }

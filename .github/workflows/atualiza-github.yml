@@ -1,0 +1,29 @@
+# Rebuilds production every 12 hours so the GitHub activity grid stays current: the build
+# fetches the contribution calendar (scripts/fetch-github-contributions.mjs). It only calls a
+# Vercel Deploy Hook; no commit is made, so it adds nothing to the contribution graph.
+# Scheduled workflows run from the default branch, and GitHub pauses them after 60 days
+# without activity in a public repository.
+name: Atualiza a atividade do GitHub
+
+on:
+  schedule:
+    - cron: "17 */12 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispara o deploy de produção na Vercel
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::Segredo VERCEL_DEPLOY_HOOK_URL não configurado; nada a fazer."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Deploy de produção disparado."

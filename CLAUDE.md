@@ -29,7 +29,8 @@ de usar uma API.
 ## Deploy
 
 - A Vercel está ligada ao repositório: push em `main` publica em produção e cada PR ganha uma URL de
-  prévia. O `vercel.json` fixa o framework como Next.js. Não há workflow de deploy no GitHub Actions.
+  prévia. O `vercel.json` fixa o framework como Next.js.
+- `.github/workflows/atualiza-github.yml` chama um Deploy Hook da Vercel (segredo `VERCEL_DEPLOY_HOOK_URL`) a cada 12 h, para a grade do GitHub se atualizar sem commit nem deploy manual.
 - Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend. O `gus.poke.site`
   só redireciona para a Vercel.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.

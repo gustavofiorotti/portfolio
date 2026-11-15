@@ -90,6 +90,13 @@ html.theme-settling .glass,
 html.theme-settling .nav-pill {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
 }
+/* one frame after a dry switch (WebKit): a different radius forces the backdrop to repaint */
+html.theme-repaint .glass {
+  backdrop-filter: blur(20.5px) saturate(180%);
+}
+html.theme-repaint .nav-pill {
+  backdrop-filter: blur(12.5px) saturate(200%);
+}
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.3s;
@@ -109,8 +116,8 @@ html.theme-settling .nav-pill {
 
 /* ---- glass, pill and buttons (direction A) ---- */
 :root {
-  /* dense enough to read on its own: WebKit blurs far less than Chromium for the same radius */
-  --glass: rgb(250 250 249 / 0.9);
+  /* liquid glass (direction A): the page shows through, blurred, in every browser */
+  --glass: rgb(250 250 249 / 0.6);
   --glass-border: rgb(250 250 249 / 0.85);
   --glass-hi: rgb(250 250 249 / 0.95);
   --pill: rgb(250 250 249 / 0.75);
@@ -126,7 +133,7 @@ html.theme-settling .nav-pill {
   --glyph-glow: rgb(24 24 27 / 0.28);
 }
 :root[data-theme="dark"] {
-  --glass: rgb(28 28 31 / 0.88);
+  --glass: rgb(28 28 31 / 0.55);
   --glass-border: rgb(236 236 238 / 0.1);
   --glass-hi: rgb(236 236 238 / 0.12);
   --pill: rgb(236 236 238 / 0.1);
@@ -153,11 +160,6 @@ html.theme-settling .nav-pill {
     .glass {
       background: color-mix(in srgb, var(--surface) 92%, transparent);
     }
-  }
-  /* WebKit and Firefox blur less: at 0.88–0.90 the text below showed through like a ghost, so
-     there the glass is nearly solid (data-glass from the inline theme script; Chromium unchanged) */
-  html[data-glass="dense"] .glass {
-    background: color-mix(in srgb, var(--surface) 96%, transparent);
   }
   .nav-pill {
     background: var(--pill);

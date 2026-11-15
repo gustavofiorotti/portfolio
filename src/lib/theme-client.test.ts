@@ -30,6 +30,21 @@ describe("setTheme", () => {
     expect(document.documentElement.classList.contains("theme-switching")).toBe(false);
   });
 
+  it("after a dry switch the glass repaints for one frame, without a denser fill", async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => (frames.push(cb), 0));
+    const { setTheme } = await import("./theme-client");
+    setTheme("dark");
+    const html = document.documentElement;
+    frames.shift()!(0);
+    frames.shift()!(0); // two frames: transitions back on
+    expect(html.classList.contains("theme-switching")).toBe(false);
+    expect(html.classList.contains("theme-settling")).toBe(false);
+    expect(html.classList.contains("theme-repaint")).toBe(true);
+    frames.shift()!(0);
+    expect(html.classList.contains("theme-repaint")).toBe(false);
+  });
+
   it("without View Transitions applies at once and turns transitions back on", async () => {
     const { setTheme } = await import("./theme-client");
     setTheme("dark");

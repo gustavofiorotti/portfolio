@@ -34,7 +34,14 @@ function endSwitch(id: number, settle: boolean) {
       if (id !== switchId) return;
       const html = document.documentElement;
       html.classList.remove("theme-switching");
-      if (!settle) return;
+      if (!settle) {
+        // WebKit (dry switch) can keep the old backdrop under the glass, and the header looked
+        // see-through: a one-frame change of the blur radius makes it rebuild the backdrop, and
+        // the glass stays glass (no denser fill)
+        html.classList.add("theme-repaint");
+        requestAnimationFrame(() => html.classList.remove("theme-repaint"));
+        return;
+      }
       // Safari takes a moment to repaint backdrop-filter after the crossfade and the glass showed
       // see-through: it stays dense a little longer
       html.classList.add("theme-settling");

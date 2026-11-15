@@ -5,12 +5,5 @@
  * (AnimatedFavicon).
  */
 export function isWebKitEngine(ua: string): boolean {
-  return /AppleWebKit/.test(ua) && !CHROMIUM_UA.test(ua);
+  return /AppleWebKit/.test(ua) && !/(Chrome|Chromium|Edg|OPR|SamsungBrowser)\//.test(ua);
 }
-
-/**
- * Chromium browsers (Chrome, Edge, Opera, Samsung Internet, on every platform but iOS). Outside
- * them (WebKit, Firefox) the backdrop blur reads weaker and text behind the header showed through
- * like a ghost: the inline theme script (theme.ts) marks html[data-glass="dense"] there.
- */
-export const CHROMIUM_UA = /(Chrome|Chromium|Edg|OPR|SamsungBrowser)\//;

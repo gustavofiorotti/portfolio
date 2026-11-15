@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isWebKitEngine } from "./theme-client";
+import { isWebKitEngine } from "./browser";
 
 const raf = (cb: FrameRequestCallback) => (cb(0), 0);
 

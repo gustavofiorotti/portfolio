@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { isWebKitEngine } from "@/lib/browser";
 import { eyesAt, frameKey } from "@/lib/favicon-eyes";
 
 const SIZE = 64;
@@ -15,7 +16,7 @@ const S = SIZE / 32; // the eye keys are in the logo's 32×32 box
 export function AnimatedFavicon() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (/^((?!chrome|chromium|android).)*safari/i.test(navigator.userAgent)) return;
+    if (isWebKitEngine(navigator.userAgent)) return; // same rule as the dry theme switch (lib/browser)
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = SIZE;
     const g = canvas.getContext("2d");

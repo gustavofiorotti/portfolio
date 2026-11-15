@@ -29,6 +29,15 @@ describe("petting", () => {
     expect(go(93, 140, 3)).toBe(1); // turns right again: the left sweep counts
   });
 
+  it("counts up-and-down strokes too", () => {
+    const f = createFeel();
+    let counted = 0;
+    for (let y = 100; y <= 130; y += 3) if (stroke(f, 200, y)) counted++;
+    for (let y = 127; y >= 95; y -= 3) if (stroke(f, 200, y)) counted++;
+    for (let y = 98; y <= 130; y += 3) if (stroke(f, 200, y)) counted++;
+    expect(counted).toBe(2);
+  });
+
   it("ignores tiny jitters", () => {
     const f = createFeel();
     let counted = 0;

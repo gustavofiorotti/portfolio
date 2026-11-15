@@ -342,7 +342,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    if (stroke(feel.current, ev.nativeEvent.clientX)) {
+    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
       if (s.needsSoothe && s.pet > 0.35) {

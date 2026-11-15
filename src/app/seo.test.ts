@@ -23,3 +23,12 @@ describe("robots", () => {
     });
   });
 });
+
+describe("stable share image", () => {
+  // gus.poke.site (hosted outside this repo) points its og:image at these fixed URLs
+  it("public/og.png and public/og.jpg exist next to the hashed Open Graph image", async () => {
+    const { existsSync } = await import("node:fs");
+    expect(existsSync("public/og.png")).toBe(true);
+    expect(existsSync("public/og.jpg")).toBe(true);
+  });
+});

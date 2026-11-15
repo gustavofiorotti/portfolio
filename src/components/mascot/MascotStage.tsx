@@ -96,17 +96,28 @@ export function MascotStage() {
     } catch {
       // private mode: he may greet again on the next visit, that is fine
     }
-    const timer = setTimeout(() => {
-      // marked only once it really shows (a cancelled timer must not use up the hello)
-      try {
-        sessionStorage.setItem(HELLO_KEY, "1");
-      } catch {
-        // see above
-      }
-      greet.current = performance.now() + WAVE_MS;
-      say("hello");
-    }, 450); // a beat after he fades in
-    return () => clearTimeout(timer);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      // only with the tab in view: a hello in a background tab would be wasted
+      if (document.visibilityState !== "visible") return;
+      document.removeEventListener("visibilitychange", schedule);
+      timer = setTimeout(() => {
+        // marked only once it really shows (a cancelled timer must not use up the hello)
+        try {
+          sessionStorage.setItem(HELLO_KEY, "1");
+        } catch {
+          // see above
+        }
+        greet.current = performance.now() + WAVE_MS;
+        say("hello");
+      }, 450); // a beat after he fades in
+    };
+    document.addEventListener("visibilitychange", schedule);
+    schedule();
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", schedule);
+    };
   }, [shown, say]);
 
   // decide when (and whether) the 3D comes in: big screen, WebGL, after load and the opening

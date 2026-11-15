@@ -12,6 +12,7 @@ import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
+import { heartsDue } from "./heart-burst";
 import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 export type { PressRequest } from "./press";
@@ -52,7 +53,7 @@ type State = {
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
   /** poked since the last time a stroke made him happy: that first happy stroke speaks at once */
-  needsSoothe: boolean; petFace: boolean;
+  needsSoothe: boolean; petFace: boolean; heartsAt: number;
   sleep: SleepStage | null; idleSaid: number;
 };
 
@@ -61,6 +62,8 @@ type SceneProps = {
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
   onSay?: (what: Say, extra?: SayExtra) => void;
+  /** a burst of hearts over his head (petting, rate-limited here) */
+  onHearts?: () => void;
   /** greeting wave: the left hand waves until this time (performance.now ms) */
   greet: MutableRefObject<number>;
 };
@@ -80,7 +83,7 @@ function writeClicks(n: number) {
   }
 }
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, greet }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
   const feel = useRef(createFeel());
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
@@ -101,7 +104,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, heartsAt: -100, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -349,6 +352,11 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
+      // he likes it: hearts float up with the happy face, now and then (heart-burst.ts)
+      if (s.pet > 0.35 && heartsDue(s.heartsAt, clock.elapsedTime)) {
+        s.heartsAt = clock.elapsedTime;
+        onHearts?.();
+      }
       if (s.needsSoothe && s.pet > 0.35) {
         // the first stroke that cheers him up after the pokes answers at once (one urgent line)
         s.needsSoothe = false;

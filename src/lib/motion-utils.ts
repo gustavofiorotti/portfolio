@@ -1,5 +1,3 @@
-/** easeOutQuart: fast start, gentle stop. */
-export const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
 /** easeOutBack: overshoots a little, then settles (used by morphing icons). */
 export const easeOutBack = (t: number) => {

@@ -11,7 +11,7 @@ const CAM_Z = 4.6;
 const RADIUS = 1.3; // Bobby's body, hands and fur, for the screen edges
 const STAGE = { w: 220, h: 190 }; // box around Bobby, with room for hops and his hands
 const SWITCH_X = 1.15; // the wall switch, in scene units (MascotScene SW)
-export const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the scene group
+const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the scene group
 
 /** Screen point (px) of the stage center, where the original scene was framed. */
 export type Anchor = { x: number; y: number };

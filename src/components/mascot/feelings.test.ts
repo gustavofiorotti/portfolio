@@ -62,5 +62,6 @@ describe("calm and the secret", () => {
     expect(eggProgress(16)).toEqual({ filled: 4, total: 5, done: false });
     expect(eggProgress(EGG_GOAL)).toEqual({ filled: 5, total: 5, done: true });
     expect(eggProgress(21)).toBeNull();
+    expect(eggProgress(24)).toBeNull(); // the hatch shows only once
   });
 });

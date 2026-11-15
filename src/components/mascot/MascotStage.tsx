@@ -168,9 +168,18 @@ export function MascotStage() {
       p.y = y;
       p.lastMove = performance.now();
     };
+    // scrolling, typing or touching also counts as someone being there (keeps him awake)
+    const onActivity = () => {
+      const p = pointer.current;
+      p.speed = 0.05;
+      p.lastMove = performance.now();
+    };
+    const activity = ["scroll", "keydown", "touchstart"] as const;
+    activity.forEach((type) => window.addEventListener(type, onActivity, { passive: true }));
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
+      activity.forEach((type) => window.removeEventListener(type, onActivity));
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
@@ -190,7 +199,8 @@ export function MascotStage() {
   }, []);
 
   const requestPress = useCallback(() => {
-    press.current.pending += 1;
+    // holding Enter on the button would queue dozens: two is enough to undo a mistaken click
+    press.current.pending = Math.min(press.current.pending + 1, 2);
     // safety net: if the scene stops taking requests (stalled GPU), flip for whatever is left
     const asked = performance.now();
     setTimeout(() => {

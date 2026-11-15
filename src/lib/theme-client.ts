@@ -27,12 +27,13 @@ function applyTheme(theme: Theme) {
 
 const SETTLE_MS = 900;
 
-function endSwitch(id: number) {
+function endSwitch(id: number, settle: boolean) {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       if (id !== switchId) return;
       const html = document.documentElement;
       html.classList.remove("theme-switching");
+      if (!settle) return;
       // Safari takes a moment to repaint backdrop-filter after the crossfade and the glass showed
       // see-through: it stays dense a little longer
       html.classList.add("theme-settling");
@@ -53,10 +54,10 @@ export function setTheme(theme: Theme) {
     const vt = document.startViewTransition(() => applyTheme(theme));
     // a switch started during another one skips the older transition: that rejection is expected
     vt.ready.catch(() => {});
-    vt.finished.catch(() => {}).finally(() => endSwitch(id));
+    vt.finished.catch(() => {}).finally(() => endSwitch(id, true));
   } else {
     applyTheme(theme);
-    endSwitch(id);
+    endSwitch(id, false); // no crossfade snapshot here, so nothing to settle
   }
   try {
     localStorage.setItem(THEME_KEY, theme);

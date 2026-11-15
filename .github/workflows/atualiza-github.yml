@@ -22,8 +22,8 @@ jobs:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
         run: |
           if [ -z "$HOOK" ]; then
-            echo "::warning::Segredo VERCEL_DEPLOY_HOOK_URL não configurado; nada a fazer."
-            exit 0
+            echo "::error::Segredo VERCEL_DEPLOY_HOOK_URL não configurado."
+            exit 1
           fi
-          curl -fsS -X POST "$HOOK" > /dev/null
+          curl -fsS --retry 3 --max-time 30 -X POST "$HOOK" > /dev/null
           echo "Deploy de produção disparado."

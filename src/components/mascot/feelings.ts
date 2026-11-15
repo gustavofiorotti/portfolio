@@ -73,7 +73,7 @@ export function calm(f: Feel, t: number, amount = 1.2) {
   f.angerT = t - COOL_AFTER;
 }
 
-// The secret: EGG_GOAL clicks in a visit unlock it (the game comes later). Every EGG_STEP clicks
+// The secret: EGG_GOAL clicks (counted for the browser session) unlock it (the game comes later). Every EGG_STEP clicks
 // a bubble shows how far along the visitor is, so it reads as something being unlocked.
 export const EGG_GOAL = 20;
 const EGG_STEP = 4;
@@ -81,7 +81,7 @@ const EGG_STEP = 4;
 /** For the n-th click of the visit: the progress bubble to show (steps filled of total), if any. */
 export function eggProgress(n: number): { filled: number; total: number; done: boolean } | null {
   const total = EGG_GOAL / EGG_STEP;
-  if (n >= EGG_GOAL) return n === EGG_GOAL || n % EGG_STEP === 0 ? { filled: total, total, done: true } : null;
+  if (n >= EGG_GOAL) return n === EGG_GOAL ? { filled: total, total, done: true } : null; // the hatch shows once
   if (n % EGG_STEP !== 0) return null;
   return { filled: n / EGG_STEP, total, done: false };
 }

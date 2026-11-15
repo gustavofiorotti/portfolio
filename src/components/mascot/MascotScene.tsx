@@ -50,7 +50,7 @@ type State = {
   glanceT: number; glance: [number, number]; mood: Mood; shake: number;
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
-  sleep: SleepStage | null; nextZ: number;
+  sleep: SleepStage | null; nextZ: number; zzz: number; idleSaid: number;
 };
 
 type SceneProps = {
@@ -95,7 +95,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 9, petSaid: -100, sleep: null, nextZ: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 9, petSaid: -100, sleep: null, nextZ: 0, zzz: 0, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -153,7 +153,10 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     // he chats now and then by himself; the first line teases the secret (🥚?)
     if (t > s.nextIdle) {
       s.nextIdle = t + 20 + Math.random() * 15;
-      if (!away && lvl === 0 && !s.sleep) onSay?.("idle");
+      if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6) {
+        s.idleSaid += 1; // a few lines per visit, not forever
+        onSay?.("idle");
+      }
     }
     // light switch: 1 s timeline (look, reach, press, come back); the theme flips at the press
     // a request that comes during a press waits for it to end (it used to be dropped, and the
@@ -204,8 +207,12 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const stage = pose?.stage ?? null;
     const said = sleepLine(s.sleep, stage);
     if (said) onSay?.(said);
+    if (!stage) s.zzz = 0;
     if (stage === "asleep" && t > s.nextZ) {
-      if (s.sleep === "asleep") onSay?.("asleep");
+      if (s.sleep === "asleep" && s.zzz < 3) {
+        s.zzz += 1; // a few "Zzz", then he just sleeps
+        onSay?.("asleep");
+      }
       s.nextZ = t + 5;
     }
     s.sleep = stage;

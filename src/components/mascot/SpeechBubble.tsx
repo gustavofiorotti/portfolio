@@ -55,7 +55,7 @@ export function useSpeech() {
 }
 
 // Claude Code's "thinking" glyphs, back and forth
-const FRAMES = ["·", "✢", "✳", "✶", "✻", "✽", "✻", "✶", "✳", "✢"];
+const FRAMES = ["✻", "✽", "✻", "✶", "✳", "✢", "·", "✢", "✳", "✶"]; // starts on ✻: with less motion it stays there
 
 function Spinner() {
   const [i, setI] = useState(0);

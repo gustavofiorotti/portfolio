@@ -23,7 +23,8 @@ export function AnimatedFavicon() {
     // and streamed metadata can add more later, so they are looked up on every frame); their
     // original hrefs come back on unmount
     const original = new Map<HTMLLinkElement, string>();
-    const links = () => [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')];
+    let own: HTMLLinkElement | null = null;
+    const links = () => [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')].filter((l) => l !== own);
     let cancelled = false;
     let last = "";
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -47,7 +48,16 @@ export function AnimatedFavicon() {
         for (const l of links()) {
           if (!original.has(l)) original.set(l, l.href);
           l.href = url;
+          l.type = "image/png";
         }
+        // Safari ignores href changes on an existing icon link: a fresh link, added last, is
+        // the only thing it may pick up (it still may not animate; then the static icon stays)
+        own?.remove();
+        own = document.createElement("link");
+        own.rel = "icon";
+        own.type = "image/png";
+        own.href = url;
+        document.head.appendChild(own);
       }
       timer = setTimeout(draw, 66);
     };
@@ -57,6 +67,7 @@ export function AnimatedFavicon() {
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      own?.remove();
       original.forEach((href, l) => (l.href = href));
     };
   }, []);

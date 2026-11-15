@@ -154,6 +154,11 @@ html.theme-settling .nav-pill {
       background: color-mix(in srgb, var(--surface) 92%, transparent);
     }
   }
+  /* WebKit and Firefox blur less: at 0.88–0.90 the text below showed through like a ghost, so
+     there the glass is nearly solid (data-glass from the inline theme script; Chromium unchanged) */
+  html[data-glass="dense"] .glass {
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+  }
   .nav-pill {
     background: var(--pill);
     backdrop-filter: blur(12px) saturate(200%);

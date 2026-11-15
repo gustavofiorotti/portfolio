@@ -85,14 +85,18 @@ export function Header() {
           <a
             href="#topo"
             onClick={go("topo")}
-            aria-label={t("backToTop")}
             className={`brand flex size-11 items-center justify-center rounded-full border sm:size-auto sm:justify-start sm:gap-2.5 sm:py-[3px] sm:pr-3 sm:pl-[3px] font-display text-base font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors duration-300 ${
               active === "topo" ? "border-transparent bg-transparent" : "border-[var(--pill-border)] bg-[var(--pill)]"
             }`}
           >
             <BrandLogo className="brand-logo" />
-            {/* phones: the logo alone is the back-to-top button (the link keeps its name) */}
-            <span className="hidden sm:inline">gus.poke.site</span>
+            {/* the name follows what is visible: "gus.poke.site, voltar ao início" from sm up (it
+                contains the visible text), just "Voltar ao início" on phones, where only the logo shows */}
+            <span className="hidden sm:inline" aria-hidden="true">
+              gus.poke.site
+            </span>
+            <span className="sr-only max-sm:hidden">{t("backToTop")}</span>
+            <span className="sr-only sm:hidden">{t("backToTopShort")}</span>
             <svg
               viewBox="0 0 24 24"
               fill="none"

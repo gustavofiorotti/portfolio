@@ -4,7 +4,6 @@
     "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
   },
   "nav": {
-    "resume": "Résumé",
     "switchLanguage": "Português",
     "backToTop": "gus.poke.site, back to top",
     "brasiliaTime": "Brasília time",
@@ -17,7 +16,8 @@
   "hero": {
     "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
-    "seeResume": "See résumé"
+    "seeResume": "See résumé",
+    "downloadResume": "Download résumé (PDF)"
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",

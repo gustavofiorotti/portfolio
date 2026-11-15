@@ -156,7 +156,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (f.mode === "dizzy") onSay?.("landed");
       s.lastMode = f.mode;
     }
-    // he chats now and then by himself; the first line teases the secret (🥚?)
+    // he chats now and then by himself; the third line teases the secret (🥚?), never the first
     if (t > s.nextIdle) {
       s.nextIdle = t + 20 + Math.random() * 15;
       if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6) {

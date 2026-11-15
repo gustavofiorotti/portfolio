@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
+import en from "@/messages/en.json";
 import pt from "@/messages/pt.json";
 import { useSpeech } from "./SpeechBubble";
 
@@ -37,6 +38,15 @@ describe("useSpeech", () => {
     act(() => result.current.say("hello"));
     act(() => result.current.say("hush"));
     expect(result.current.line?.text).toBe(pt.bobby.hello[0]);
+    vi.restoreAllMocks();
+  });
+
+  it("the first idle line is never the secret's egg", () => {
+    vi.spyOn(performance, "now").mockReturnValue(30_000);
+    const { result } = renderHook(() => useSpeech(), { wrapper });
+    act(() => result.current.say("idle"));
+    expect(result.current.line?.text).not.toContain("🥚");
+    expect(en.bobby.idle[0]).not.toContain("🥚");
     vi.restoreAllMocks();
   });
 });

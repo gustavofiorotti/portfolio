@@ -24,6 +24,8 @@ export function AnimatedFavicon() {
     // original hrefs come back on unmount
     const original = new Map<HTMLLinkElement, string>();
     let own: HTMLLinkElement | null = null;
+    const cache = new Map<string, string>();
+    const safari = /^((?!chrome|chromium|android).)*safari/i.test(navigator.userAgent);
     const links = () => [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')].filter((l) => l !== own);
     let cancelled = false;
     let last = "";
@@ -35,16 +37,21 @@ export function AnimatedFavicon() {
       const key = frameKey(e);
       if (key !== last || links().some((l) => !original.has(l))) {
         last = key;
-        g.clearRect(0, 0, SIZE, SIZE);
-        g.drawImage(img, 0, 0, SIZE, SIZE);
-        g.fillStyle = "#FAFAF9";
-        // eye spots on the tightly cropped base image (it fills the whole icon edge to edge)
-        for (const cx of [12.85, 19.17]) {
-          g.beginPath();
-          g.ellipse((cx + e.dx) * S, (13.85 + e.dy) * S, 2.33 * S, 3.35 * S * e.open, 0, 0, Math.PI * 2);
-          g.fill();
+        // the loop repeats, so each picture is drawn and encoded only once
+        let url = cache.get(key);
+        if (!url) {
+          g.clearRect(0, 0, SIZE, SIZE);
+          g.drawImage(img, 0, 0, SIZE, SIZE);
+          g.fillStyle = "#FAFAF9";
+          // eye spots on the tightly cropped base image (it fills the whole icon edge to edge)
+          for (const cx of [12.85, 19.17]) {
+            g.beginPath();
+            g.ellipse((cx + e.dx) * S, (13.85 + e.dy) * S, 2.33 * S, 3.35 * S * e.open, 0, 0, Math.PI * 2);
+            g.fill();
+          }
+          url = canvas.toDataURL("image/png");
+          cache.set(key, url);
         }
-        const url = canvas.toDataURL("image/png");
         for (const l of links()) {
           if (!original.has(l)) original.set(l, l.href);
           l.href = url;
@@ -52,12 +59,14 @@ export function AnimatedFavicon() {
         }
         // Safari ignores href changes on an existing icon link: a fresh link, added last, is
         // the only thing it may pick up (it still may not animate; then the static icon stays)
-        own?.remove();
-        own = document.createElement("link");
-        own.rel = "icon";
-        own.type = "image/png";
-        own.href = url;
-        document.head.appendChild(own);
+        if (safari) {
+          own?.remove();
+          own = document.createElement("link");
+          own.rel = "icon";
+          own.type = "image/png";
+          own.href = url;
+          document.head.appendChild(own);
+        }
       }
       timer = setTimeout(draw, 66);
     };

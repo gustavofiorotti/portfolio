@@ -112,7 +112,14 @@ export function MascotStage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one sync decision after mount
     setPlain(!(big.matches && hasWebGL()));
     // no need to wait for every image: start now and fetch the 3D chunk while the opening plays
-    if (big.matches && hasWebGL()) void import("./MascotScene");
+    // fetch the 3D chunk in the first idle moment (it parses off the opening's busiest frames),
+    // unless the visitor asked to save data; a failed download just leaves the plain switch
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    let preload: number | ReturnType<typeof setTimeout> | undefined;
+    if (big.matches && hasWebGL() && !saveData) {
+      const fetchScene = () => void import("./MascotScene").catch(() => {});
+      preload = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(fetchScene, { timeout: 1500 }) : setTimeout(fetchScene, 800);
+    }
     start();
     big.addEventListener("change", onSize);
     reduce.addEventListener("change", onReduce);
@@ -124,6 +131,10 @@ export function MascotStage() {
       document.removeEventListener("visibilitychange", onVisibility);
       if (idle !== undefined) window.cancelIdleCallback(idle);
       clearTimeout(timer);
+      if (preload !== undefined) {
+        if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(preload as number);
+        clearTimeout(preload as ReturnType<typeof setTimeout>);
+      }
     };
   }, []);
 

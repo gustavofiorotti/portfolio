@@ -41,7 +41,10 @@ function focusSection(el: HTMLElement | null) {
  * it runs on the compositor, so it stays fluid while the main thread is busy (the 3D scene
  * draws every frame while Bobby walks). The old requestAnimationFrame loop stuttered there.
  */
+let scrollCall = 0; // only the latest smoothScrollTo may move focus
+
 export function smoothScrollTo(id: string | null, offset = 0) {
+  const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;
   const to = Math.max(0, target ? target.getBoundingClientRect().top + window.scrollY - offset : 0);
   if (prefersReducedMotion()) {
@@ -56,7 +59,7 @@ export function smoothScrollTo(id: string | null, offset = 0) {
     if (done) return;
     done = true;
     window.removeEventListener("scrollend", finish);
-    focusSection(target);
+    if (call === scrollCall) focusSection(target); // a newer jump took over: leave focus to it
   };
   window.addEventListener("scrollend", finish, { once: true });
   setTimeout(finish, scrollDuration(to - window.scrollY) + 400);

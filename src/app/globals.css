@@ -75,8 +75,8 @@ html {
 body {
   margin: 0;
 }
-/* the opening scales the page up for a moment; clip it so it never adds a sideways scroll */
-html {
+/* the opening scales the page up for a moment; clip only then, so a real overflow still shows */
+html[data-intro] {
   overflow-x: clip;
 }
 
@@ -391,6 +391,10 @@ section[tabindex="-1"]:focus {
   100% { opacity: 0; translate: 0 -3px; }
 }
 html[data-bobby="behind"] .bobby-bubble { display: none; }
+/* less motion: the bubble just shows (the global rule would end it at its invisible last frame) */
+@media (prefers-reduced-motion: reduce) {
+  .bobby-bubble { animation: none; opacity: 1; }
+}
 main { position: relative; z-index: 1; }
 html[data-bobby-hover="1"] body { cursor: grab; }
 html[data-bobby-drag] body { cursor: grabbing; user-select: none; -webkit-user-select: none; }

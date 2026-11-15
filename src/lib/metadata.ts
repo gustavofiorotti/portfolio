@@ -12,6 +12,9 @@ export async function buildMetadata(locale: Locale): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "meta" });
   const title = t("title");
   const description = t("description");
+  // the share card has its own words: the image already shows the name and the role
+  const shareTitle = t("shareTitle");
+  const shareDescription = t("shareDescription");
   const path = locale === "pt" ? "/" : "/en";
   return {
     metadataBase: new URL(SITE_URL),
@@ -23,9 +26,9 @@ export async function buildMetadata(locale: Locale): Promise<Metadata> {
       siteName: "gus.poke.site",
       locale: locale === "pt" ? "pt_BR" : "en_US",
       url: path,
-      title,
-      description,
+      title: shareTitle,
+      description: shareDescription,
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", title: shareTitle, description: shareDescription },
   };
 }

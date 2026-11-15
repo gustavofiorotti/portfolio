@@ -30,6 +30,11 @@ class SceneBoundary extends Component<{ onError: () => void; children: ReactNode
   }
 }
 
+/** The visitor asked the browser to save data: no 3D (the plain switch does the job). */
+function savesData(): boolean {
+  return Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+}
+
 function hasWebGL(): boolean {
   try {
     const c = document.createElement("canvas");
@@ -128,7 +133,7 @@ export function MascotStage() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let stopWaiting = () => {};
     const start = () => {
-      const can3d = big.matches && hasWebGL();
+      const can3d = big.matches && hasWebGL() && !savesData();
       setPlain(!can3d);
       if (!can3d) return;
       stopWaiting = afterIntro(() => {
@@ -147,13 +152,12 @@ export function MascotStage() {
     // without WebGL it shows immediately instead of after the load event. It cannot be the initial
     // state: the server render has no window, and hydration must match it
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one sync decision after mount
-    setPlain(!(big.matches && hasWebGL()));
+    setPlain(!(big.matches && hasWebGL() && !savesData()));
     // no need to wait for every image: start now and fetch the 3D chunk while the opening plays
     // fetch the 3D chunk in the first idle moment (it parses off the opening's busiest frames),
     // unless the visitor asked to save data; a failed download just leaves the plain switch
-    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
     let preload: number | ReturnType<typeof setTimeout> | undefined;
-    if (big.matches && hasWebGL() && !saveData) {
+    if (big.matches && hasWebGL() && !savesData()) {
       const fetchScene = () => void import("./MascotScene").catch(() => {});
       preload = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(fetchScene, { timeout: 1500 }) : setTimeout(fetchScene, 800);
     }

@@ -26,4 +26,17 @@ describe("useSpeech", () => {
     expect(pt.bobby.pet).toContain(result.current.line?.text);
     vi.restoreAllMocks();
   });
+
+  it("the petting face takes an angry bubble away, but leaves other lines", () => {
+    vi.spyOn(performance, "now").mockReturnValue(20_000);
+    const { result } = renderHook(() => useSpeech(), { wrapper });
+    act(() => result.current.say("angry"));
+    act(() => result.current.say("hush"));
+    expect(result.current.line).toBeNull();
+
+    act(() => result.current.say("hello"));
+    act(() => result.current.say("hush"));
+    expect(result.current.line?.text).toBe(pt.bobby.hello[0]);
+    vi.restoreAllMocks();
+  });
 });

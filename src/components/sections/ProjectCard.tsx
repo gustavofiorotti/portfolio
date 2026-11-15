@@ -18,7 +18,8 @@ function ProjectMedia({ project, alt }: { project: Project; alt: string }) {
   if (image.kind === "self") {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <BrandLogo size={76} />
+        {/* its own clock (8.6 s, started half a cycle in), so it never mirrors the header logo */}
+        <BrandLogo size={76} cycle={8.6} phase={4.3} />
         <span className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 font-mono text-[15px] font-medium text-fg">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             <rect x="5" y="11" width="14" height="10" rx="2" />

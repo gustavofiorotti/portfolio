@@ -226,11 +226,15 @@
   .resume-download { transition: none; }
 }
 
-/* GitHub grid on narrow screens: the year scrolls sideways, like github.com on phones. It starts
-   at the latest weeks (rtl container) and the left edge fades so the cut reads as "more here". */
-@media (max-width: 1054px) {
-  .gh-scroll {
-    -webkit-mask-image: linear-gradient(to right, transparent, black 32px);
-    mask-image: linear-gradient(to right, transparent, black 32px);
-  }
+/* GitHub grid on narrow screens: the year scrolls sideways, like github.com on phones, starting at
+   the latest weeks (rtl). Only the edges that hide weeks fade (data-fade set by EdgeFadeScroll);
+   the mask is alpha only, never painted. */
+.gh-scroll[data-fade="left"] {
+  mask-image: linear-gradient(to right, transparent, black 32px);
+}
+.gh-scroll[data-fade="right"] {
+  mask-image: linear-gradient(to left, transparent, black 32px);
+}
+.gh-scroll[data-fade="both"] {
+  mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
 }

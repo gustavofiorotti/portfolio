@@ -161,8 +161,7 @@
       "title": "Atividade no GitHub",
       "total": "{total, plural, one {# contribuição} other {# contribuições}} no último ano",
       "less": "Menos",
-      "more": "Mais",
-      "recent": "Últimos meses"
+      "more": "Mais"
     }
   },
   "contact": {

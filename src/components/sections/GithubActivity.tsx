@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import data from "@/data/github-contributions.json";
 import { contributionLevel, type Contributions } from "@/lib/github";
+import { EdgeFadeScroll } from "./EdgeFadeScroll";
 import "./sections.css";
 
 const PROFILE = "https://github.com/gustavofiorotti";
@@ -33,15 +34,13 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           </div>
           <span className="text-xs text-muted">{t("total", { total })}</span>
         </div>
-        {/* rtl container: on narrow screens the scroll starts at the latest weeks; the mask on
-            the left edge (gh-scroll) shows the year continues (mask alpha only, never painted) */}
-        <div
+        {/* rtl container: on narrow screens the scroll starts at the latest weeks; the edges
+            that hide weeks fade (EdgeFadeScroll), and when the year fits it sits on the right */}
+        <EdgeFadeScroll
           className="gh-scroll overflow-x-auto overscroll-x-contain rounded-md [direction:rtl] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg"
-          tabIndex={0}
-          role="group"
-          aria-label={t("total", { total })}
+          label={t("total", { total })}
         >
-          <div className="mr-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
+          <div className="ml-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
             {weeks.map((week, w) => (
               <div key={w} className="flex flex-col gap-[3px]">
                 {week.map((level, d) => (
@@ -50,7 +49,7 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
               </div>
             ))}
           </div>
-        </div>
+        </EdgeFadeScroll>
         <div className="mt-3 flex items-center justify-end gap-1 text-xs text-muted" aria-hidden="true">
           {t("less")}
           {LEVELS.map((l) => (

@@ -14,7 +14,6 @@ import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
 import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
-/** Presses asked for and not started yet (quick clicks queue up, none is lost), and when the last one started. */
 export type { PressRequest } from "./press";
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 

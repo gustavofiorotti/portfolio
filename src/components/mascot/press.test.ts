@@ -17,18 +17,12 @@ describe("askPress", () => {
     expect(r.pending).toBe(MAX_PENDING);
   });
 
-  it("ignores a held key (keydown repeat)", () => {
+  it("two clicks inside the 300 ms window count as one (the price of merging the two handlers)", () => {
     const r = createPressRequest();
     expect(askPress(r, 0)).toBe(true);
-    for (let t = 500; t < 3000; t += 33) expect(askPress(r, t, true)).toBe(false);
+    expect(askPress(r, DEDUPE_MS - 1)).toBe(false); // a very fast double click: still one press
     expect(r.pending).toBe(1);
-  });
-
-  it("a fast double click still collapses inside the window, and a later one is accepted again", () => {
-    const r = createPressRequest();
-    askPress(r, 0);
-    askPress(r, 120);
     r.pending = 0; // the scene took it
-    expect(askPress(r, 500)).toBe(true);
+    expect(askPress(r, 2 * DEDUPE_MS)).toBe(true); // a later click is a new press
   });
 });

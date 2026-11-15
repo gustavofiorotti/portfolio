@@ -2,20 +2,15 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { MotionValue } from "motion/react";
 import { follow, touchTilt, viewportOffset } from "@/lib/touch-tilt";
-import { canListenToGyro, gyroAccess, onGyroGranted, requestGyro } from "@/lib/gyro-permission";
-
-/** Whether a tap landed on a link or button (or inside one). */
-export function isControl(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest("a, button") !== null;
-}
+import { armGyroOnTap, canListenToGyro, onGyroGranted } from "@/lib/gyro-permission";
 
 type Springs = { rotateX: MotionValue<number>; rotateY: MotionValue<number>; scale: MotionValue<number> };
 
 /**
  * Touch screens have no hover: the card tilts with the scroll as it crosses the middle of the
  * screen and, where the browser hands out the phone's orientation without asking (Android),
- * with the phone's tilt too. iOS asks for permission: the first tap on a card asks, and once
- * granted every card follows the phone. Returns whether the card is in focus (for the sheen and
+ * with the phone's tilt too. iOS asks for permission: the first tap on the page outside links
+ * and buttons asks, and once granted every card follows the phone. Returns whether the card is in focus (for the sheen and
  * the shadow).
  */
 export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Springs, reduce: boolean | null): boolean {
@@ -61,14 +56,8 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
       listening = false;
       window.removeEventListener("deviceorientation", onOrientation);
     };
-    // iOS: the prompt only shows inside a user gesture, so the first tap on a card asks
-    // (requestGyro is called synchronously in the handler, and asks only once for all cards).
-    // Never on a link or button: their tap opens a new tab, and the prompt must not race it
-    const ask = (e: Event) => {
-      if (gyroAccess() !== "ask" || isControl(e.target)) return;
-      void requestGyro();
-    };
-    el.addEventListener("touchend", ask);
+    // iOS: the first tap on the page outside links and buttons asks (gyro-permission.ts)
+    armGyroOnTap();
     const stopWaiting = onGyroGranted(listen);
     const rest = () => {
       rotateX.set(0);
@@ -95,7 +84,6 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
     return () => {
       io.disconnect();
       cancelAnimationFrame(raf);
-      el.removeEventListener("touchend", ask);
       stopWaiting();
       window.removeEventListener("scroll", schedule);
       unlisten();

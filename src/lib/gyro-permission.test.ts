@@ -53,3 +53,24 @@ describe("gyro permission", () => {
     expect(canListenToGyro()).toBe(false);
   });
 });
+
+describe("armGyroOnTap", () => {
+  it("asks on the first tap outside links and buttons, once", async () => {
+    const { armGyroOnTap, isControl } = await import("./gyro-permission");
+    const ask = vi.fn(() => Promise.resolve("granted"));
+    fakeDOE(ask);
+    document.body.innerHTML = `<a id="link" href="#"><span id="in">x</span></a><button id="btn">b</button><p id="body">t</p>`;
+    expect(isControl(document.getElementById("in"))).toBe(true);
+    expect(isControl(document.getElementById("btn"))).toBe(true);
+    expect(isControl(document.getElementById("body"))).toBe(false);
+    armGyroOnTap();
+    armGyroOnTap();
+    const tap = (id: string) => document.getElementById(id)!.dispatchEvent(new Event("touchend", { bubbles: true }));
+    tap("in");
+    tap("btn");
+    expect(ask).not.toHaveBeenCalled();
+    tap("body");
+    tap("body");
+    expect(ask).toHaveBeenCalledTimes(1);
+  });
+});

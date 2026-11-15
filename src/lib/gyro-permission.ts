@@ -52,15 +52,40 @@ export function requestGyro(): Promise<boolean> {
   return pending;
 }
 
-/** Runs `fn` when the permission is granted (by a tap on any card). Returns an unsubscribe. */
+/** Runs `fn` when the permission is granted (by a tap on the page). Returns an unsubscribe. */
 export function onGyroGranted(fn: () => void): () => void {
   waiting.add(fn);
   return () => waiting.delete(fn);
+}
+
+/** Whether a tap landed on a link or button (or inside one). */
+export function isControl(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest("a, button") !== null;
+}
+
+let armed = false;
+
+/**
+ * iOS: ask on the first tap anywhere on the page that is not a link or button (the project cards
+ * are links from edge to edge, and their tap opens a new tab: the prompt must not race it).
+ * touchend is a user gesture for Safari; a touch that scrolled is not, and then nothing happens
+ * until a real tap. Safe to call many times: one listener, gone once answered.
+ */
+export function armGyroOnTap(): void {
+  if (armed || gyroAccess() !== "ask") return;
+  armed = true;
+  const onTap = (e: Event) => {
+    if (isControl(e.target)) return;
+    document.removeEventListener("touchend", onTap);
+    void requestGyro();
+  };
+  document.addEventListener("touchend", onTap, { passive: true });
 }
 
 /** Tests only: forget the detected state. */
 export function resetGyroAccess(): void {
   access = null;
   pending = null;
+  armed = false;
   waiting.clear();
 }

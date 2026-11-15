@@ -305,6 +305,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
     if (lvl > before) onSay?.(lvl === 4 ? "egg" : lvl >= 2 ? "angry" : "poke");
+    else if (lvl === 4) onSay?.("angry"); // still poking him while furious: the lines keep escalating
   };
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;

@@ -75,10 +75,6 @@ html {
 body {
   margin: 0;
 }
-/* the opening scales the page up for a moment; clip only then, so a real overflow still shows */
-html[data-intro] {
-  overflow-x: clip;
-}
 
 /* theme switch: no element fades on its own; the page crossfades as one (theme-client.ts) */
 html.theme-switching *,
@@ -111,7 +107,7 @@ html.theme-switching .nav-pill {
 /* ---- glass, pill and buttons (direction A) ---- */
 :root {
   /* dense enough to read on its own: WebKit blurs far less than Chromium for the same radius */
-  --glass: rgb(250 250 249 / 0.84);
+  --glass: rgb(250 250 249 / 0.9);
   --glass-border: rgb(250 250 249 / 0.85);
   --glass-hi: rgb(250 250 249 / 0.95);
   --pill: rgb(250 250 249 / 0.75);
@@ -127,7 +123,7 @@ html.theme-switching .nav-pill {
   --glyph-glow: rgb(24 24 27 / 0.28);
 }
 :root[data-theme="dark"] {
-  --glass: rgb(28 28 31 / 0.82);
+  --glass: rgb(28 28 31 / 0.88);
   --glass-border: rgb(236 236 238 / 0.1);
   --glass-hi: rgb(236 236 238 / 0.12);
   --pill: rgb(236 236 238 / 0.1);
@@ -322,7 +318,8 @@ html[data-intro] .brand-logo .logo-blink { animation-play-state: paused; }
   22%, 34% { transform: scaleY(0.08); }
 }
 @keyframes intro-focus {
-  from { opacity: 0; filter: blur(18px); transform: scale(1.05); }
+  /* no scale: growing the page made it wider than the screen during the opening */
+  from { opacity: 0; filter: blur(18px); }
   35% { opacity: 1; }
 }
 @keyframes intro-focus-flat {

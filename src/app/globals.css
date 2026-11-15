@@ -194,13 +194,14 @@ html.theme-settling .nav-pill {
   .clock-flip {
     animation: clock-flip 0.5s cubic-bezier(0.3, 1.4, 0.5, 1);
   }
+  /* --logo-cycle / --logo-phase (set by BrandLogo) drive both animations, so they stay paired */
   .logo-glance {
-    animation: logo-glance 7s ease-in-out infinite;
+    animation: logo-glance var(--logo-cycle, 7s) ease-in-out var(--logo-phase, 0s) infinite;
     transform-box: fill-box;
     transform-origin: center;
   }
   .logo-blink {
-    animation: logo-blink 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: logo-blink var(--logo-cycle, 7s) cubic-bezier(0.4, 0, 0.2, 1) var(--logo-phase, 0s) infinite;
     transform-box: fill-box;
     transform-origin: center;
   }

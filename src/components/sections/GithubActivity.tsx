@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import data from "@/data/github-contributions.json";
-import { contributionLevel, type Contributions } from "@/lib/github";
+import type { Contributions } from "@/lib/github";
 import { EdgeFadeScroll } from "./EdgeFadeScroll";
+import { GithubGrid } from "./GithubGrid";
 import "./sections.css";
 
 const PROFILE = "https://github.com/gustavofiorotti";
@@ -12,7 +13,7 @@ const cell = (level: number) => `var(--gh-${level})`;
 /** Contribution grid (53 weeks x 7 days) read from src/data/github-contributions.json, refreshed on each deploy. */
 export async function GithubActivity({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "about.github" });
-  const { total, weeks } = data as Contributions;
+  const { total, weeks, fetchedAt } = data as Contributions;
   return (
     <section aria-label={t("title")} className="reveal mx-auto max-w-[1120px] px-6 pb-24">
       <div className="rounded-[28px] border border-line bg-surface px-7 pt-7 pb-[22px] max-sm:px-5">
@@ -41,20 +42,7 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           scrollerClassName="gh-scroll overflow-x-auto overscroll-x-contain [direction:rtl]"
           label={t("total", { total })}
         >
-          <div className="ml-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
-            {weeks.map((week, w) => (
-              <div key={w} className="flex flex-col gap-[3px]">
-                {/* days outside the calendar (after today) keep their slot but are not drawn, like GitHub */}
-                {week.map((level, d) =>
-                  level === null ? (
-                    <span key={d} className="size-[15px]" />
-                  ) : (
-                    <span key={d} className="size-[15px] rounded-[4px]" style={{ background: cell(contributionLevel(level)) }} />
-                  ),
-                )}
-              </div>
-            ))}
-          </div>
+          <GithubGrid weeks={weeks} fetchedAt={fetchedAt} />
         </EdgeFadeScroll>
         <div className="mt-3 flex items-center justify-end gap-1 text-xs text-muted" aria-hidden="true">
           {t("less")}

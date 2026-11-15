@@ -40,8 +40,8 @@ export function levelFromGitHub(level) {
 /**
  * Converts the GraphQL response into { total, fetchedAt, weeks } with exactly 53 weeks of 7 days
  * (Sunday first). Days of partial weeks that are outside the calendar (before its first day, or
- * after today in the current week) are null, so the grid leaves them out like GitHub does; extra
- * leading weeks are dropped.
+ * after today in the current week) are null, so the grid leaves them out like GitHub does, and so
+ * are missing leading weeks; extra leading weeks are dropped.
  * Throws when the response does not have the expected shape.
  * @param {any} response
  * @param {Date} [fetchedAt]
@@ -65,7 +65,7 @@ export function toContributions(response, fetchedAt = new Date()) {
   });
 
   const lastWeeks = weeks.slice(-WEEKS);
-  const padding = Array.from({ length: WEEKS - lastWeeks.length }, () => new Array(DAYS).fill(0));
+  const padding = Array.from({ length: WEEKS - lastWeeks.length }, () => new Array(DAYS).fill(null));
 
   return {
     total: calendar.totalContributions,

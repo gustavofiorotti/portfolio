@@ -76,11 +76,11 @@ describe("toContributions", () => {
     expect(data.weeks.flat().every((d) => d === 0)).toBe(true);
   });
 
-  it("pads at the start when GitHub returns fewer weeks", () => {
+  it("pads missing leading weeks with null when GitHub returns fewer", () => {
     const data = toContributions(response([fullWeek("FIRST_QUARTILE")]), fetchedAt);
 
     expect(data.weeks).toHaveLength(53);
-    expect(data.weeks[0]).toEqual([0, 0, 0, 0, 0, 0, 0]);
+    expect(data.weeks[0]).toEqual([null, null, null, null, null, null, null]);
     expect(data.weeks[52]).toEqual([1, 1, 1, 1, 1, 1, 1]);
   });
 

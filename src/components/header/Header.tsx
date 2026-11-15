@@ -8,6 +8,7 @@ import { BrandLogo } from "./BrandLogo";
 import { BrtClock } from "./BrtClock";
 import { CommandMenu } from "./CommandMenu";
 import { LocaleSwitch } from "./LocaleSwitch";
+import { MobileNav } from "./MobileNav";
 import { activeSection, SECTION_IDS, type SectionId } from "./sections";
 
 const ARROW_HIDDEN = "M12 12 L12 12 M12 12 L12 12 L12 12";
@@ -76,7 +77,7 @@ export function Header() {
   return (
     <div className={`site-header sticky z-20 flex justify-center px-4 transition-[top] duration-300 sm:px-6 ${scrolled ? "top-2.5" : "top-5"}`}>
       <header
-        className={`glass grid w-full grid-cols-[1fr_auto] items-center rounded-full transition-[max-width,padding] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] lg:grid-cols-[1fr_auto_1fr] ${
+        className={`glass grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 rounded-full lg:gap-0 transition-[max-width,padding] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] lg:grid-cols-[1fr_auto_1fr] ${
           scrolled ? "max-w-[1040px] py-1.5 pr-1.5 pl-2 sm:pl-3" : "max-w-[1120px] py-2 pr-2 pl-2.5 sm:py-2.5 sm:pr-2.5 sm:pl-4"
         }`}
       >
@@ -85,12 +86,13 @@ export function Header() {
             href="#topo"
             onClick={go("topo")}
             aria-label={t("backToTop")}
-            className={`brand flex min-h-11 items-center gap-2 rounded-full border py-[3px] pr-2.5 pl-[3px] sm:min-h-0 sm:gap-2.5 sm:pr-3 font-display text-base font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors duration-300 ${
+            className={`brand flex size-11 items-center justify-center rounded-full border sm:size-auto sm:justify-start sm:gap-2.5 sm:py-[3px] sm:pr-3 sm:pl-[3px] font-display text-base font-semibold tracking-[-0.02em] whitespace-nowrap transition-colors duration-300 ${
               active === "topo" ? "border-transparent bg-transparent" : "border-[var(--pill-border)] bg-[var(--pill)]"
             }`}
           >
             <BrandLogo className="brand-logo" />
-            <span>gus.poke.site</span>
+            {/* phones: the logo alone is the back-to-top button (the link keeps its name) */}
+            <span className="hidden sm:inline">gus.poke.site</span>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -99,7 +101,7 @@ export function Header() {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              className="-ml-1 h-3.5 transition-[width,opacity] duration-300"
+              className="-ml-1 hidden h-3.5 transition-[width,opacity] duration-300 sm:block"
               style={{ width: active === "topo" ? 0 : 14, opacity: active === "topo" ? 0 : 1 }}
             >
               <path d={lerpPath(ARROW_HIDDEN, ARROW_UP, arrowK)} />
@@ -109,6 +111,8 @@ export function Header() {
             <BrtClock label={t("brasiliaTime")} />
           </span>
         </div>
+
+        <MobileNav label={t("sections")} active={active} names={{ projetos: t("projetos"), experiencia: t("experiencia"), sobre: t("sobre"), contato: t("contato") }} onGo={go} />
 
         <nav ref={navRef} aria-label={t("sections")} onMouseLeave={() => setHover(null)} className="relative hidden gap-0.5 text-sm lg:flex">
           <span

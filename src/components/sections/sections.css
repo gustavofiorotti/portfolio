@@ -97,10 +97,10 @@
   animation-play-state: paused;
   opacity: 0;
 }
-/* the light starts once the bar has grown */
+/* the light starts once the bar has grown (same 1.6 s as the width transition) */
 .course-fill[data-grow="go"] .course-shine,
 .course-fill[data-grow="go"] .course-tip {
-  animation-delay: 1.4s;
+  animation-delay: 1.6s;
 }
 /* Course bar: the fill brightens towards today, a soft shimmer runs along it and, when it
    reaches the tip, the tip glows for a moment. One 5.6 s cycle drives both, so they stay in sync. */

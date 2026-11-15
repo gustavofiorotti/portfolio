@@ -37,7 +37,8 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
         {/* rtl container: on narrow screens the scroll starts at the latest weeks; the edges
             that hide weeks fade (EdgeFadeScroll), and when the year fits it sits on the right */}
         <EdgeFadeScroll
-          className="gh-scroll overflow-x-auto overscroll-x-contain rounded-md [direction:rtl] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg"
+          className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg"
+          scrollerClassName="gh-scroll overflow-x-auto overscroll-x-contain [direction:rtl]"
           label={t("total", { total })}
         >
           <div className="ml-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">

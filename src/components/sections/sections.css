@@ -173,6 +173,17 @@
 .dock[data-active] .dock-icon {
   transition-duration: 0.05s;
 }
+/* touch: a horizontal slide magnifies (vertical still scrolls the page); a tap presses */
+.dock {
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.dock-icon {
+  transition-property: width, height, scale;
+}
+.dock-icon.is-pressed {
+  scale: 0.86;
+}
 
 /* Hero résumé: with a mouse, the round download button hides behind the pill and slides out on
    hover/focus; on touch screens it simply sits next to it. */

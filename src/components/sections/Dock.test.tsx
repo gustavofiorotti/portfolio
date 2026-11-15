@@ -75,8 +75,40 @@ describe("Dock", () => {
     expect(widths()).toEqual(["42px", "42px", "42px", "42px", "42px"]);
     act(() => vi.advanceTimersByTime(16));
     expect(widths()[2]).toBe("60px");
-    fireEvent.pointerLeave(nav);
+    fireEvent.pointerLeave(nav, { pointerType: "mouse" });
     act(() => vi.advanceTimersByTime(16));
     expect(widths()).toEqual(["42px", "42px", "42px", "42px", "42px"]);
+  });
+
+  it("magnifies under a sliding finger, presses on a tap and never opens a link after a slide", () => {
+    const { container } = renderDock();
+    const nav = screen.getByRole("navigation");
+    const icons = () => [...container.querySelectorAll<HTMLElement>(".dock-icon")];
+    const github = screen.getByRole("link", { name: /GitHub/ });
+    const opened = vi.fn((e: Event) => e.preventDefault());
+    github.addEventListener("click", opened);
+
+    // a tap: pressure feedback on the icon under the finger, released on lift
+    fireEvent.pointerDown(nav, { pointerType: "touch", clientX: 0, clientY: 20 });
+    expect(icons()[2].classList.contains("is-pressed")).toBe(true);
+    fireEvent.pointerUp(nav, { pointerType: "touch", clientX: 0, clientY: 20 });
+    expect(icons()[2].classList.contains("is-pressed")).toBe(false);
+
+    // a slide: the icons grow while the finger moves, and lifting it opens nothing
+    fireEvent.pointerDown(nav, { pointerType: "touch", clientX: -40, clientY: 20 });
+    fireEvent.pointerMove(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    act(() => vi.advanceTimersByTime(16));
+    expect(icons().some((el) => parseInt(el.style.width) > 42)).toBe(true);
+    expect(icons().some((el) => el.classList.contains("is-pressed"))).toBe(false);
+    fireEvent.pointerUp(nav, { pointerType: "touch", clientX: 30, clientY: 20 });
+    fireEvent.click(github);
+    expect(opened).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(16));
+    expect(icons().map((el) => el.style.width)).toEqual(["42px", "42px", "42px", "42px", "42px"]);
+
+    // after that, a normal tap does open it
+    act(() => vi.advanceTimersByTime(500));
+    fireEvent.click(github);
+    expect(opened).toHaveBeenCalledTimes(1);
   });
 });

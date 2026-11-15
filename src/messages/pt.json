@@ -4,7 +4,6 @@
     "description": "Desenvolvedor Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
   },
   "nav": {
-    "resume": "Currículo",
     "switchLanguage": "English",
     "backToTop": "gus.poke.site, voltar ao início",
     "brasiliaTime": "Horário de Brasília",
@@ -17,7 +16,8 @@
   "hero": {
     "lead": "Desenvolvedor Fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
     "seeProjects": "Ver projetos",
-    "seeResume": "Ver currículo"
+    "seeResume": "Ver currículo",
+    "downloadResume": "Baixar currículo (PDF)"
   },
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
@@ -161,7 +161,8 @@
       "title": "Atividade no GitHub",
       "total": "{total, plural, one {# contribuição} other {# contribuições}} no último ano",
       "less": "Menos",
-      "more": "Mais"
+      "more": "Mais",
+      "recent": "Últimos meses"
     }
   },
   "contact": {

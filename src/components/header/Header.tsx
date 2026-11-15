@@ -8,7 +8,6 @@ import { BrandLogo } from "./BrandLogo";
 import { BrtClock } from "./BrtClock";
 import { CommandMenu } from "./CommandMenu";
 import { LocaleSwitch } from "./LocaleSwitch";
-import { ResumeButton } from "./ResumeButton";
 import { activeSection, SECTION_IDS, type SectionId } from "./sections";
 
 const ARROW_HIDDEN = "M12 12 L12 12 M12 12 L12 12 L12 12";
@@ -91,8 +90,7 @@ export function Header() {
             }`}
           >
             <BrandLogo className="brand-logo" />
-            {/* 320 px phones: the logo alone (the link keeps its accessible name) */}
-            <span className="max-[359px]:hidden">gus.poke.site</span>
+            <span>gus.poke.site</span>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -136,7 +134,6 @@ export function Header() {
         <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
           <CommandMenu />
           <LocaleSwitch locale={locale} label={t("switchLanguage")} />
-          <ResumeButton label={t("resume")} />
         </div>
       </header>
     </div>

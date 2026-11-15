@@ -15,8 +15,9 @@
   --on-accent: #fafaf9;
   --logo-eye: #fafaf9;
   --sheen: rgb(250 250 249 / 0.7);
-  --course-shine: rgb(250 250 249 / 0.62);
-  --course-shine-edge: rgb(250 250 249 / 0.16);
+  --course-from: rgb(24 24 27 / 0.55);
+  --course-shimmer: rgb(250 250 249 / 0.55);
+  --course-glow: rgb(24 24 27 / 0.3);
   --shadow-lift: rgb(24 24 27 / 0.45);
   /* GitHub contribution levels 0–4 (palette from the approved mockup) */
   --gh-0: #ebedf0;
@@ -36,8 +37,9 @@
   --chip: #26262a;
   --card: #1b1b1e;
   --sheen: rgb(236 236 238 / 0.22);
-  --course-shine: #fafaf9;
-  --course-shine-edge: rgb(10 10 12 / 0.22);
+  --course-from: rgb(236 236 238 / 0.42);
+  --course-shimmer: rgb(250 250 249 / 0.85);
+  --course-glow: rgb(250 250 249 / 0.55);
   --shadow-lift: rgb(10 10 12 / 0.6);
   --gh-0: #26262a;
   --gh-1: #0e4429;

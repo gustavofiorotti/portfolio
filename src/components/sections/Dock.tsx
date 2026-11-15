@@ -5,13 +5,14 @@ import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { CONTACT } from "@/lib/contact";
 import { copyText } from "@/lib/copy";
-import { DOCK, dockSizes, dockWidth, hoveredIcon } from "@/lib/dock";
+import { DOCK, dockSizes, dockWidth, fitDock, hoveredIcon, type Geometry } from "@/lib/dock";
 import { showToast } from "@/components/ui/Toast";
 import { MORPHS, useMorphPath } from "@/components/ui/MorphIcon";
 import { FilledGlyph, GLYPHS, GlassGlyph, RESTING_LIGHT, StrokedGlyph, type Light } from "./DockIcon";
 
-const BAR_HEIGHT = 66;
+const BAR_ABOVE = 24; // bar height = icon size + this
 const BAR_BOTTOM = 11;
+const SCRUB_PX = 8; // a touch that moves more than this is a scrub, not a tap
 const COPIED_MS = 2000;
 
 // order by importance (kit-gustavo): e-mail first, it copies instead of opening mailto
@@ -28,15 +29,15 @@ const ICON_CLASS =
 
 type Pointer = { x: number; y: number } | null;
 type DockState = { pointer: Pointer; sizes: number[] };
-const REST: DockState = { pointer: null, sizes: dockSizes(null, COUNT) };
+const restFor = (g: Geometry): DockState => ({ pointer: null, sizes: dockSizes(null, COUNT, undefined, g) });
 
 /** Light under the pointer for the hovered icon, in its 24×24 glyph units. */
-function lightFor(pointer: Pointer, index: number, sizes: number[], hovered: number): Light {
+function lightFor(pointer: Pointer, index: number, sizes: number[], hovered: number, g: Geometry): Light {
   if (!pointer || index !== hovered) return RESTING_LIGHT;
   const size = sizes[index];
-  const left = DOCK.pad + sizes.slice(0, index).reduce((a, b) => a + b + DOCK.gap, 0);
+  const left = g.pad + sizes.slice(0, index).reduce((a, b) => a + b + g.gap, 0);
   const cx = left + size / 2;
-  const cy = BAR_HEIGHT - BAR_BOTTOM - size / 2;
+  const cy = g.base + BAR_ABOVE - BAR_BOTTOM - size / 2;
   return { x: 12 + ((pointer.x - cx) / size) * 24, y: 12 + ((pointer.y - cy) / size) * 24, z: 7, strength: 2.6 };
 }
 
@@ -44,7 +45,12 @@ function lightFor(pointer: Pointer, index: number, sizes: number[], hovered: num
 export function Dock() {
   const t = useTranslations("contact");
   const reduce = useReducedMotion();
-  const [{ pointer, sizes }, setDock] = useState<DockState>(REST);
+  const [geo, setGeo] = useState<Geometry>(DOCK);
+  const [{ pointer, sizes }, setDock] = useState<DockState>(() => restFor(DOCK));
+  const [pressed, setPressed] = useState(-1);
+  const navRef = useRef<HTMLElement>(null);
+  const touch = useRef<{ x: number; y: number; scrub: boolean } | null>(null);
+  const swallowClick = useRef(false);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mailPath = useMorphPath(MORPHS.mail.from, MORPHS.mail.to, copied);
@@ -61,10 +67,46 @@ export function Dock() {
     [],
   );
 
-  const hovered = hoveredIcon(pointer?.x ?? null, sizes);
+  // small phones: the dock and its magnification shrink to the room the section gives it
+  useEffect(() => {
+    // measure the section's content box: the dock's own wrapper shrinks to the dock, which
+    // would feed its own size back into the fit
+    const host = navRef.current?.closest("section");
+    if (!host) return;
+    const fit = () => {
+      const cs = getComputedStyle(host);
+      const room = host.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      if (!(room > 0)) return; // not laid out (yet)
+      const g = fitDock(room, COUNT);
+      setGeo((prev) => (prev.base === g.base && prev.max === g.max ? prev : g));
+      setDock(restFor(g));
+    };
+    fit();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", fit);
+      return () => window.removeEventListener("resize", fit);
+    }
+    const ro = new ResizeObserver(fit);
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, []);
+
+  const hovered = hoveredIcon(pointer?.x ?? null, sizes, geo);
 
   function onMove(e: PointerEvent<HTMLElement>) {
-    if (e.pointerType !== "mouse") return;
+    if (e.pointerType !== "mouse") {
+      // touch: magnify while the finger is down and slides over the dock
+      const t0 = touch.current;
+      if (!t0) return;
+      if (!t0.scrub && Math.hypot(e.clientX - t0.x, e.clientY - t0.y) > SCRUB_PX) {
+        t0.scrub = true;
+        setPressed(-1);
+      }
+    }
+    track(e);
+  }
+
+  function track(e: PointerEvent<HTMLElement>) {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
     const k = rect.width ? el.offsetWidth / rect.width : 1;
@@ -77,9 +119,9 @@ export function Dock() {
       const raw = latest.current;
       if (!raw) return;
       setDock((prev) => {
-        const next = { x: dockWidth(prev.sizes) / 2 + raw.fromCenter, y: raw.y };
+        const next = { x: dockWidth(prev.sizes, geo) / 2 + raw.fromCenter, y: raw.y };
         // with reduced motion the icons keep their size; the hover light still marks the icon
-        return { pointer: next, sizes: reduce ? REST.sizes : dockSizes(next.x, COUNT, prev.sizes) };
+        return { pointer: next, sizes: reduce ? restFor(geo).sizes : dockSizes(next.x, COUNT, prev.sizes, geo) };
       });
     });
   }
@@ -88,7 +130,28 @@ export function Dock() {
     cancelAnimationFrame(frame.current);
     frame.current = 0;
     latest.current = null;
-    setDock(REST);
+    setDock(restFor(geo));
+  }
+
+  function onDown(e: PointerEvent<HTMLElement>) {
+    if (e.pointerType === "mouse") return;
+    touch.current = { x: e.clientX, y: e.clientY, scrub: false };
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = dockWidth(sizes, geo) / 2 + (e.clientX - rect.left - rect.width / 2);
+    setPressed(hoveredIcon(x, sizes, geo)); // pressure feedback on a tap
+    track(e);
+  }
+
+  function onUp(e: PointerEvent<HTMLElement>) {
+    if (e.pointerType === "mouse") return;
+    // a scrub only magnifies: lifting the finger must not open whatever icon is under it
+    if (touch.current?.scrub) {
+      swallowClick.current = true;
+      setTimeout(() => (swallowClick.current = false), 400);
+    }
+    touch.current = null;
+    setPressed(-1);
+    onLeave();
   }
 
   async function copyEmail() {
@@ -105,14 +168,24 @@ export function Dock() {
   return (
     <nav
       aria-label={t("dockLabel")}
+      ref={navRef}
       onPointerMove={onMove}
-      onPointerLeave={onLeave}
+      onPointerDown={onDown}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onPointerLeave={(e) => e.pointerType === "mouse" && onLeave()}
+      onClickCapture={(e) => {
+        if (!swallowClick.current) return;
+        swallowClick.current = false;
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       data-active={pointer ? "" : undefined}
       className="dock glass flex items-end overflow-visible rounded-[24px] [border-color:var(--dock-border)]"
-      style={{ height: BAR_HEIGHT, gap: DOCK.gap, padding: `0 ${DOCK.pad}px ${BAR_BOTTOM}px` }}
+      style={{ height: geo.base + BAR_ABOVE, gap: geo.gap, padding: `0 ${geo.pad}px ${BAR_BOTTOM}px` }}
     >
-      <button type="button" onClick={copyEmail} aria-label={t("email")} title={t("email")} className={`${ICON_CLASS} cursor-pointer border-0 bg-transparent p-0`} style={box(0)}>
-        <GlassGlyph light={lightFor(pointer, 0, sizes, hovered)} lit={hovered === 0}>
+      <button type="button" onClick={copyEmail} aria-label={t("email")} title={t("email")} className={`${ICON_CLASS} ${pressed === 0 ? "is-pressed" : ""} cursor-pointer border-0 bg-transparent p-0`} style={box(0)}>
+        <GlassGlyph light={lightFor(pointer, 0, sizes, hovered, geo)} lit={hovered === 0}>
           {(filter) => <StrokedGlyph d={mailPath} filter={filter} />}
         </GlassGlyph>
       </button>
@@ -120,8 +193,8 @@ export function Dock() {
         const i = j + 1;
         const name = t(link.id);
         return (
-          <a key={link.id} href={link.href} target="_blank" rel="noopener" aria-label={t("newTab", { name })} title={name} className={ICON_CLASS} style={box(i)}>
-            <GlassGlyph light={lightFor(pointer, i, sizes, hovered)} lit={hovered === i}>
+          <a key={link.id} href={link.href} target="_blank" rel="noopener" aria-label={t("newTab", { name })} title={name} className={`${ICON_CLASS} ${pressed === i ? "is-pressed" : ""}`} style={box(i)}>
+            <GlassGlyph light={lightFor(pointer, i, sizes, hovered, geo)} lit={hovered === i}>
               {(filter) => <FilledGlyph d={GLYPHS[link.id]} filter={filter} />}
             </GlassGlyph>
           </a>

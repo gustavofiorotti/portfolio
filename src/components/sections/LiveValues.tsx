@@ -37,15 +37,19 @@ export function CourseProgress({ buildDay }: { buildDay: string }) {
       </div>
       <div className="font-display text-xl font-semibold tracking-[-0.02em]">{t("course")}</div>
       <div
-        className="mt-3.5 h-2 overflow-hidden rounded-full bg-chip"
+        className="mt-3.5 h-2 rounded-full bg-chip"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={pct}
         aria-label={t("course")}
       >
-        <div className="course-grow relative h-full overflow-hidden rounded-full bg-fg" style={{ width: `${pct}%` }}>
-          <span className="course-shine" />
+        <div className="course-grow course-fill relative h-full rounded-full" style={{ width: `${pct}%` }}>
+          {/* the shimmer runs inside the fill; the tip glow sits outside it, so it is not clipped */}
+          <span className="absolute inset-0 overflow-hidden rounded-full">
+            <span className="course-shine" />
+          </span>
+          <span className="course-tip" />
         </div>
       </div>
       <div className="mt-2 flex justify-between gap-3 font-mono text-xs text-muted">

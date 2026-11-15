@@ -66,3 +66,22 @@ export function endStroke(f: Feel) {
   f.dir = 0;
   f.travel = 0;
 }
+
+/** Petting soothes him: each stroke takes some anger away, and the cooling goes on at once. */
+export function calm(f: Feel, t: number, amount = 1.2) {
+  f.anger = Math.max(0, angerAt(f, t) - amount);
+  f.angerT = t - COOL_AFTER;
+}
+
+// The secret: EGG_GOAL clicks in a visit unlock it (the game comes later). Every EGG_STEP clicks
+// a bubble shows how far along the visitor is, so it reads as something being unlocked.
+export const EGG_GOAL = 20;
+const EGG_STEP = 4;
+
+/** For the n-th click of the visit: the progress bubble to show (steps filled of total), if any. */
+export function eggProgress(n: number): { filled: number; total: number; done: boolean } | null {
+  const total = EGG_GOAL / EGG_STEP;
+  if (n >= EGG_GOAL) return n === EGG_GOAL || n % EGG_STEP === 0 ? { filled: total, total, done: true } : null;
+  if (n % EGG_STEP !== 0) return null;
+  return { filled: n / EGG_STEP, total, done: false };
+}

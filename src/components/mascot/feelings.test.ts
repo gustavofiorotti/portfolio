@@ -44,3 +44,23 @@ describe("petting", () => {
     expect(stroke(f, 50)).toBe(false);
   });
 });
+
+describe("calm and the secret", () => {
+  it("petting takes anger away right away", async () => {
+    const { calm } = await import("./feelings");
+    const f = createFeel();
+    for (let i = 0; i < 5; i++) poke(f, i * 0.1);
+    calm(f, 0.5);
+    calm(f, 0.6);
+    expect(levelOf(angerAt(f, 0.6))).toBeLessThan(4);
+  });
+
+  it("shows progress every few clicks until it is unlocked", async () => {
+    const { eggProgress, EGG_GOAL } = await import("./feelings");
+    expect(eggProgress(1)).toBeNull();
+    expect(eggProgress(4)).toEqual({ filled: 1, total: 5, done: false });
+    expect(eggProgress(16)).toEqual({ filled: 4, total: 5, done: false });
+    expect(eggProgress(EGG_GOAL)).toEqual({ filled: 5, total: 5, done: true });
+    expect(eggProgress(21)).toBeNull();
+  });
+});

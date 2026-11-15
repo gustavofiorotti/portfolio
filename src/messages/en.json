@@ -191,7 +191,7 @@
       "ENOUGH!"
     ],
     "egg": [
-      "easter egg? 🥚"
+      "🥚?"
     ],
     "pet": [
       "hehe",
@@ -215,10 +215,34 @@
       "shh"
     ],
     "idle": [
+      "🥚?",
+      "✻ Pondering…",
       "psst",
       "guarding the switch",
+      "✻ Noodling…",
       "Gufi better watch out",
       "…"
+    ],
+    "eggDone": [
+      "🐣 coming soon…"
+    ],
+    "yawn": [
+      "aaawn…"
+    ],
+    "doze": [
+      "z…"
+    ],
+    "jolt": [
+      "huh?!",
+      "I'm awake!"
+    ],
+    "asleep": [
+      "Zzz"
+    ],
+    "wake": [
+      "huh?!",
+      "who?",
+      "I'm awake!"
     ]
   }
 }

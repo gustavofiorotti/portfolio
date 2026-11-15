@@ -61,7 +61,7 @@ export function MascotStage() {
   const t = useTranslations("theme");
   const dark = useTheme() === "dark";
   const stage = useRef<HTMLDivElement>(null);
-  const press = useRef<PressRequest>({ pending: false, at: 0 });
+  const press = useRef<PressRequest>({ pending: 0, at: 0 });
   const pointer = useRef<Pointer>({ x: 0, y: 0, lastMove: 0, speed: 0 });
   const th = useRef(createThrow());
   const anchor = useRef<Anchor>({ x: 0, y: 0 });
@@ -190,13 +190,12 @@ export function MascotStage() {
   }, []);
 
   const requestPress = useCallback(() => {
-    press.current.pending = true;
-    // safety net: if the scene never takes the request (stalled GPU), flip anyway
+    press.current.pending += 1;
+    // safety net: if the scene stops taking requests (stalled GPU), flip for whatever is left
     const asked = performance.now();
     setTimeout(() => {
-      if (press.current.pending && press.current.at < asked) {
-        press.current.pending = false;
-        toggleTheme();
+      if (press.current.pending > 0 && press.current.at < asked) {
+        for (; press.current.pending > 0; press.current.pending--) toggleTheme();
       }
     }, 3000); // he may first have to walk to the switch
   }, []);

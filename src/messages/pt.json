@@ -191,7 +191,7 @@
       "CHEGA!"
     ],
     "egg": [
-      "easter egg? 🥚"
+      "🥚?"
     ],
     "pet": [
       "hehe",
@@ -215,10 +215,34 @@
       "shh"
     ],
     "idle": [
+      "🥚?",
+      "✻ Matutando…",
       "psiu",
       "tô de olho no interruptor",
+      "✻ Ruminando…",
       "o Gufi que se cuide",
       "…"
+    ],
+    "eggDone": [
+      "🐣 em breve…"
+    ],
+    "yawn": [
+      "aaahn…"
+    ],
+    "doze": [
+      "z…"
+    ],
+    "jolt": [
+      "hã?!",
+      "tô acordado!"
+    ],
+    "asleep": [
+      "Zzz"
+    ],
+    "wake": [
+      "hã?!",
+      "quem?",
+      "tô acordado!"
     ]
   }
 }

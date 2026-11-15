@@ -47,7 +47,16 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
     // (the constructor itself is missing in some browsers: check before touching it)
     const DOE = typeof DeviceOrientationEvent === "undefined" ? undefined : (DeviceOrientationEvent as unknown as { requestPermission?: unknown });
     const needsPermission = !DOE || typeof DOE.requestPermission === "function";
-    const io = new IntersectionObserver(([entry]) => {
+    const rest = () => {
+      rotateX.set(0);
+      rotateY.set(0);
+      scale.set(1);
+      setFeatured(false);
+    };
+    // several entries can arrive in one batch: the last one is the current state
+    const io = new IntersectionObserver((entries) => {
+      const entry = entries.at(-1);
+      if (!entry) return;
       if (entry.isIntersecting) {
         window.addEventListener("scroll", schedule, { passive: true });
         if (!needsPermission) window.addEventListener("deviceorientation", onOrientation);
@@ -55,10 +64,7 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
       } else {
         window.removeEventListener("scroll", schedule);
         window.removeEventListener("deviceorientation", onOrientation);
-        rotateX.set(0);
-        rotateY.set(0);
-        scale.set(1);
-        setFeatured(false);
+        rest();
       }
     });
     io.observe(el);
@@ -67,6 +73,8 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("deviceorientation", onOrientation);
+      // unmount, or reduced motion switched on while mounted: never leave the card tilted
+      rest();
     };
   }, [ref, reduce, rotateX, rotateY, scale]);
 

@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { prefersReducedMotion } from "@/lib/motion-utils";
+import { isSmoothScrolling, prefersReducedMotion } from "@/lib/motion-utils";
+import { stripAlign } from "./strip-align";
 import { SECTION_IDS, type SectionId } from "./sections";
 
-const SETTLE_MS = 160; // the page counts as settled after this long without scrolling
+const SETTLE_MS = 160; // the page counts as still after this long without scrolling
 
 type Props = {
   label: string;
@@ -82,22 +83,27 @@ export function MobileNav({ label, active, names, onGo }: Props) {
     el.scrollTo({ left, behavior: smooth && !prefersReducedMotion() ? "smooth" : "auto" });
   };
 
-  // The highlight follows the page live (aria-current changes on every scroll frame), but the
-  // strip itself never scrolls while the page does: in WebKit, touching the strip's scroll position
-  // (even without animation) cancels the page's smooth scroll, and a tapped topic stopped halfway
-  // (seen in a real WKWebView). So the strip aligns when the page settles, and a tapped topic is
-  // aligned before the page starts moving (see go below). If the visitor is moving the strip, it
-  // waits for them too.
+  // The strip follows the active topic, but never while a tapped topic smooth scrolls the page:
+  // in WebKit, touching the strip's scroll position (even without animation) cancels the page's
+  // smooth scroll, and a tapped topic stopped halfway (seen in a real WKWebView). That jump is
+  // aligned before it starts (see go below). A page moved by the finger is followed at once,
+  // without animation, so a fast scroll never leaves the active topic out of the strip. If the
+  // visitor is moving the strip, it waits for them.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const align = () => {
-      const quietFor = performance.now() - pageScrollAt.current;
-      const wait = dragging.current ? 300 : Math.max(userUntil.current - performance.now(), SETTLE_MS - quietFor);
-      if (wait > 0) {
-        timer = setTimeout(align, wait);
+      const now = performance.now();
+      const next = stripAlign({
+        smoothScrolling: isSmoothScrolling(),
+        dragging: dragging.current,
+        userPauseMs: userUntil.current - now,
+        pageMoving: now - pageScrollAt.current < SETTLE_MS,
+      });
+      if ("wait" in next) {
+        timer = setTimeout(align, next.wait);
         return;
       }
-      alignTo(active, true);
+      alignTo(active, next.behavior === "smooth");
     };
     align();
     return () => clearTimeout(timer);

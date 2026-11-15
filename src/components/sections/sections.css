@@ -198,6 +198,11 @@
   right: 0;
 }
 @media (hover: hover) and (pointer: fine) {
+  /* the reserved space stays out of the centering while the button hides: the pair sits in the
+     exact center and still never shifts when the button slides out */
+  .resume-duo {
+    margin-right: -60px;
+  }
   .resume-download {
     opacity: 0;
     transform: translateX(-60px) scale(0.7);

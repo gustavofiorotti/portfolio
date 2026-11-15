@@ -45,6 +45,7 @@ de usar uma API.
   dinâmicas sem `generateStaticParams`.
 - Cores só pelos tokens de `src/app/globals.css` (nunca preto ou branco puros).
 - Conteúdo de carreira: só texto aprovado pelo Gustavo; sem nomes de clientes ou sistemas de terceiros.
+- O produto se escreve Gnexum.
 - Nunca escrever `-webkit-backdrop-filter` à mão junto com `backdrop-filter`: o minificador de CSS (Lightning CSS) junta os dois e deixa só o prefixado, e o Chrome fica sem desfoque. Escreva só `backdrop-filter`; o prefixo do Safari é gerado no build.
 - Conferir toda mudança visual em Chromium, WebKit e Firefox lado a lado.
 - Ao trocar de branch, apagar `.next` antes do `pnpm build` (e reiniciar o `pnpm dev`): o cache reaproveita o CSS da branch anterior e o resultado engana.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DOCK, dockSizes, dockWidth, hoveredIcon } from "./dock";
+import { DOCK, dockSizes, dockWidth, fitDock, hoveredIcon } from "./dock";
 
 const center = (i: number) => DOCK.pad + i * (DOCK.base + DOCK.gap) + DOCK.base / 2;
 
@@ -60,5 +60,28 @@ describe("hoveredIcon", () => {
     expect(hoveredIcon(DOCK.pad + DOCK.base + 11, s)).toBe(1);
     expect(hoveredIcon(null, s)).toBe(-1);
     expect(hoveredIcon(1000, s)).toBe(-1);
+  });
+});
+
+describe("fitDock", () => {
+  const widest = (g: ReturnType<typeof fitDock>) => {
+    let w = 0;
+    for (let x = 0; x < 400; x += 1) w = Math.max(w, dockWidth(dockSizes(x, 5, undefined, g), g));
+    return w;
+  };
+  it("keeps the desktop geometry when there is room", () => {
+    expect(fitDock(1000, 5)).toEqual({ ...DOCK });
+  });
+  it("shrinks the magnification so the grown bar fits a 390 px phone", () => {
+    const g = fitDock(342, 5);
+    expect(g.base).toBe(DOCK.base);
+    expect(g.max).toBeLessThan(DOCK.max);
+    expect(widest(g)).toBeLessThanOrEqual(342 + 0.5);
+  });
+  it("scales the whole dock down when even the resting bar is too wide (320 px)", () => {
+    const g = fitDock(272, 5);
+    expect(g.base).toBeLessThan(DOCK.base);
+    expect(g.max / g.base).toBeGreaterThanOrEqual(1.24); // still a real magnification
+    expect(widest(g)).toBeLessThanOrEqual(272 + 0.5);
   });
 });

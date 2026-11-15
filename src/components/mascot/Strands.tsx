@@ -69,6 +69,7 @@ const fragment = /* glsl */ `
   uniform vec3 uTipColor;
   uniform vec3 uRimColor;
   uniform float uRim;
+uniform float uGain;
   varying float vFront;
   varying float vT;
   varying vec3 vTangent;
@@ -97,7 +98,7 @@ const fragment = /* glsl */ `
     vec3 base = mix(face, mix(ring, face, smoothstep(0.5, 0.64, vFront)), uRim) * mix(0.82, 1.12, vShade);
     vec3 col = base * (0.22 + 0.95 * diff * wrap) * ao;
     col += vec3(1.0, 0.94, 0.9) * spec1 * 0.1 * wrap + base * spec2 * 0.28 * wrap;
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(col * uGain, 1.0);
     #include <colorspace_fragment>
   }
 `
@@ -149,9 +150,11 @@ type StrandsProps = ThreeElements['group'] & {
   faceTrim?: number
   /** reduced motion: the coat stops swaying */
   still?: boolean
+  /** overall brightness: the lighting model reads darker than the chosen color, 1 = as is */
+  gain?: number
 }
 
-export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.012, color = '#C41E1A', tipColor, rimColor, squash, seed = 7, faceTrim = 1, still = false, ...props }: StrandsProps) {
+export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.012, color = '#C41E1A', tipColor, rimColor, squash, seed = 7, faceTrim = 1, still = false, gain = 1, ...props }: StrandsProps) {
   const mat = useRef<THREE.ShaderMaterial>(null)
   const geo = useMemo(() => buildGeometry(count, seed), [count, seed])
   const uniforms = useMemo(
@@ -167,6 +170,7 @@ export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.01
       uTipColor: { value: new THREE.Color(tipColor || color) },
       uRimColor: { value: new THREE.Color(rimColor || color) },
       uRim: { value: rimColor ? 1 : 0 },
+      uGain: { value: gain },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- created once; updated through the material below
     [],
@@ -182,6 +186,7 @@ export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.01
     if (!u) return
     if (!still) u.uTime.value = state.clock.elapsedTime
     u.uLength.value = length
+    u.uGain.value = gain
     u.uColor.value.copy(colors.base)
     u.uTipColor.value.copy(colors.tip)
     if (squash) u.uSquash.value = squash.current
@@ -191,7 +196,7 @@ export function Strands({ radius = 1, count = 26000, length = 0.22, width = 0.01
       {/* the skin under the coat, so gaps between strands are never see-through */}
       <mesh>
         <sphereGeometry args={[radius * 1.005, 48, 32]} />
-        <meshBasicMaterial color={new THREE.Color(color).multiplyScalar(0.42)} />
+        <meshBasicMaterial color={new THREE.Color(color).multiplyScalar(0.42 * gain)} />
       </mesh>
       <mesh geometry={geo} frustumCulled={false}>
         <shaderMaterial ref={mat} vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} side={THREE.DoubleSide} />

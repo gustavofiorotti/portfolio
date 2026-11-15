@@ -1,12 +1,12 @@
 {
   "meta": {
-    "title": "Gustavo Fiorotti · Full-stack developer",
-    "description": "Full-stack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
+    "title": "Gustavo Fiorotti · Fullstack developer",
+    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
   },
   "nav": {
-    "resume": "Résumé",
     "switchLanguage": "Português",
     "backToTop": "gus.poke.site, back to top",
+    "backToTopShort": "Back to top",
     "brasiliaTime": "Brasília time",
     "sections": "Sections",
     "projetos": "Projects",
@@ -15,9 +15,10 @@
     "contato": "Contact"
   },
   "hero": {
-    "lead": "Full-stack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
+    "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
-    "seeResume": "See résumé"
+    "seeResume": "See résumé",
+    "downloadResume": "Download résumé (PDF)"
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
@@ -96,7 +97,7 @@
     "span": "Nov 2025 to Aug 2026 · 10 months",
     "jobs": {
       "fullstack": {
-        "role": "Full-stack Intern",
+        "role": "Fullstack Intern",
         "period": "Jun 2026 to Aug 2026",
         "summary": "Worked on Gnexum, a platform to build and manage APIs and integrate databases and systems.",
         "items": {
@@ -176,5 +177,75 @@
     "newTab": "{name} (opens in a new tab)",
     "copyright": "© <year></year> Gustavo Fiorotti",
     "madeWith": "Made with Next.js some time past midnight"
+  },
+  "bobby": {
+    "hello": [
+      "hi, I'm Bobby 👋"
+    ],
+    "poke": [
+      "hey!",
+      "ouch!",
+      "whoa"
+    ],
+    "angry": [
+      "stop that",
+      "seriously?",
+      "enough…",
+      "ENOUGH!"
+    ],
+    "egg": [
+      "🥚?"
+    ],
+    "pet": [
+      "hehe",
+      "that's nice",
+      "more!"
+    ],
+    "thrown": [
+      "waaah!",
+      "put me down!"
+    ],
+    "landed": [
+      "so dizzy…",
+      "ow…"
+    ],
+    "switchOn": [
+      "lights!",
+      "wakey wakey"
+    ],
+    "switchOff": [
+      "good night",
+      "shh"
+    ],
+    "idle": [
+      "🥚?",
+      "✻ Pondering…",
+      "psst",
+      "guarding the switch",
+      "✻ Noodling…",
+      "where's the coffee?",
+      "…"
+    ],
+    "eggDone": [
+      "🐣 coming soon…"
+    ],
+    "yawn": [
+      "aaawn…"
+    ],
+    "doze": [
+      "z…"
+    ],
+    "jolt": [
+      "huh?!",
+      "I'm awake!"
+    ],
+    "asleep": [
+      "Zzz"
+    ],
+    "wake": [
+      "huh?!",
+      "who?",
+      "I'm awake!"
+    ]
   }
 }

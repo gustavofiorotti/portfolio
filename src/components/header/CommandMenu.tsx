@@ -9,7 +9,7 @@ import { copyText } from "@/lib/copy";
 import { smoothScrollTo } from "@/lib/motion-utils";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import { showToast } from "@/components/ui/Toast";
-import { RESUME_URL } from "./ResumeButton";
+import { RESUME_URL } from "@/lib/resume";
 import { SECTION_IDS } from "./sections";
 
 /** ⌘K / Ctrl+K menu: jump to a section, copy the e-mail, download the résumé, switch theme or language. */

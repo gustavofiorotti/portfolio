@@ -70,17 +70,30 @@ export function FilledGlyph({ d, filter }: { d: string; filter: string }) {
   );
 }
 
-/** A stroked glyph (used by the e-mail icon, which morphs into a check). */
+/**
+ * A stroked glyph (the e-mail icon, which morphs into a check) drawn as glass like the filled
+ * ones: the strokes become a mask, so crossings and joins never stack their alpha (no darker
+ * dots), the light filter sees one solid shape, and the rim follows its outline.
+ */
 export function StrokedGlyph({ d, filter }: { d: string; filter: string }) {
+  const id = `stroke-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const line = { d, fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as const;
   return (
-    <path
-      d={d}
-      fill="none"
-      strokeWidth={2.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      filter={filter}
-      style={{ stroke: "var(--glyph-fill)" }}
-    />
+    <>
+      {/* mask luminance only (white shows, black hides): never painted on screen */}
+      <defs>
+        <mask id={`${id}-body`} maskUnits="userSpaceOnUse" x="-2" y="-2" width="28" height="28">
+          <path {...line} stroke="#fff" strokeWidth={2.6} />
+        </mask>
+        <mask id={`${id}-rim`} maskUnits="userSpaceOnUse" x="-2" y="-2" width="28" height="28">
+          <path {...line} stroke="#fff" strokeWidth={2.9} />
+          <path {...line} stroke="#000" strokeWidth={2.3} />
+        </mask>
+      </defs>
+      <g filter={filter}>
+        <rect x="-2" y="-2" width="28" height="28" mask={`url(#${id}-body)`} style={{ fill: "var(--glyph-fill)" }} />
+      </g>
+      <rect x="-2" y="-2" width="28" height="28" mask={`url(#${id}-rim)`} style={{ fill: "var(--glyph-rim)" }} />
+    </>
   );
 }

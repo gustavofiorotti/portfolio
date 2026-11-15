@@ -4,6 +4,11 @@ import type { MotionValue } from "motion/react";
 import { follow, touchTilt, viewportOffset } from "@/lib/touch-tilt";
 import { canListenToGyro, gyroAccess, onGyroGranted, requestGyro } from "@/lib/gyro-permission";
 
+/** Whether a tap landed on a link or button (or inside one). */
+export function isControl(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest("a, button") !== null;
+}
+
 type Springs = { rotateX: MotionValue<number>; rotateY: MotionValue<number>; scale: MotionValue<number> };
 
 /**
@@ -57,11 +62,13 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
       window.removeEventListener("deviceorientation", onOrientation);
     };
     // iOS: the prompt only shows inside a user gesture, so the first tap on a card asks
-    // (requestGyro is called synchronously in the handler, and asks only once for all cards)
-    const ask = () => {
-      if (gyroAccess() === "ask") void requestGyro();
+    // (requestGyro is called synchronously in the handler, and asks only once for all cards).
+    // Never on a link or button: their tap opens a new tab, and the prompt must not race it
+    const ask = (e: Event) => {
+      if (gyroAccess() !== "ask" || isControl(e.target)) return;
+      void requestGyro();
     };
-    el.addEventListener("click", ask);
+    el.addEventListener("touchend", ask);
     const stopWaiting = onGyroGranted(listen);
     const rest = () => {
       rotateX.set(0);
@@ -88,7 +95,7 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
     return () => {
       io.disconnect();
       cancelAnimationFrame(raf);
-      el.removeEventListener("click", ask);
+      el.removeEventListener("touchend", ask);
       stopWaiting();
       window.removeEventListener("scroll", schedule);
       unlisten();

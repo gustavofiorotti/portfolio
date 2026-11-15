@@ -2,12 +2,10 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import data from "@/data/github-contributions.json";
 import { contributionLevel, type Contributions } from "@/lib/github";
-import type { CSSProperties } from "react";
 import "./sections.css";
 
 const PROFILE = "https://github.com/gustavofiorotti";
 const LEVELS = [0, 1, 2, 3, 4] as const;
-const RECENT = 38; // weeks kept on the narrowest phones (about 9 months)
 const cell = (level: number) => `var(--gh-${level})`;
 
 /** Contribution grid (53 weeks x 7 days) read from src/data/github-contributions.json, refreshed on each deploy. */
@@ -35,19 +33,23 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           </div>
           <span className="text-xs text-muted">{t("total", { total })}</span>
         </div>
-        {/* the whole year fits the width (no scroll): cells shrink with the card; on the
-            narrowest phones only the latest weeks that stay legible are shown */}
-        <div className="gh-wrap" role="img" aria-label={t("total", { total })}>
-          <div className="gh-grid" style={{ "--weeks": weeks.length, "--recent": Math.min(RECENT, weeks.length) } as CSSProperties}>
+        {/* rtl container: on narrow screens the scroll starts at the latest weeks; the mask on
+            the left edge (gh-scroll) shows the year continues (mask alpha only, never painted) */}
+        <div
+          className="gh-scroll overflow-x-auto overscroll-x-contain rounded-md [direction:rtl] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-fg"
+          tabIndex={0}
+          role="group"
+          aria-label={t("total", { total })}
+        >
+          <div className="mr-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
             {weeks.map((week, w) => (
-              <div key={w} className={`gh-week ${w < weeks.length - RECENT ? "gh-old" : ""}`}>
+              <div key={w} className="flex flex-col gap-[3px]">
                 {week.map((level, d) => (
-                  <span key={d} className="gh-cell" style={{ background: cell(contributionLevel(level)) }} />
+                  <span key={d} className="size-[15px] rounded-[4px]" style={{ background: cell(contributionLevel(level)) }} />
                 ))}
               </div>
             ))}
           </div>
-          <span className="gh-recent text-xs text-muted">{t("recent")}</span>
         </div>
         <div className="mt-3 flex items-center justify-end gap-1 text-xs text-muted" aria-hidden="true">
           {t("less")}

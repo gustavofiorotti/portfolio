@@ -83,11 +83,10 @@ html.theme-switching *::before,
 html.theme-switching *::after {
   transition: none !important;
 }
-/* View Transition snapshots have no backdrop-filter: keep the glass readable while they show */
+/* View Transition snapshots have no backdrop-filter: keep the glass readable while they show
+   (only during the snapshot; when the crossfade ends the live glass, with its blur, takes over) */
 html.theme-switching .glass,
-html.theme-switching .nav-pill,
-html.theme-settling .glass,
-html.theme-settling .nav-pill {
+html.theme-switching .nav-pill {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
 }
 /* one frame after a dry switch (WebKit): a different radius forces the backdrop to repaint */

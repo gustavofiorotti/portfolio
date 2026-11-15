@@ -39,7 +39,6 @@ describe("setTheme", () => {
     frames.shift()!(0);
     frames.shift()!(0); // two frames: transitions back on
     expect(html.classList.contains("theme-switching")).toBe(false);
-    expect(html.classList.contains("theme-settling")).toBe(false);
     expect(html.classList.contains("theme-repaint")).toBe(true);
     frames.shift()!(0);
     expect(html.classList.contains("theme-repaint")).toBe(false);

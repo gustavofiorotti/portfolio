@@ -10,6 +10,9 @@ import { scrollProgress } from "./walk";
 import { SpeechBubble, useSpeech } from "./SpeechBubble";
 import type { Anchor, Layout } from "./ViewRig";
 
+const HELLO_KEY = "bobby-hello";
+const WAVE_MS = 1600;
+
 // three.js loads only after the page is up, in its own chunk
 const MascotScene = dynamic(() => import("./MascotScene"), { ssr: false });
 
@@ -83,6 +86,28 @@ export function MascotStage() {
   }, []);
   const onFirstFrame = useCallback(() => setShown(true), []);
   const { line, say } = useSpeech();
+  const greet = useRef(0); // the scene waves until this time (performance.now ms)
+
+  // hello, once per visit, as soon as he shows up after the opening (sessionStorage)
+  useEffect(() => {
+    if (!shown) return;
+    try {
+      if (sessionStorage.getItem(HELLO_KEY)) return;
+    } catch {
+      // private mode: he may greet again on the next visit, that is fine
+    }
+    const timer = setTimeout(() => {
+      // marked only once it really shows (a cancelled timer must not use up the hello)
+      try {
+        sessionStorage.setItem(HELLO_KEY, "1");
+      } catch {
+        // see above
+      }
+      greet.current = performance.now() + WAVE_MS;
+      say("hello");
+    }, 450); // a beat after he fades in
+    return () => clearTimeout(timer);
+  }, [shown, say]);
 
   // decide when (and whether) the 3D comes in: big screen, WebGL, after load and the opening
   useEffect(() => {
@@ -235,6 +260,7 @@ export function MascotStage() {
               onBehind={onBehind}
               onFirstFrame={onFirstFrame}
               onSay={say}
+              greet={greet}
             />
           </SceneBoundary>
         </div>

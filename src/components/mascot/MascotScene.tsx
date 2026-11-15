@@ -26,7 +26,7 @@ const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 type Mood = "normal" | "feliz" | "dor" | "irritado" | "bravo" | "furioso" | "susto" | "sono";
 /** What Bobby says in a bubble; the stage picks the words (messages bobby.*). */
 export type Say =
-  | "poke" | "angry" | "egg" | "eggStep" | "pet" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
+  | "hello" | "poke" | "angry" | "egg" | "eggStep" | "pet" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
   | "yawn" | "doze" | "jolt" | "asleep" | "wake";
 export type SayExtra = { filled: number; total: number; done: boolean };
 const PRESS_S = 0.6; // the whole reach-press-return; the theme flips halfway
@@ -59,6 +59,8 @@ type SceneProps = {
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
   onSay?: (what: Say, extra?: SayExtra) => void;
+  /** greeting wave: the left hand waves until this time (performance.now ms) */
+  greet: MutableRefObject<number>;
 };
 
 function readClicks(): number {
@@ -76,7 +78,7 @@ function writeClicks(n: number) {
   }
 }
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, greet }: SceneProps) {
   const feel = useRef(createFeel());
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
@@ -97,7 +99,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 9, petSaid: -100, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -192,11 +194,12 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (s.sleep === "asleep" || s.sleep === "drop") onSay?.("wake");
     }
     const petting = s.pet > 0.35;
+    const waving = performance.now() < greet.current; // hello when he first shows up
     let mood: Mood = "normal";
     if (pressing) mood = "normal";
     else if (f.mode === "held" || f.mode === "flying") mood = "susto";
     else if (f.mode === "dizzy") mood = "dor";
-    else if (petting) mood = "feliz"; // a stroke shows at once, even mid-tantrum (it also calms him)
+    else if (petting || waving) mood = "feliz"; // a stroke shows at once, even mid-tantrum (it also calms him)
     else if (lvl === 4) mood = "furioso";
     else if (lvl === 3) mood = "bravo";
     else if (lvl === 2) mood = "irritado";
@@ -270,6 +273,11 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (mood === "sono") { y = -0.5 + (pose?.yawn ?? 0) * 0.75; x = sd * (0.96 + (pose?.yawn ?? 0) * 0.12); }
       if (mood === "dor") { y = -0.05; x = sd * 0.9; z = 0.45; }
       let kk = 10;
+      if (waving && sd < 0 && !pressing) {
+        // hand up beside the head, waving side to side
+        y = 0.46; x = sd * (1.06 + Math.sin(t * 13) * 0.12 * motion); z = 0.3;
+        kk = 16;
+      }
       if (sd > 0 && pressing && pp < 0.66) {
         const up = (s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07) * SW_SCALE;
         tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.2 * SW_SCALE);
@@ -387,14 +395,14 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
  * Drives rendering on demand: 60 fps while something happens (pointer moving, a press, a
  * mood), about 24 fps when he just floats, nothing with reduced motion except reactions.
  */
-function FrameDriver({ pointer, press, still, th, layout }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean; th: MutableRefObject<Throw>; layout: MutableRefObject<Layout> }) {
+function FrameDriver({ pointer, press, still, th, layout, greet }: { pointer: MutableRefObject<Pointer>; press: MutableRefObject<PressRequest>; still: boolean; th: MutableRefObject<Throw>; layout: MutableRefObject<Layout>; greet: MutableRefObject<number> }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
     let raf = 0;
     let last = 0;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
-      const busy = th.current.mode !== "home" || layout.current.moving || now - pointer.current.lastMove < 2500 || press.current.pending > 0 || now - press.current.at < 4000;
+      const busy = th.current.mode !== "home" || layout.current.moving || now - pointer.current.lastMove < 2500 || press.current.pending > 0 || now - press.current.at < 4000 || now < greet.current;
       const gap = busy ? 0 : still ? 1000 : 1000 / 24;
       if (now - last >= gap) {
         last = now;
@@ -403,7 +411,7 @@ function FrameDriver({ pointer, press, still, th, layout }: { pointer: MutableRe
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [invalidate, pointer, press, still, th, layout]);
+  }, [invalidate, pointer, press, still, th, layout, greet]);
   return null;
 }
 
@@ -426,7 +434,7 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
       flat
       onCreated={({ gl }) => gl.domElement.addEventListener("webglcontextlost", (e) => (e.preventDefault(), props.onContextLost?.()))}
     >
-      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} layout={scene.layout} />
+      <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} layout={scene.layout} greet={scene.greet} />
       <ViewRig anchor={scene.anchor} root={root} th={scene.th} layout={scene.layout} />
       <group ref={root}>
         <Plush {...scene} />

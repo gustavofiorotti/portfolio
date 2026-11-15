@@ -179,6 +179,9 @@
     "madeWith": "Feito com Next.js em alguma madrugada aí"
   },
   "bobby": {
+    "hello": [
+      "oi, eu sou o Bobby 👋"
+    ],
     "poke": [
       "ei!",
       "ai!",

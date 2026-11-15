@@ -25,7 +25,7 @@ const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 type Mood = "normal" | "feliz" | "dor" | "irritado" | "bravo" | "furioso" | "susto" | "sono";
 /** What Bobby says in a bubble; the stage picks the words (messages bobby.*). */
 export type Say =
-  | "hello" | "poke" | "angry" | "egg" | "eggStep" | "pet" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
+  | "hello" | "poke" | "angry" | "egg" | "eggStep" | "pet" | "soothed" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
   | "yawn" | "doze" | "jolt" | "asleep" | "wake";
 export type SayExtra = { filled: number; total: number; done: boolean };
 const PRESS_S = 0.6; // the whole reach-press-return; the theme flips halfway
@@ -50,6 +50,8 @@ type State = {
   glanceT: number; glance: [number, number]; mood: Mood; shake: number;
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
+  /** poked since the last time a stroke made him happy: that first happy stroke speaks at once */
+  needsSoothe: boolean;
   sleep: SleepStage | null; idleSaid: number;
 };
 
@@ -98,7 +100,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -328,6 +330,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     s.vel -= 3 + lvl * 0.6;
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
+    s.needsSoothe = true;
     if (clicks.current === null) clicks.current = readClicks();
     clicks.current += 1;
     writeClicks(clicks.current);
@@ -342,7 +345,12 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (stroke(feel.current, ev.nativeEvent.clientX)) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
-      if (s.pet > 0.5 && clock.elapsedTime - s.petSaid > 8) {
+      if (s.needsSoothe && s.pet > 0.35) {
+        // the first stroke that cheers him up after the pokes answers at once (one urgent line)
+        s.needsSoothe = false;
+        s.petSaid = clock.elapsedTime;
+        onSay?.("soothed");
+      } else if (s.pet > 0.5 && clock.elapsedTime - s.petSaid > 8) {
         s.petSaid = clock.elapsedTime;
         onSay?.("pet");
       }

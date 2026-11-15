@@ -9,7 +9,8 @@ const CALM_GAP_MS = 6000; // between chatty lines (idle, switch)
 const REACT_GAP_MS = 900; // reactions (a poke, a stroke, a throw, his naps) can come quicker
 // petting is a reaction too: "hehe" right after a poke must still show
 const REACTIONS: Say[] = ["poke", "angry", "pet", "thrown", "landed", "yawn", "doze", "jolt", "asleep", "wake"];
-const URGENT: Say[] = ["hello", "angry", "egg", "eggStep", "wake"]; // always replace what he was saying
+// "soothed" is the first happy stroke after the pokes: it answers at once, with the pet lines
+const URGENT: Say[] = ["hello", "angry", "egg", "eggStep", "wake", "soothed"]; // always replace what he was saying
 const SPIN = "✻ "; // lines starting with it get Claude Code's spinner in front
 
 /**
@@ -34,12 +35,13 @@ export function useSpeech() {
         setLine(extra.done ? { text: (t.raw("eggDone") as string[])[0], id: now } : { text: "🥚", id: now, egg: extra });
         return;
       }
-      const options = t.raw(what) as string[];
+      const key = what === "soothed" ? "pet" : what; // same words, only the timing differs
+      const options = t.raw(key) as string[];
       // angry lines escalate in order (starting over once he has calmed down); the rest rotate
       if (what === "angry" && now - (turn.current.angryAt ?? 0) > 8000) turn.current.angry = 0;
       if (what === "angry") turn.current.angryAt = now;
-      const i = turn.current[what] ?? 0;
-      turn.current[what] = i + 1;
+      const i = turn.current[key] ?? 0;
+      turn.current[key] = i + 1;
       const text = what === "angry" ? options[Math.min(i, options.length - 1)] : options[i % options.length];
       setLine({ text, id: now });
     },

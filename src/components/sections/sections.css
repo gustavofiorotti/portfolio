@@ -82,18 +82,25 @@
   transition-duration: 0.1s;
 }
 
-/* Course bar: grows when it enters the view, with a quick shine every 6s. */
-@supports (animation-timeline: view()) {
-  .course-grow {
-    animation: course-grow 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-  }
+/* Course bar: grows once, by time, when it enters the view (data-grow from CourseProgress). It
+   used to be a scroll-driven animation: stopping the scroll midway left the bar half grown, with
+   the shimmer and the tip glow parked near its start. */
+.course-fill {
+  transition: width 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-@keyframes course-grow {
-  from {
-    width: 0;
-  }
+.course-fill[data-grow="wait"] {
+  width: 0 !important;
+  transition: none;
+}
+.course-fill[data-grow="wait"] .course-shine,
+.course-fill[data-grow="wait"] .course-tip {
+  animation-play-state: paused;
+  opacity: 0;
+}
+/* the light starts once the bar has grown */
+.course-fill[data-grow="go"] .course-shine,
+.course-fill[data-grow="go"] .course-tip {
+  animation-delay: 1.4s;
 }
 /* Course bar: the fill brightens towards today, a soft shimmer runs along it and, when it
    reaches the tip, the tip glows for a moment. One 5.6 s cycle drives both, so they stay in sync. */
@@ -148,8 +155,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .course-fill {
+    transition: none;
+  }
   .reveal,
-  .course-grow,
   .course-shine,
   .course-tip,
   .base-pulse,
@@ -197,7 +206,9 @@
   top: 0;
   right: 0;
 }
-@media (hover: hover) and (pointer: fine) {
+/* hidden until hover only where the row has room for it (460 px and up); on narrower windows it
+   simply shows next to the pill, like on touch screens */
+@media (hover: hover) and (pointer: fine) and (min-width: 460px) {
   /* the reserved space stays out of the centering while the button hides: the pair sits in the
      exact center and still never shifts when the button slides out */
   .resume-download {
@@ -215,9 +226,9 @@
     transform: none;
   }
 }
-/* centering trick only where both buttons share one row: on a narrow window the pair wraps and
-   the negative margin would push the reserved space past the screen edge */
-@media (hover: hover) and (pointer: fine) and (min-width: 640px) {
+/* with the download hidden, its reserved room stays out of the centering, so the visible pair (or
+   the "Ver currículo" pill alone, when the row wraps) sits in the exact center */
+@media (hover: hover) and (pointer: fine) and (min-width: 460px) {
   .resume-duo {
     margin-right: -60px;
   }

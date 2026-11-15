@@ -3,8 +3,11 @@ export type Contributions = {
   total: number;
   /** ISO 8601 timestamp of when the data was fetched. */
   fetchedAt: string;
-  /** 53 weeks x 7 days, each a level from 0 (none) to 4 (most). */
-  weeks: number[][];
+  /**
+   * 53 weeks x 7 days (Sunday first), each a level from 0 (none) to 4 (most), or null for a day
+   * outside the calendar (after today in the current week, or before its first day).
+   */
+  weeks: (number | null)[][];
 };
 
 /** Clamps any value to a valid level (0–4), so a bad entry never breaks the grid colors. */

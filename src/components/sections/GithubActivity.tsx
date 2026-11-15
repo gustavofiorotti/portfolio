@@ -44,9 +44,14 @@ export async function GithubActivity({ locale }: { locale: Locale }) {
           <div className="ml-auto flex w-max gap-[3px] [direction:ltr]" aria-hidden="true">
             {weeks.map((week, w) => (
               <div key={w} className="flex flex-col gap-[3px]">
-                {week.map((level, d) => (
-                  <span key={d} className="size-[15px] rounded-[4px]" style={{ background: cell(contributionLevel(level)) }} />
-                ))}
+                {/* days outside the calendar (after today) keep their slot but are not drawn, like GitHub */}
+                {week.map((level, d) =>
+                  level === null ? (
+                    <span key={d} className="size-[15px]" />
+                  ) : (
+                    <span key={d} className="size-[15px] rounded-[4px]" style={{ background: cell(contributionLevel(level)) }} />
+                  ),
+                )}
               </div>
             ))}
           </div>

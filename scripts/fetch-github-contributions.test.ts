@@ -52,7 +52,7 @@ describe("toContributions", () => {
     expect(data.weeks.every((w) => w.length === 7 && w.every((d) => d === 2))).toBe(true);
   });
 
-  it("places days of partial weeks by weekday and pads the rest with 0", () => {
+  it("places days of partial weeks by weekday and leaves days outside the calendar null", () => {
     const first: Day[] = [
       { weekday: 5, contributionLevel: "FOURTH_QUARTILE" },
       { weekday: 6, contributionLevel: "FIRST_QUARTILE" },
@@ -64,8 +64,8 @@ describe("toContributions", () => {
     const weeks = [first, ...Array.from({ length: 51 }, () => fullWeek()), last];
     const data = toContributions(response(weeks), fetchedAt);
 
-    expect(data.weeks[0]).toEqual([0, 0, 0, 0, 0, 4, 1]);
-    expect(data.weeks[52]).toEqual([3, 0, 0, 0, 0, 0, 0]);
+    expect(data.weeks[0]).toEqual([null, null, null, null, null, 4, 1]);
+    expect(data.weeks[52]).toEqual([3, 0, null, null, null, null, null]);
   });
 
   it("keeps the most recent 53 weeks when GitHub returns more", () => {

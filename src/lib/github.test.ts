@@ -17,7 +17,7 @@ describe("github-contributions.json", () => {
     expect(c.weeks).toHaveLength(53);
     for (const week of c.weeks) {
       expect(week).toHaveLength(7);
-      for (const level of week) expect(contributionLevel(level)).toBe(level);
+      for (const level of week) if (level !== null) expect(contributionLevel(level)).toBe(level);
     }
   });
   it("has a numeric total and an ISO fetch date", () => {

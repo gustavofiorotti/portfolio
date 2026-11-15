@@ -9,17 +9,21 @@ import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
+import { angerAt, createFeel, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
 
 export type PressRequest = { pending: boolean; at: number };
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 
 const BODY = "#D97757"; // Claude Code orange, chosen by Gustavo
-const GAIN = 1.45; // the fur lighting reads darker than the chosen orange; this brings it back
+const GAIN = 1.75; // the fur lighting reads darker than the chosen orange; this brings it back
 const EYES = "#1C1C20";
-const SW = new THREE.Vector3(1.05, 0.05, 0); // where the wall switch sits
+const SW = new THREE.Vector3(1.15, 0.05, 0); // where the wall switch sits
+const SW_SCALE = 1.6; // the switch read too small next to him
 const damp = THREE.MathUtils.damp;
 const ease = (x: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
-type Mood = "normal" | "feliz" | "dor" | "bravo" | "susto" | "sono";
+type Mood = "normal" | "feliz" | "dor" | "irritado" | "bravo" | "furioso" | "susto" | "sono";
+/** What Bobby says in a bubble; the stage picks the words (messages bobby.*). */
+export type Say = "poke" | "angry" | "egg" | "pet" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle";
 
 function roundedRect(w: number, h: number, r: number) {
   const s = new THREE.Shape();
@@ -57,7 +61,7 @@ function LightSwitch({ dark, rocker, plate, onPress }: { dark: boolean; rocker: 
     return { plate: ex(0.5, 0.78, 0.11, 0.05, true), well: ex(0.26, 0.46, 0.07, 0.02, false), key: ex(0.22, 0.2, 0.06, 0.07, true) };
   }, []);
   return (
-    <group ref={plate} position={SW} onClick={(e) => (e.stopPropagation(), onPress())}>
+    <group ref={plate} position={SW} scale={SW_SCALE} onClick={(e) => (e.stopPropagation(), onPress())}>
       <mesh geometry={geo.plate}>
         <meshStandardMaterial color={dark ? "#26262B" : "#FAFAF9"} roughness={0.6} />
       </mesh>
@@ -77,19 +81,21 @@ function LightSwitch({ dark, rocker, plate, onPress }: { dark: boolean; rocker: 
 }
 
 type State = {
-  squash: number; vel: number; hurtT: number; pet: number; pokes: number[]; angryT: number; surpriseT: number;
-  lastX: number; dir: number; glanceT: number; glance: [number, number]; mood: Mood; shake: number;
+  squash: number; vel: number; hurtT: number; pet: number; surpriseT: number;
+  glanceT: number; glance: [number, number]; mood: Mood; shake: number;
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
-  holdUntil: number; framed: boolean; walking: number;
+  holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
 };
 
 type SceneProps = {
   onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>;
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
+  onSay?: (what: Say) => void;
 };
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay }: SceneProps) {
+  const feel = useRef(createFeel());
   const carrier = useRef<THREE.Group>(null);
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
@@ -104,8 +110,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
-    squash: 1, vel: 0, hurtT: 0, pet: 0, pokes: [], angryT: 0, surpriseT: 0, lastX: 0, dir: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0,
+    squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 30, petSaid: -100,
   });
 
   useFrame((state, delta) => {
@@ -140,6 +146,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     L.moving = Math.abs(walkTo - L.walk) > 0.004;
     s.walking = damp(s.walking, Math.min(1, Math.abs(L.walk - before) / Math.max(delta, 1e-3) / 2), 10, delta);
     carrier.current.position.set(f.x, f.y + L.walk, 0);
+    L.headX = (L.rootX - 0.45 + f.x + float.current.position.x) * PPU;
+    L.headY = -(L.rootY + 0.05 + f.y + L.walk + float.current.position.y + 1.3) * PPU;
     const behind = f.mode === "running";
     if (behind !== s.behind) {
       s.behind = behind;
@@ -150,10 +158,17 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (s.pokeAt) {
       s.pokeAt = false;
       s.hurtT = t + 0.8;
-      if (s.pokes.length >= 4) {
-        s.angryT = t + 2.6;
-        s.pokes = [];
-      }
+    }
+    const lvl = levelOf(angerAt(feel.current, t));
+    // bubbles for what just happened (the stage rate-limits and picks the words)
+    if (f.mode !== s.lastMode) {
+      if (f.mode === "flying" && s.lastMode === "held") onSay?.("thrown");
+      if (f.mode === "dizzy") onSay?.("landed");
+      s.lastMode = f.mode;
+    }
+    if (t > s.nextIdle) {
+      s.nextIdle = t + 35 + Math.random() * 25;
+      if (!away && lvl === 0) onSay?.("idle");
     }
     // light switch: 1 s timeline (look, reach, press, come back); the theme flips at the press
     if (press.current.pending && (away || Math.abs(L.walk) < 0.04)) {
@@ -174,6 +189,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (pressing && pp >= 0.5 && !s.pressed) {
       s.pressed = true;
       s.happyT = t + 2.4; // pleased with himself after every press
+      onSay?.(dark ? "switchOn" : "switchOff");
       onToggle();
       s.vel -= 0.9;
     }
@@ -184,7 +200,9 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (pressing) mood = "normal";
     else if (f.mode === "held" || f.mode === "flying") mood = "susto";
     else if (f.mode === "dizzy") mood = "dor";
-    else if (t < s.angryT) mood = "bravo";
+    else if (lvl === 4) mood = "furioso";
+    else if (lvl === 3) mood = "bravo";
+    else if (lvl === 2) mood = "irritado";
     else if (t < s.hurtT) mood = "dor";
     else if (t < s.surpriseT) mood = "susto";
     else if (s.pet > 0.35 || t < s.happyT) mood = "feliz";
@@ -200,7 +218,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const e = expr.current;
     const k = mood === "dor" || mood === "susto" ? 20 : 10;
     (Object.keys(target) as (keyof EyeShape)[]).forEach((key) => (e[key] = damp(e[key], target[key], k, delta)));
-    if ((mood === "normal" || mood === "bravo") && t % 3.8 > 3.68) e.open = Math.min(e.open, 0.08);
+    if ((mood === "normal" || mood === "irritado" || mood === "bravo") && t % 3.8 > 3.68) e.open = Math.min(e.open, 0.08);
 
     // body language (no idle motion when the visitor asked for less motion)
     const motion = still ? 0 : 1;
@@ -213,10 +231,10 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const sy = s.squash * (1 + Math.sin(t * 1.6 + 1.2) * 0.012 * motion);
     body.current.scale.set(1 + (1 - sy) * 0.65, sy, 1 + (1 - sy) * 0.65);
     s.shake = Math.max(0, s.shake - delta * 2.5);
-    const tremble = mood === "bravo" ? Math.sin(t * 48) * 0.012 * motion : 0;
+    const tremble = (mood === "furioso" ? Math.sin(t * 62) * 0.03 : mood === "bravo" ? Math.sin(t * 48) * 0.012 : 0) * motion;
     body.current.position.x = Math.sin(t * 55) * 0.04 * s.shake * motion + tremble;
     const rz = mood === "feliz" ? Math.sin(t * 7) * 0.12 * motion : mood === "sono" ? 0.16 : 0;
-    const rx = mood === "bravo" ? 0.14 : mood === "sono" ? 0.12 : 0;
+    const rx = mood === "furioso" ? 0.22 : mood === "bravo" ? 0.14 : mood === "irritado" ? 0.06 : mood === "sono" ? 0.12 : 0;
     const lean = pressing && pp < 0.8;
     const tilt = away ? THREE.MathUtils.clamp(-f.vx * 0.015, -0.5, 0.5) : rz;
     body.current.rotation.z = damp(body.current.rotation.z, lean ? -0.13 : tilt, 8, delta);
@@ -233,13 +251,15 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       let y = -0.36, x = sd * 1.02, z = 0.22;
       if (mood === "feliz") y = -0.2 + (sd > 0 ? Math.sin(t * 10) * 0.12 * motion : 0);
       if (mood === "susto") { y = 0.15; x = sd * 1.05; }
+      if (mood === "irritado") { y = -0.3; x = sd * 0.86; z = 0.5; } // arms crossed, more or less
       if (mood === "bravo") { y = -0.42 + Math.sin(t * 40 + sd) * 0.015 * motion; x = sd * 0.98; z = 0.32; }
+      if (mood === "furioso") { y = 0.12 + Math.sin(t * 30 + sd * 2) * 0.06 * motion; x = sd * 1.0; z = 0.38; } // fists up
       if (mood === "sono") { y = -0.5; x = sd * 0.96; }
       if (mood === "dor") { y = -0.05; x = sd * 0.9; z = 0.45; }
       let kk = 10;
       if (sd > 0 && pressing && pp < 0.66) {
-        const up = s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07;
-        tmp.set(SW.x + 0.07, SW.y + up, SW.z + 0.2);
+        const up = (s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07) * SW_SCALE;
+        tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.2 * SW_SCALE);
         h.parent.updateWorldMatrix(true, false);
         h.parent.worldToLocal(tmp);
         if (pp < 0.28) { x = 0.95; y = -0.28; z = 0.05; }
@@ -279,23 +299,25 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     ev.stopPropagation();
     if (dragged.current || !reachable(th.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) return; // a drag, or a control on top
     const s = st.current;
-    const t = ev.nativeEvent.timeStamp / 1000;
-    s.vel -= 3;
-    s.shake = 1;
-    s.pokes = s.pokes.filter((p) => t - p < 3).concat(t);
+    const before = levelOf(angerAt(feel.current, clock.elapsedTime));
+    const lvl = addPoke(feel.current, clock.elapsedTime);
+    s.vel -= 3 + lvl * 0.6;
+    s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
+    if (lvl > before) onSay?.(lvl === 4 ? "egg" : lvl >= 2 ? "angry" : "poke");
   };
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    const x = ev.pointer.x;
-    const d = Math.sign(x - s.lastX);
-    if (d !== 0 && d !== s.dir && Math.abs(x - s.lastX) > 0.008) {
-      s.dir = d;
-      s.pet = Math.min(1.4, s.pet + 0.14);
+    if (stroke(feel.current, ev.nativeEvent.clientX)) {
+      s.pet = Math.min(1.4, s.pet + 0.3);
+      if (s.pet > 0.5 && clock.elapsedTime - s.petSaid > 8) {
+        s.petSaid = clock.elapsedTime;
+        onSay?.("pet");
+      }
     }
-    s.lastX = x;
   };
+  const petEnd = () => endStroke(feel.current);
 
   return (
     <group>
@@ -310,7 +332,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
           </mesh>
           <group ref={float}>
             <group ref={body}>
-              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={hover(false)} />
+              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
               <group ref={eyesPivot}>
                 <group position={[0, 0.08, 1.0]}>
                   {[-1, 1].map((sd) => (

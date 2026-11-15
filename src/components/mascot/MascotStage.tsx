@@ -6,6 +6,7 @@ import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer, PressRequest } from "./MascotScene";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
+import { SpeechBubble, useSpeech } from "./SpeechBubble";
 import type { Anchor, Layout } from "./ViewRig";
 
 // three.js loads only after the page is up, in its own chunk
@@ -64,7 +65,7 @@ export function MascotStage() {
   const pointer = useRef<Pointer>({ x: 0, y: 0, lastMove: 0, speed: 0 });
   const th = useRef(createThrow());
   const anchor = useRef<Anchor>({ x: 0, y: 0 });
-  const layout = useRef<Layout>({ rootX: 0, rootY: 0, bounds: { left: 0, right: 0, floor: 0 }, progress: 0, walk: 0, moving: false });
+  const layout = useRef<Layout>({ rootX: 0, rootY: 0, bounds: { left: 0, right: 0, floor: 0 }, progress: 0, walk: 0, moving: false, headX: 0, headY: 0 });
   const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(true);
   const [still, setStill] = useState(false);
@@ -80,6 +81,7 @@ export function MascotStage() {
     setPlain(true);
   }, []);
   const onFirstFrame = useCallback(() => setShown(true), []);
+  const { line, say } = useSpeech();
 
   // decide when (and whether) the 3D comes in: big screen, WebGL, after load and the opening
   useEffect(() => {
@@ -94,8 +96,10 @@ export function MascotStage() {
       if (!can3d) return;
       stopWaiting = afterIntro(() => {
         const run = () => setReady(true);
-        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(run, { timeout: 2500 });
-        else timer = setTimeout(run, 1200);
+        // the scene chunk is already downloading (preloaded below): mount it right after the
+        // opening, just one idle moment later so it never janks the landing
+        if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(run, { timeout: 300 });
+        else timer = setTimeout(run, 200);
       });
     };
     const onSize = () => (big.matches ? start() : (setReady(false), setShown(false), setPlain(true)));
@@ -107,14 +111,14 @@ export function MascotStage() {
     // state: the server render has no window, and hydration must match it
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one sync decision after mount
     setPlain(!(big.matches && hasWebGL()));
-    if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
+    // no need to wait for every image: start now and fetch the 3D chunk while the opening plays
+    if (big.matches && hasWebGL()) void import("./MascotScene");
+    start();
     big.addEventListener("change", onSize);
     reduce.addEventListener("change", onReduce);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       stopWaiting();
-      window.removeEventListener("load", start);
       big.removeEventListener("change", onSize);
       reduce.removeEventListener("change", onReduce);
       document.removeEventListener("visibilitychange", onVisibility);
@@ -208,10 +212,12 @@ export function MascotStage() {
               layout={layout}
               onBehind={onBehind}
               onFirstFrame={onFirstFrame}
+              onSay={say}
             />
           </SceneBoundary>
         </div>
       )}
+      {ready && shown && <SpeechBubble line={line} layout={layout} />}
       <div ref={stage} className="mascot-stage">
         {/* on desktop the button is an invisible hit area over the 3D switch: it joins the tab order
             only once the switch is visible (the theme is always reachable from the ⌘K menu) */}

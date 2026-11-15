@@ -176,5 +176,48 @@
     "newTab": "{name} (abre em nova aba)",
     "copyright": "© <year></year> Gustavo Fiorotti",
     "madeWith": "Feito com Next.js em alguma madrugada aí"
+  },
+  "bobby": {
+    "poke": [
+      "ei!",
+      "ai!",
+      "opa"
+    ],
+    "angry": [
+      "para com isso",
+      "sério?",
+      "já chega…",
+      "CHEGA!"
+    ],
+    "egg": [
+      "easter egg? 🥚"
+    ],
+    "pet": [
+      "hehe",
+      "isso é bom",
+      "mais!"
+    ],
+    "thrown": [
+      "uaaa!",
+      "me solta!"
+    ],
+    "landed": [
+      "que tontura…",
+      "ai…"
+    ],
+    "switchOn": [
+      "luz!",
+      "acordem!"
+    ],
+    "switchOff": [
+      "boa noite",
+      "shh"
+    ],
+    "idle": [
+      "psiu",
+      "tô de olho no interruptor",
+      "o Gufi que se cuide",
+      "…"
+    ]
   }
 }

@@ -38,6 +38,9 @@ export function setTheme(theme: Theme) {
   const id = ++switchId;
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   if (typeof document.startViewTransition === "function" && !reduce) {
+    // before the old snapshot is taken: snapshots drop backdrop-filter, so the glass goes dense
+    // for the crossfade instead of turning see-through
+    document.documentElement.classList.add("theme-switching");
     const vt = document.startViewTransition(() => applyTheme(theme));
     // a switch started during another one skips the older transition: that rejection is expected
     vt.ready.catch(() => {});

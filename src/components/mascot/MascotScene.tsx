@@ -3,6 +3,7 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
+import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { LightSwitch, SW, SW_SCALE } from "./LightSwitch";
 import { Strands } from "./Strands";
@@ -14,7 +15,7 @@ import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as add
 import { SLEEPY_AFTER, sleepLine, sleepPose, type SleepStage } from "./sleep";
 
 /** Presses asked for and not started yet (quick clicks queue up, none is lost), and when the last one started. */
-export type PressRequest = { pending: number; at: number };
+export type { PressRequest } from "./press";
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
 
 const BODY = "#D97757"; // Claude Code orange, chosen by Gustavo

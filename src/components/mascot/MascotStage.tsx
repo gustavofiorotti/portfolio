@@ -3,7 +3,8 @@ import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
-import type { Pointer, PressRequest } from "./MascotScene";
+import type { Pointer } from "./MascotScene";
+import { askPress, createPressRequest, type PressRequest } from "./press";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
 import { SpeechBubble, useSpeech } from "./SpeechBubble";
@@ -61,7 +62,7 @@ export function MascotStage() {
   const t = useTranslations("theme");
   const dark = useTheme() === "dark";
   const stage = useRef<HTMLDivElement>(null);
-  const press = useRef<PressRequest>({ pending: 0, at: 0 });
+  const press = useRef<PressRequest>(createPressRequest());
   const pointer = useRef<Pointer>({ x: 0, y: 0, lastMove: 0, speed: 0 });
   const th = useRef(createThrow());
   const anchor = useRef<Anchor>({ x: 0, y: 0 });
@@ -199,8 +200,9 @@ export function MascotStage() {
   }, []);
 
   const requestPress = useCallback(() => {
-    // holding Enter on the button would queue dozens: two is enough to undo a mistaken click
-    press.current.pending = Math.min(press.current.pending + 1, 2);
+    // one physical click = one request (the button and the 3D switch both hear it), at most two
+    // queued (enough to undo a mistaken click); the rule lives in press.ts
+    if (!askPress(press.current, performance.now())) return;
     // safety net: if the scene stops taking requests (stalled GPU), flip for whatever is left
     const asked = performance.now();
     setTimeout(() => {
@@ -244,6 +246,8 @@ export function MascotStage() {
         <button
           type="button"
           onClick={flip}
+          // holding Enter/Space repeats the click: only the first press counts
+          onKeyDown={(e) => e.repeat && (e.key === "Enter" || e.key === " ") && e.preventDefault()}
           aria-label={label}
           title={label}
           tabIndex={plain || shown ? 0 : -1}

@@ -3,6 +3,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion-utils";
 import { SECTION_IDS, type SectionId } from "./sections";
 
+const SETTLE_MS = 160; // the page counts as settled after this long without scrolling
+
 type Props = {
   label: string;
   active: SectionId;
@@ -63,40 +65,49 @@ export function MobileNav({ label, active, names, onGo }: Props) {
     };
   }, []);
 
-  // when the active section changes, bring its topic into view once (only the strip scrolls,
-  // never the page). It waits for the page to stop scrolling: in WebKit, a smooth scroll started
-  // on the strip cancels the page's own smooth scroll (the jump from a tapped topic would stop
-  // halfway). If the visitor is moving the strip, it waits for them too.
+  // the page is scrolling right now (by finger or by a tapped topic): read by the alignment below
+  const pageScrollAt = useRef(-Infinity);
   useEffect(() => {
+    const mark = () => (pageScrollAt.current = performance.now());
+    window.addEventListener("scroll", mark, { passive: true });
+    return () => window.removeEventListener("scroll", mark);
+  }, []);
+
+  const alignTo = (id: SectionId, smooth: boolean) => {
     const el = strip.current;
     if (!el) return;
+    const item = el.querySelector<HTMLElement>(`[data-nav="${id}"]`);
+    // position inside the strip (offsetLeft would be relative to the header)
+    const left = item ? item.getBoundingClientRect().left - el.getBoundingClientRect().left + el.scrollLeft - 4 : 0;
+    el.scrollTo({ left, behavior: smooth && !prefersReducedMotion() ? "smooth" : "auto" });
+  };
+
+  // The highlight follows the page live (aria-current changes on every scroll frame), but the
+  // strip itself never scrolls while the page does: in WebKit, touching the strip's scroll position
+  // (even without animation) cancels the page's smooth scroll, and a tapped topic stopped halfway
+  // (seen in a real WKWebView). So the strip aligns when the page settles, and a tapped topic is
+  // aligned before the page starts moving (see go below). If the visitor is moving the strip, it
+  // waits for them too.
+  useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let done = false;
     const align = () => {
-      const wait = dragging.current ? 300 : userUntil.current - performance.now();
+      const quietFor = performance.now() - pageScrollAt.current;
+      const wait = dragging.current ? 300 : Math.max(userUntil.current - performance.now(), SETTLE_MS - quietFor);
       if (wait > 0) {
         timer = setTimeout(align, wait);
         return;
       }
-      done = true;
-      window.removeEventListener("scroll", settle);
-      const item = el.querySelector<HTMLElement>(`[data-nav="${active}"]`);
-      // position inside the strip (offsetLeft would be relative to the header)
-      const left = item ? item.getBoundingClientRect().left - el.getBoundingClientRect().left + el.scrollLeft - 4 : 0;
-      el.scrollTo({ left, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      alignTo(active, true);
     };
-    function settle() {
-      if (done) return;
-      clearTimeout(timer);
-      timer = setTimeout(align, 160);
-    }
-    settle();
-    window.addEventListener("scroll", settle, { passive: true });
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("scroll", settle);
-    };
+    align();
+    return () => clearTimeout(timer);
   }, [active]);
+
+  // a tapped topic: bring it into view first, then let the page scroll to its section
+  const go = (id: SectionId) => (e: React.MouseEvent) => {
+    alignTo(id, false);
+    onGo(id)(e);
+  };
 
   const fade = `linear-gradient(to right, ${edges.start ? "black" : "transparent"} 0, black 12px, black calc(100% - 18px), ${edges.end ? "black" : "transparent"} 100%)`;
 
@@ -114,7 +125,7 @@ export function MobileNav({ label, active, names, onGo }: Props) {
           key={id}
           href={`#${id}`}
           data-nav={id}
-          onClick={onGo(id)}
+          onClick={go(id)}
           aria-current={active === id ? "location" : undefined}
           className={`flex h-11 shrink-0 snap-start items-center rounded-full border px-3 whitespace-nowrap transition-colors duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-fg ${
             active === id ? "border-[var(--pill-border)] bg-[var(--pill)] font-semibold text-fg" : "border-transparent font-medium text-muted"

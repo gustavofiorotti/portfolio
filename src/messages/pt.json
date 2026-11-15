@@ -1,12 +1,12 @@
 {
   "meta": {
-    "title": "Gustavo Fiorotti · Desenvolvedor fullstack",
-    "description": "Desenvolvedor fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
+    "title": "Gustavo Fiorotti · Desenvolvedor Fullstack",
+    "description": "Desenvolvedor Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
   },
   "nav": {
-    "resume": "Currículo",
     "switchLanguage": "English",
     "backToTop": "gus.poke.site, voltar ao início",
+    "backToTopShort": "Voltar ao início",
     "brasiliaTime": "Horário de Brasília",
     "sections": "Seções",
     "projetos": "Projetos",
@@ -15,9 +15,10 @@
     "contato": "Contato"
   },
   "hero": {
-    "lead": "Desenvolvedor fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
+    "lead": "Desenvolvedor Fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
     "seeProjects": "Ver projetos",
-    "seeResume": "Ver currículo"
+    "seeResume": "Ver currículo",
+    "downloadResume": "Baixar currículo (PDF)"
   },
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
@@ -176,5 +177,75 @@
     "newTab": "{name} (abre em nova aba)",
     "copyright": "© <year></year> Gustavo Fiorotti",
     "madeWith": "Feito com Next.js em alguma madrugada aí"
+  },
+  "bobby": {
+    "hello": [
+      "oi, eu sou o Bobby 👋"
+    ],
+    "poke": [
+      "ei!",
+      "ai!",
+      "opa"
+    ],
+    "angry": [
+      "para com isso",
+      "sério?",
+      "já chega…",
+      "CHEGA!"
+    ],
+    "egg": [
+      "🥚?"
+    ],
+    "pet": [
+      "hehe",
+      "isso é bom",
+      "mais!"
+    ],
+    "thrown": [
+      "uaaa!",
+      "me solta!"
+    ],
+    "landed": [
+      "que tontura…",
+      "ai…"
+    ],
+    "switchOn": [
+      "luz!",
+      "acordem!"
+    ],
+    "switchOff": [
+      "boa noite",
+      "shh"
+    ],
+    "idle": [
+      "🥚?",
+      "✻ Matutando…",
+      "psiu",
+      "tô de olho no interruptor",
+      "✻ Ruminando…",
+      "cadê o café?",
+      "…"
+    ],
+    "eggDone": [
+      "🐣 em breve…"
+    ],
+    "yawn": [
+      "aaahn…"
+    ],
+    "doze": [
+      "z…"
+    ],
+    "jolt": [
+      "hã?!",
+      "tô acordado!"
+    ],
+    "asleep": [
+      "Zzz"
+    ],
+    "wake": [
+      "hã?!",
+      "quem?",
+      "tô acordado!"
+    ]
   }
 }

@@ -37,36 +37,41 @@ function focusSection(el: HTMLElement | null) {
 }
 
 /**
- * Animated scroll to an element id (or to the top), with the kit's timing. It stops as soon
- * as the visitor scrolls, touches or presses a key, and then moves focus to the target.
+ * Scrolls to a section (or the top) and focuses it. Uses the browser's own smooth scrolling:
+ * it runs on the compositor, so it stays fluid while the main thread is busy (the 3D scene
+ * draws every frame while Bobby walks). The old requestAnimationFrame loop stuttered there.
  */
+let scrollCall = 0; // only the latest smoothScrollTo may move focus
+
 export function smoothScrollTo(id: string | null, offset = 0) {
+  const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;
-  const to = target ? target.getBoundingClientRect().top + window.scrollY - offset : 0;
-  const from = window.scrollY;
+  const to = Math.max(0, target ? target.getBoundingClientRect().top + window.scrollY - offset : 0);
   if (prefersReducedMotion()) {
     window.scrollTo(0, to);
     focusSection(target);
     return;
   }
-  const dur = scrollDuration(to - from);
-  const t0 = performance.now();
-  let raf = 0;
-  // ignore the event that started the scroll (e.g. Enter in the ⌘K menu still bubbling up)
-  const stop = (e?: Event) => {
-    if (e && e.timeStamp <= t0) return;
-    cancelAnimationFrame(raf);
-    ["wheel", "touchstart", "keydown"].forEach((ev) => window.removeEventListener(ev, stop));
+  window.scrollTo({ top: to, behavior: "smooth" });
+  // focus once it arrives: scrollend where supported, a timer otherwise. WebKit on touch devices
+  // can fire an early scrollend, and focusing mid-way (even with preventScroll) cancels its smooth
+  // scroll, so a scrollend only counts when the page is really there.
+  // the destination is measured again at each check: late images or fonts can move the target,
+  // and near the bottom the page stops short of it (at the end of the scroll range)
+  const destination = () => {
+    const top = Math.max(0, target ? target.getBoundingClientRect().top + window.scrollY - offset : 0);
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return max > 0 ? Math.min(top, max) : top;
   };
-  ["wheel", "touchstart", "keydown"].forEach((ev) => window.addEventListener(ev, stop, { passive: true }));
-  const step = (now: number) => {
-    const t = Math.min(1, (now - t0) / dur);
-    window.scrollTo(0, from + (to - from) * easeOutQuart(t));
-    if (t < 1) raf = requestAnimationFrame(step);
-    else {
-      stop();
-      focusSection(target);
-    }
+  const arrived = () => Math.abs(window.scrollY - destination()) <= 2;
+  let done = false;
+  const finish = (force: boolean) => {
+    if (done || (!force && !arrived())) return;
+    done = true;
+    window.removeEventListener("scrollend", onEnd);
+    if (call === scrollCall) focusSection(target); // a newer jump took over: leave focus to it
   };
-  raf = requestAnimationFrame(step);
+  const onEnd = () => finish(false);
+  window.addEventListener("scrollend", onEnd);
+  setTimeout(() => finish(true), scrollDuration(to - window.scrollY) + 400);
 }

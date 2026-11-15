@@ -29,7 +29,8 @@ de usar uma API.
 ## Deploy
 
 - A Vercel está ligada ao repositório: push em `main` publica em produção e cada PR ganha uma URL de
-  prévia. O `vercel.json` fixa o framework como Next.js. Não há workflow de deploy no GitHub Actions.
+  prévia. O `vercel.json` fixa o framework como Next.js.
+- `.github/workflows/atualiza-github.yml` chama um Deploy Hook da Vercel (segredo `VERCEL_DEPLOY_HOOK_URL`) a cada 12 h, para a grade do GitHub se atualizar sem commit nem deploy manual.
 - Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend. O `gus.poke.site`
   só redireciona para a Vercel.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.
@@ -43,6 +44,9 @@ de usar uma API.
 - Cores só pelos tokens de `src/app/globals.css` (nunca preto ou branco puros).
 - Não expor clientes, ERPs, produtos internos, endpoints ou arquitetura (contrato de
   confidencialidade). O produto se escreve "Gnexum".
+- Nunca escrever `-webkit-backdrop-filter` à mão junto com `backdrop-filter`: o minificador de CSS (Lightning CSS) junta os dois e deixa só o prefixado, e o Chrome fica sem desfoque. Escreva só `backdrop-filter`; o prefixo do Safari é gerado no build.
+- Conferir toda mudança visual em Chromium, WebKit e Firefox lado a lado.
+- Ao trocar de branch, apagar `.next` antes do `pnpm build` (e reiniciar o `pnpm dev`): o cache reaproveita o CSS da branch anterior e o resultado engana.
 - Layout precisa funcionar em celular (sem scroll horizontal) e respeitar `prefers-reduced-motion`.
 - Antes de mexer em UI, carregar a skill `kit-gustavo`. Mockups aprovados: canvas da direção A em
   https://claude.ai/artifact/3M4R5sjCV7gbGUNmcqsZoY. Protótipo do personagem e logo 3D em

@@ -30,7 +30,8 @@
   background-position: 120% 0;
   opacity: 0;
 }
-.project-card:hover .project-sheen {
+.project-card:hover .project-sheen,
+.project-card.is-featured .project-sheen {
   opacity: 1;
   animation: project-sweep 1s cubic-bezier(0.4, 0, 0.2, 1) 1 forwards;
 }
@@ -81,35 +82,61 @@
   transition-duration: 0.1s;
 }
 
-/* Course bar: grows when it enters the view, with a quick shine every 6s. */
-@supports (animation-timeline: view()) {
-  .course-grow {
-    animation: course-grow 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-  }
+/* Course bar: grows once, by time, when it enters the view (data-grow from CourseProgress). It
+   used to be a scroll-driven animation: stopping the scroll midway left the bar half grown, with
+   the shimmer and the tip glow parked near its start. */
+.course-fill {
+  transition: width 1.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-@keyframes course-grow {
-  from {
-    width: 0;
-  }
+.course-fill[data-grow="wait"] {
+  width: 0 !important;
+  transition: none;
+}
+.course-fill[data-grow="wait"] .course-shine,
+.course-fill[data-grow="wait"] .course-tip {
+  animation-play-state: paused;
+  opacity: 0;
+}
+/* the light starts once the bar has grown (same 1.6 s as the width transition) */
+.course-fill[data-grow="go"] .course-shine,
+.course-fill[data-grow="go"] .course-tip {
+  animation-delay: 1.6s;
+}
+/* Course bar: the fill brightens towards today, a soft shimmer runs along it and, when it
+   reaches the tip, the tip glows for a moment. One 5.6 s cycle drives both, so they stay in sync. */
+.course-fill {
+  background: linear-gradient(90deg, var(--course-from), var(--fg));
 }
 .course-shine {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, var(--shine), transparent);
-  background-size: 35% 100%;
-  background-repeat: no-repeat;
-  animation: course-shine 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  inset: 0 auto 0 0;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, var(--course-shimmer) 55%, transparent);
+  filter: blur(1px);
+  transform: translateX(-110%);
+  animation: course-shine 5.6s cubic-bezier(0.45, 0.05, 0.3, 1) infinite;
 }
 @keyframes course-shine {
-  0% {
-    background-position: -60% 0;
-  }
-  20%,
-  100% {
-    background-position: 160% 0;
-  }
+  0% { transform: translateX(-110%); }
+  32%, 100% { transform: translateX(250%); }
+}
+.course-tip {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  translate: 50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--course-glow) 0, transparent 68%);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: course-tip 5.6s ease-in-out infinite;
+}
+@keyframes course-tip {
+  0%, 22% { opacity: 0.35; scale: 0.8; }
+  34% { opacity: 1; scale: 1.15; }
+  52%, 100% { opacity: 0.35; scale: 0.8; }
 }
 
 /* "Based in" dot. */
@@ -128,9 +155,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .course-fill {
+    transition: none;
+  }
   .reveal,
-  .course-grow,
   .course-shine,
+  .course-tip,
   .base-pulse,
   .logo-glance,
   .logo-blink,
@@ -151,4 +181,71 @@
 }
 .dock[data-active] .dock-icon {
   transition-duration: 0.05s;
+}
+/* touch: a horizontal slide magnifies (vertical still scrolls the page); a tap presses */
+.dock {
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.dock-icon {
+  transition-property: width, height, scale;
+}
+.dock-icon.is-pressed {
+  scale: 0.86;
+}
+
+/* Hero résumé: the round download button's room is always reserved (the group never changes
+   width, so "Ver projetos" never moves). With a mouse it waits behind the pill and slides out on
+   hover/focus, animating only transform and opacity; on touch screens it just sits there. */
+.resume-duo {
+  position: relative;
+  padding-right: 60px; /* 52 px button + 8 px gap */
+}
+.resume-download {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+/* hidden until hover only where the row has room for it (460 px and up); on narrower windows it
+   simply shows next to the pill, like on touch screens */
+@media (hover: hover) and (pointer: fine) and (min-width: 460px) {
+  /* the reserved space stays out of the centering while the button hides: the pair sits in the
+     exact center and still never shifts when the button slides out */
+  .resume-download {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.7);
+    transition:
+      opacity 0.25s ease,
+      transform 0.42s cubic-bezier(0.34, 1.3, 0.64, 1),
+      background-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+  .resume-duo:hover .resume-download,
+  .resume-duo:focus-within .resume-download {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* with the download hidden, its reserved room stays out of the centering, so the visible pair (or
+   the "Ver currículo" pill alone, when the row wraps) sits in the exact center */
+@media (hover: hover) and (pointer: fine) and (min-width: 460px) {
+  .resume-duo {
+    margin-right: -60px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resume-download { transition: none; }
+}
+
+/* GitHub grid on narrow screens: the year scrolls sideways, like github.com on phones, starting at
+   the latest weeks (rtl). Only the edges that hide weeks fade (data-fade set by EdgeFadeScroll);
+   the mask is alpha only, never painted. */
+.gh-scroll[data-fade="left"] {
+  mask-image: linear-gradient(to right, transparent, black 32px);
+}
+.gh-scroll[data-fade="right"] {
+  mask-image: linear-gradient(to left, transparent, black 32px);
+}
+.gh-scroll[data-fade="both"] {
+  mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
 }

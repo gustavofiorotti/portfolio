@@ -70,7 +70,7 @@ story = [
 
 story += heading("Resumo")
 story.append(Paragraph(
-    "Estudante de Ciência da Computação com experiência em desenvolvimento fullstack com TypeScript, React, "
+    "Estudante de Ciência da Computação com experiência em desenvolvimento Fullstack com TypeScript, React, "
     "Next.js, NestJS e PostgreSQL. Atuei na evolução de uma plataforma de integração de sistemas, do frontend "
     "ao deploy em servidores de clientes. Comecei em suporte de TI e migrei para o desenvolvimento. Busco "
     "vaga júnior em desenvolvimento de software.", base))

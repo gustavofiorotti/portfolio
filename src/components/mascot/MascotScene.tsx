@@ -12,7 +12,7 @@ import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
-import { SLEEPY_AFTER, sleepLine, sleepPose, type SleepStage } from "./sleep";
+import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 /** Presses asked for and not started yet (quick clicks queue up, none is lost), and when the last one started. */
 export type { PressRequest } from "./press";
@@ -51,7 +51,7 @@ type State = {
   glanceT: number; glance: [number, number]; mood: Mood; shake: number;
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
-  sleep: SleepStage | null; nextZ: number; zzz: number; idleSaid: number;
+  sleep: SleepStage | null; idleSaid: number;
 };
 
 type SceneProps = {
@@ -78,6 +78,7 @@ function writeClicks(n: number) {
 
 function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay }: SceneProps) {
   const feel = useRef(createFeel());
+  const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
   const scene = useRef<THREE.Group>(null);
   const drool = useRef<THREE.Mesh>(null);
@@ -96,7 +97,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 9, petSaid: -100, sleep: null, nextZ: 0, zzz: 0, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 9, petSaid: -100, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -207,15 +208,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const pose = mood === "sono" && !still ? sleepPose(idleFor - SLEEPY_AFTER) : null;
     const stage = pose?.stage ?? null;
     const said = sleepLine(s.sleep, stage);
-    if (said) onSay?.(said);
-    if (!stage) s.zzz = 0;
-    if (stage === "asleep" && t > s.nextZ) {
-      if (s.sleep === "asleep" && s.zzz < 3) {
-        s.zzz += 1; // a few "Zzz", then he just sleeps
-        onSay?.("asleep");
-      }
-      s.nextZ = t + 5;
-    }
+    if (said && said !== "asleep") onSay?.(said);
+    if (zzzNow(zzz.current, stage, said, idleFor < SLEEPY_AFTER, t)) onSay?.("asleep"); // at most 3 per nap (sleep.ts)
     s.sleep = stage;
     if (mood !== s.mood) {
       s.mood = mood;

@@ -71,3 +71,22 @@ export function sleepLine(prev: SleepStage | null, next: SleepStage | null): "ya
   if (next === "asleep") return "asleep";
   return null;
 }
+
+export const ZZZ_MAX = 3; // "Zzz" bubbles per nap
+const ZZZ_EVERY = 5; // s between them
+
+export type Zzz = { count: number; nextAt: number };
+
+/**
+ * Whether to show a "Zzz" now (t in s). At most ZZZ_MAX per nap, the first one included. The
+ * count only restarts when he is really woken (`awake`: the pointer moved); the stage also blinks
+ * to null while the walk nudges him, and coming back from it used to say "Zzz" again.
+ */
+export function zzzNow(z: Zzz, stage: SleepStage | null, said: ReturnType<typeof sleepLine>, awake: boolean, t: number): boolean {
+  if (awake) z.count = 0;
+  if (stage !== "asleep" || (said !== "asleep" && t <= z.nextAt)) return false;
+  z.nextAt = t + ZZZ_EVERY;
+  if (z.count >= ZZZ_MAX) return false;
+  z.count += 1;
+  return true;
+}

@@ -5,9 +5,10 @@ import type { Say, SayExtra } from "./MascotScene";
 import type { Layout } from "./ViewRig";
 
 const SHOW_MS = 2400;
-const CALM_GAP_MS = 6000; // between chatty lines (idle, pet, switch)
-const REACT_GAP_MS = 900; // reactions to a poke, a throw or his naps can come quicker
-const REACTIONS: Say[] = ["poke", "angry", "thrown", "landed", "yawn", "doze", "jolt", "asleep", "wake"];
+const CALM_GAP_MS = 6000; // between chatty lines (idle, switch)
+const REACT_GAP_MS = 900; // reactions (a poke, a stroke, a throw, his naps) can come quicker
+// petting is a reaction too: "hehe" right after a poke must still show
+const REACTIONS: Say[] = ["poke", "angry", "pet", "thrown", "landed", "yawn", "doze", "jolt", "asleep", "wake"];
 const URGENT: Say[] = ["angry", "egg", "eggStep", "wake"]; // always replace what he was saying
 const SPIN = "✻ "; // lines starting with it get Claude Code's spinner in front
 

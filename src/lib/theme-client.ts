@@ -42,12 +42,23 @@ function endSwitch(id: number, settle: boolean) {
   );
 }
 
+/**
+ * WebKit engines: Safari on the Mac and every browser on iOS (Chrome and Firefox there are WebKit
+ * too: CriOS, FxiOS). Their View Transition drops backdrop-filter from the snapshots and repaints
+ * it late, so the glass header went see-through for about a second after each switch.
+ */
+export function isWebKitEngine(ua: string): boolean {
+  return /AppleWebKit/.test(ua) && !/(Chrome|Chromium|Edg|OPR|SamsungBrowser)\//.test(ua);
+}
+
 /** Applies and remembers the theme, and tells listeners once the page has it. */
 export function setTheme(theme: Theme) {
   intended = theme;
   const id = ++switchId;
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  if (typeof document.startViewTransition === "function" && !reduce) {
+  // Chromium and Firefox crossfade the whole page; WebKit gets the dry switch (transitions off),
+  // which keeps the frosted header frosted
+  if (typeof document.startViewTransition === "function" && !reduce && !isWebKitEngine(navigator.userAgent)) {
     // before the old snapshot is taken: snapshots drop backdrop-filter, so the glass goes dense
     // for the crossfade instead of turning see-through
     document.documentElement.classList.add("theme-switching");

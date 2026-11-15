@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isWebKitEngine } from "./theme-client";
 
 const raf = (cb: FrameRequestCallback) => (cb(0), 0);
 
@@ -9,10 +10,24 @@ describe("setTheme", () => {
     window.matchMedia = vi.fn(() => ({ matches: false })) as unknown as typeof window.matchMedia;
     document.documentElement.className = "";
     document.documentElement.dataset.theme = "light";
+    // jsdom's own user agent reads as WebKit; these tests are about the crossfade path
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (Macintosh) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
   });
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     delete (document as { startViewTransition?: unknown }).startViewTransition;
+  });
+
+  it("in WebKit it switches without the View Transition (Safari kept the glass see-through)", async () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15");
+    const start = vi.fn();
+    (document as { startViewTransition?: unknown }).startViewTransition = start;
+    const { setTheme } = await import("./theme-client");
+    setTheme("dark");
+    expect(start).not.toHaveBeenCalled();
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.classList.contains("theme-switching")).toBe(false);
   });
 
   it("without View Transitions applies at once and turns transitions back on", async () => {
@@ -65,5 +80,28 @@ describe("setTheme", () => {
     setTheme("dark");
     expect(vt).not.toHaveBeenCalled();
     expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+});
+
+describe("isWebKitEngine", () => {
+  const UA = {
+    safariMac: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
+    safariIOS: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
+    chromeIOS: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0.6778.73 Mobile/15E148 Safari/604.1",
+    chromeMac: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    edge: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+    firefox: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
+    android: "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+  };
+  it("is true for Safari and every iOS browser (all WebKit)", () => {
+    expect(isWebKitEngine(UA.safariMac)).toBe(true);
+    expect(isWebKitEngine(UA.safariIOS)).toBe(true);
+    expect(isWebKitEngine(UA.chromeIOS)).toBe(true);
+  });
+  it("is false for Chromium browsers and Firefox", () => {
+    expect(isWebKitEngine(UA.chromeMac)).toBe(false);
+    expect(isWebKitEngine(UA.edge)).toBe(false);
+    expect(isWebKitEngine(UA.android)).toBe(false);
+    expect(isWebKitEngine(UA.firefox)).toBe(false);
   });
 });

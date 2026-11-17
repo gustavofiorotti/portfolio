@@ -9,7 +9,9 @@ const GLANCE: Key[] = [
   [0.56, 1, 1.2], [0.7, 1, 1.2], [0.74, 0, 0], [1, 0, 0],
 ];
 
-const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
+// eased like the logo's CSS keyframes: a linear move over a few favicon frames read as stutter
+const ease = (f: number) => f * f * (3 - 2 * f);
+const lerp = (a: number, b: number, f: number) => a + (b - a) * ease(f);
 
 /** Where the eyes are and how open they are at time t (ms). */
 export function eyesAt(t: number): { dx: number; dy: number; open: number } {
@@ -25,5 +27,5 @@ export function eyesAt(t: number): { dx: number; dy: number; open: number } {
 
 /** A short key for a frame, so the favicon is only re-encoded when the picture changes. */
 export function frameKey(e: { dx: number; dy: number; open: number }): string {
-  return `${e.dx.toFixed(1)},${e.dy.toFixed(1)},${e.open.toFixed(2)}`;
+  return `${e.dx.toFixed(2)},${e.dy.toFixed(2)},${e.open.toFixed(2)}`;
 }

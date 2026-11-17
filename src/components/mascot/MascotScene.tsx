@@ -11,7 +11,7 @@ import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
-import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, pettable, poke as addPoke, stroke } from "./feelings";
+import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
 import { heartsDue } from "./heart-burst";
 import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
@@ -89,7 +89,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const carrier = useRef<THREE.Group>(null);
   const scene = useRef<THREE.Group>(null);
   const drool = useRef<THREE.Mesh>(null);
-  const clicks = useRef<number | null>(null); // clicks this visit, towards the secret
+  const clicks = useRef<number | null>(null); // clicks in a row, towards the secret
+  const clickAt = useRef(-Infinity); // last click (clock s): a pause resets the count
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
   const float = useRef<THREE.Group>(null);
@@ -342,9 +343,11 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     s.pokeAt = true;
     s.needsSoothe = true;
     if (clicks.current === null) clicks.current = readClicks();
-    clicks.current += 1;
-    writeClicks(clicks.current);
-    const egg = eggProgress(clicks.current);
+    const next = nextEggCount(clicks.current, clickAt.current, clock.elapsedTime);
+    clickAt.current = clock.elapsedTime;
+    clicks.current = next.n;
+    writeClicks(next.n);
+    const egg = next.dropped ? EGG_EMPTY : eggProgress(next.n);
     if (egg) onSay?.("eggStep", egg); // the secret filling up beats any other line
     else if (lvl > before) onSay?.(lvl === 4 ? "egg" : lvl >= 2 ? "angry" : "poke");
     else if (lvl === 4) onSay?.("angry"); // still poking him while furious: the lines keep escalating

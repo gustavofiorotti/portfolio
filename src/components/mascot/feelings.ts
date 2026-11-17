@@ -100,6 +100,20 @@ export function calm(f: Feel, t: number, amount = 1.2) {
 // a bubble shows how far along the visitor is, so it reads as something being unlocked.
 export const EGG_GOAL = 20;
 const EGG_STEP = 4;
+export const EGG_PAUSE_S = 1.5; // only clicks in a row count: a longer pause starts over
+/** The bar shown empty, when a pause reset the count. */
+export const EGG_EMPTY = { filled: 0, total: EGG_GOAL / EGG_STEP, done: false };
+
+/**
+ * The count after a click at time now (s), given the count so far and the last click's time.
+ * After a pause longer than EGG_PAUSE_S the count starts over (dropped: a bar that had shown
+ * comes back empty, so the visitor sees it reset). Once hatched it stays hatched.
+ */
+export function nextEggCount(n: number, lastAt: number, now: number): { n: number; dropped: boolean } {
+  if (n >= EGG_GOAL) return { n: n + 1, dropped: false };
+  if (now - lastAt > EGG_PAUSE_S) return { n: 1, dropped: n >= EGG_STEP };
+  return { n: n + 1, dropped: false };
+}
 
 /** For the n-th click of the visit: the progress bubble to show (steps filled of total), if any. */
 export function eggProgress(n: number): { filled: number; total: number; done: boolean } | null {

@@ -43,17 +43,17 @@ export function levelOf(anger: number): AngerLevel {
  * A poke: returns the new level. A poke in the middle of petting is a betrayal: he goes angry at
  * once (the happy face used to stay) and refuses strokes for GRUDGE_S.
  */
-export function poke(f: Feel, t: number, petting = false): AngerLevel {
+export function poke(f: Feel, t: number, petting = false, now = t): AngerLevel {
   const anger = angerAt(f, t) + 1;
   f.anger = Math.min(MAX_ANGER, petting ? Math.max(anger, BETRAYED_ANGER) : anger);
   f.angerT = t;
-  if (petting) f.grudgeT = t + GRUDGE_S;
+  if (petting) f.grudgeT = now + GRUDGE_S; // wall clock (now): the scene clock slows when he is still
   return levelOf(f.anger);
 }
 
-/** Whether a stroke at time t can cheer him up (not right after he was hit mid-petting). */
-export function pettable(f: Feel, t: number): boolean {
-  return t >= f.grudgeT;
+/** Whether a stroke at wall time now (s) can cheer him up (not right after he was hit mid-petting). */
+export function pettable(f: Feel, now: number): boolean {
+  return now >= f.grudgeT;
 }
 
 /** One axis of the pointer: true when it turned around after a long enough sweep. */
@@ -111,7 +111,9 @@ export const EGG_EMPTY = { filled: 0, total: EGG_GOAL / EGG_STEP, done: false };
  */
 export function nextEggCount(n: number, lastAt: number, now: number): { n: number; dropped: boolean } {
   if (n >= EGG_GOAL) return { n: n + 1, dropped: false };
-  if (now - lastAt > EGG_PAUSE_S) return { n: 1, dropped: n >= EGG_STEP };
+  // no click yet this page load (lastAt -Infinity): a count saved before a reload resets quietly,
+  // the visitor never saw that bar on this page
+  if (now - lastAt > EGG_PAUSE_S) return { n: 1, dropped: n >= EGG_STEP && Number.isFinite(lastAt) };
   return { n: n + 1, dropped: false };
 }
 

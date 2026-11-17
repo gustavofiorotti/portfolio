@@ -68,6 +68,8 @@ type SceneProps = {
   greet: MutableRefObject<number>;
 };
 
+const wallS = () => performance.now() / 1000;
+
 function readClicks(): number {
   try {
     return Number(sessionStorage.getItem(CLICKS_KEY)) || 0;
@@ -90,7 +92,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const scene = useRef<THREE.Group>(null);
   const drool = useRef<THREE.Mesh>(null);
   const clicks = useRef<number | null>(null); // clicks in a row, towards the secret
-  const clickAt = useRef(-Infinity); // last click (clock s): a pause resets the count
+  const clickAt = useRef(-Infinity); // last click (wall clock s): a pause resets the count
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
   const float = useRef<THREE.Group>(null);
@@ -337,14 +339,15 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     // hit while being petted: the happy face goes at once and he turns angry (feelings.ts)
     const petting = s.pet > 0.35;
     if (petting) s.pet = 0;
-    const lvl = addPoke(feel.current, clock.elapsedTime, petting);
+    const lvl = addPoke(feel.current, clock.elapsedTime, petting, wallS());
     s.vel -= 3 + lvl * 0.6;
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
     s.needsSoothe = true;
     if (clicks.current === null) clicks.current = readClicks();
-    const next = nextEggCount(clicks.current, clickAt.current, clock.elapsedTime);
-    clickAt.current = clock.elapsedTime;
+    // wall clock, not the scene clock: that one runs at ~1 fps while he is still
+    const next = nextEggCount(clicks.current, clickAt.current, wallS());
+    clickAt.current = wallS();
     clicks.current = next.n;
     writeClicks(next.n);
     const egg = next.dropped ? EGG_EMPTY : eggProgress(next.n);
@@ -355,7 +358,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY) && pettable(feel.current, clock.elapsedTime)) {
+    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY) && pettable(feel.current, wallS())) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
       // he likes it: hearts float up with the happy face, now and then (heart-burst.ts)

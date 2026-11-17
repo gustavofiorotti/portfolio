@@ -85,9 +85,9 @@ describe("hit while being petted", () => {
 
   it("refuses strokes for a moment, then takes them again", () => {
     const f = createFeel();
-    poke(f, 10, true);
-    expect(pettable(f, 10.5)).toBe(false);
-    expect(pettable(f, 10 + GRUDGE_S)).toBe(true);
+    poke(f, 10, true, 500); // scene clock 10 s, wall clock 500 s: the grudge follows the wall clock
+    expect(pettable(f, 500.5)).toBe(false);
+    expect(pettable(f, 500 + GRUDGE_S)).toBe(true);
     expect(pettable(createFeel(), 0)).toBe(true);
   });
 });
@@ -99,6 +99,8 @@ describe("secret only with clicks in a row", () => {
     expect(nextEggCount(3, 5, 5.4)).toEqual({ n: 4, dropped: false });
     // a pause after the bar had shown: back to 1, and the bar comes back empty
     expect(nextEggCount(9, 5, 5 + EGG_PAUSE_S + 0.1)).toEqual({ n: 1, dropped: true });
+    // first click after a reload with a saved count: starts over without an empty bar
+    expect(nextEggCount(9, -Infinity, 3)).toEqual({ n: 1, dropped: false });
     // a pause before any bar: just starts over, quietly
     expect(nextEggCount(2, 5, 9)).toEqual({ n: 1, dropped: false });
   });

@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import pt from "@/messages/pt.json";
@@ -45,5 +46,16 @@ describe("CommandMenu", () => {
     const close = screen.getByRole("button", { name: "Fechar" });
     const input = screen.getByPlaceholderText("O que você procura?");
     expect(close.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("the static HTML hides the shortcut text, so Windows never sees ⌘K blink", () => {
+    vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+    const html = renderToString(
+      <NextIntlClientProvider locale="pt" messages={pt}>
+        <CommandMenu />
+      </NextIntlClientProvider>,
+    );
+    expect(html).toMatch(/class="hidden lg:inline invisible"/);
+    expect(html).toContain('aria-label="Abrir menu de comandos"');
   });
 });

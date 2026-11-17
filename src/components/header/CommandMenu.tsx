@@ -32,7 +32,9 @@ export function CommandMenu() {
   // read live from html[data-theme], so the label is right however the menu was opened
   const dark = useTheme() === "dark";
   // ⌘K on Apple devices, Ctrl K elsewhere, nothing on phones (no keyboard to talk about)
-  const key = useSyncExternalStore(noSubscribe, clientShortcutLabel, () => "⌘K");
+  // undefined until hydrated: the static HTML cannot know the visitor's OS, and a "⌘K" baked
+  // into it blinked on Windows before turning into "Ctrl K"
+  const key = useSyncExternalStore<string | null | undefined>(noSubscribe, clientShortcutLabel, () => undefined);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -64,7 +66,8 @@ export function CommandMenu() {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="lg:hidden">
           <path d="M4 7h16M4 12h16M4 17h10" />
         </svg>
-        <span className="hidden lg:inline">{key ?? "⌘K"}</span>
+        {/* the space is kept while hidden, so the button does not change width on hydration */}
+        <span className={`hidden lg:inline ${key === undefined ? "invisible" : ""}`}>{key ?? "⌘K"}</span>
       </button>
       <Command.Dialog
         open={open}

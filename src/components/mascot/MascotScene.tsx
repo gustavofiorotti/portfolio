@@ -11,7 +11,7 @@ import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
-import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
+import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, pettable, poke as addPoke, stroke } from "./feelings";
 import { heartsDue } from "./heart-burst";
 import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
@@ -333,7 +333,10 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (dragged.current || !reachable(th.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) return; // a drag, or a control on top
     const s = st.current;
     const before = levelOf(angerAt(feel.current, clock.elapsedTime));
-    const lvl = addPoke(feel.current, clock.elapsedTime);
+    // hit while being petted: the happy face goes at once and he turns angry (feelings.ts)
+    const petting = s.pet > 0.35;
+    if (petting) s.pet = 0;
+    const lvl = addPoke(feel.current, clock.elapsedTime, petting);
     s.vel -= 3 + lvl * 0.6;
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
@@ -349,7 +352,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) {
+    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY) && pettable(feel.current, clock.elapsedTime)) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
       // he likes it: hearts float up with the happy face, now and then (heart-burst.ts)

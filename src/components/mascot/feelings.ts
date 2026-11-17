@@ -8,17 +8,20 @@
 // never worked).
 
 type Sweep = { dir: number; travel: number; last: number | null };
-export type Feel = { anger: number; angerT: number; x: Sweep; y: Sweep };
+/** grudgeT: until then strokes are refused (he was hit while being petted) */
+export type Feel = { anger: number; angerT: number; grudgeT: number; x: Sweep; y: Sweep };
 
 export const STROKE_PX = 14;
 const COOL_AFTER = 1.6; // s without pokes before the anger starts to cool
 const COOL_RATE = 0.7; // anger points per second
 const MAX_ANGER = 6;
+const BETRAYED_ANGER = 3.6; // hit while being petted: straight to "angry" (level 3)
+export const GRUDGE_S = 1.5; // and for this long more strokes do not cheer him up
 
 const sweep = (): Sweep => ({ dir: 0, travel: 0, last: null });
 
 export function createFeel(): Feel {
-  return { anger: 0, angerT: -100, x: sweep(), y: sweep() };
+  return { anger: 0, angerT: -100, grudgeT: -100, x: sweep(), y: sweep() };
 }
 
 /** Current anger at time t (s), after cooling down. */
@@ -36,11 +39,21 @@ export function levelOf(anger: number): AngerLevel {
   return 4;
 }
 
-/** A poke: returns the new level. */
-export function poke(f: Feel, t: number): AngerLevel {
-  f.anger = Math.min(MAX_ANGER, angerAt(f, t) + 1);
+/**
+ * A poke: returns the new level. A poke in the middle of petting is a betrayal: he goes angry at
+ * once (the happy face used to stay) and refuses strokes for GRUDGE_S.
+ */
+export function poke(f: Feel, t: number, petting = false): AngerLevel {
+  const anger = angerAt(f, t) + 1;
+  f.anger = Math.min(MAX_ANGER, petting ? Math.max(anger, BETRAYED_ANGER) : anger);
   f.angerT = t;
+  if (petting) f.grudgeT = t + GRUDGE_S;
   return levelOf(f.anger);
+}
+
+/** Whether a stroke at time t can cheer him up (not right after he was hit mid-petting). */
+export function pettable(f: Feel, t: number): boolean {
+  return t >= f.grudgeT;
 }
 
 /** One axis of the pointer: true when it turned around after a long enough sweep. */

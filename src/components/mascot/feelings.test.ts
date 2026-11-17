@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { angerAt, createFeel, endStroke, levelOf, poke, stroke, STROKE_PX } from "./feelings";
+import { angerAt, createFeel, endStroke, GRUDGE_S, levelOf, pettable, poke, stroke, STROKE_PX } from "./feelings";
 
 describe("anger", () => {
   it("climbs one level after another with quick pokes", () => {
@@ -72,5 +72,22 @@ describe("calm and the secret", () => {
     expect(eggProgress(EGG_GOAL)).toEqual({ filled: 5, total: 5, done: true });
     expect(eggProgress(21)).toBeNull();
     expect(eggProgress(24)).toBeNull(); // the hatch shows only once
+  });
+});
+
+describe("hit while being petted", () => {
+  it("goes straight to angry, not just hurt", () => {
+    const f = createFeel();
+    expect(poke(f, 10)).toBe(1); // a plain first poke only hurts
+    const g = createFeel();
+    expect(poke(g, 10, true)).toBe(3);
+  });
+
+  it("refuses strokes for a moment, then takes them again", () => {
+    const f = createFeel();
+    poke(f, 10, true);
+    expect(pettable(f, 10.5)).toBe(false);
+    expect(pettable(f, 10 + GRUDGE_S)).toBe(true);
+    expect(pettable(createFeel(), 0)).toBe(true);
   });
 });

@@ -115,7 +115,7 @@ html.theme-repaint .nav-pill {
 
 /* ---- glass, pill and buttons (direction A) ---- */
 :root {
-  /* liquid glass (direction A): the page shows through, blurred, in every browser */
+  /* liquid glass (direction A): the page shows through, blurred (Chromium; elsewhere see data-glass) */
   --glass: rgb(250 250 249 / 0.6);
   --glass-border: rgb(250 250 249 / 0.85);
   --glass-hi: rgb(250 250 249 / 0.95);
@@ -159,6 +159,12 @@ html.theme-repaint .nav-pill {
     .glass {
       background: color-mix(in srgb, var(--surface) 96%, transparent);
     }
+  }
+  /* WebKit and Firefox blur less: the text below showed through like a ghost, so there the glass
+     is nearly solid, on phones too (data-glass from the inline theme script; Chromium keeps the
+     liquid glass) */
+  html[data-glass="dense"] .glass {
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
   }
   .nav-pill {
     background: var(--pill);

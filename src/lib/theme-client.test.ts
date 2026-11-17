@@ -36,6 +36,8 @@ describe("setTheme", () => {
     const { setTheme } = await import("./theme-client");
     setTheme("dark");
     const html = document.documentElement;
+    // the dense snapshot fill is only for the View Transition: here the header jumped to it
+    expect(html.classList.contains("theme-snapshot")).toBe(false);
     frames.shift()!(0);
     frames.shift()!(0); // two frames: transitions back on
     expect(html.classList.contains("theme-switching")).toBe(false);
@@ -62,11 +64,13 @@ describe("setTheme", () => {
     setTheme("dark");
     expect(document.documentElement.dataset.theme).toBe("dark");
     expect(document.documentElement.classList.contains("theme-switching")).toBe(true);
+    expect(document.documentElement.classList.contains("theme-snapshot")).toBe(true);
     done();
     await finished;
     await Promise.resolve();
     await Promise.resolve();
     expect(document.documentElement.classList.contains("theme-switching")).toBe(false);
+    expect(document.documentElement.classList.contains("theme-snapshot")).toBe(false);
   });
 
   it("two quick toggles flip twice, even before the page shows the first", async () => {

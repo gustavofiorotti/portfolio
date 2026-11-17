@@ -36,7 +36,7 @@ function endSwitch(id: number, dry: boolean) {
     requestAnimationFrame(() => {
       if (id !== switchId) return;
       const html = document.documentElement;
-      html.classList.remove("theme-switching");
+      html.classList.remove("theme-switching", "theme-snapshot");
       if (!dry) return;
       html.classList.add("theme-repaint");
       requestAnimationFrame(() => html.classList.remove("theme-repaint"));
@@ -56,8 +56,9 @@ export function setTheme(theme: Theme) {
   // crossfade, WebKit can crossfade too (drop the isWebKitEngine check)
   if (typeof document.startViewTransition === "function" && !reduce && !isWebKitEngine(navigator.userAgent)) {
     // before the old snapshot is taken: snapshots drop backdrop-filter, so the glass goes dense
-    // for the crossfade instead of turning see-through
-    document.documentElement.classList.add("theme-switching");
+    // for the crossfade instead of turning see-through (theme-snapshot: only on this path; the
+    // dry switch keeps the glass as it is, or the header jumped to the dense fill for a moment)
+    document.documentElement.classList.add("theme-switching", "theme-snapshot");
     const vt = document.startViewTransition(() => applyTheme(theme));
     // a switch started during another one skips the older transition: that rejection is expected
     vt.ready.catch(() => {});

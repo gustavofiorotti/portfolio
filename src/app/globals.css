@@ -86,9 +86,9 @@ html.theme-switching *::after {
 /* View Transition snapshots have no backdrop-filter: keep the glass readable while they show
    (only during the snapshot; when the crossfade ends the live glass, with its blur, takes over).
    theme-snapshot is set only on the View Transition path: the dry switch keeps the glass as is,
-   and the dense glass (Firefox) is already denser than this fill */
+   and the dense glass and pill (Firefox) are already denser than this fill */
 html.theme-snapshot:not([data-glass="dense"]) .glass,
-html.theme-snapshot .nav-pill {
+html.theme-snapshot:not([data-glass="dense"]) .nav-pill {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
 }
 /* one frame after a dry switch (WebKit): a different radius forces the backdrop to repaint */
@@ -174,6 +174,11 @@ html.theme-repaint .nav-pill {
     border: 1px solid var(--pill-border);
     box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 var(--pill-border), 0 4px 12px -4px var(--shadow);
     transition: left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+  }
+  /* dense glass: the pill is its own tint laid over the solid surface, so nothing shows through
+     it either and it looks the same as over the liquid glass */
+  html[data-glass="dense"] .nav-pill {
+    background: linear-gradient(var(--pill), var(--pill)), var(--surface);
   }
   /* soft response on every button: up 1 px, light shadow, 0.98 on press */
   .btn {

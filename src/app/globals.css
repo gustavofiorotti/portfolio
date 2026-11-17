@@ -85,8 +85,9 @@ html.theme-switching *::after {
 }
 /* View Transition snapshots have no backdrop-filter: keep the glass readable while they show
    (only during the snapshot; when the crossfade ends the live glass, with its blur, takes over).
-   theme-snapshot is set only on the View Transition path: the dry switch keeps the glass as is */
-html.theme-snapshot .glass,
+   theme-snapshot is set only on the View Transition path: the dry switch keeps the glass as is,
+   and the dense glass (Firefox) is already denser than this fill */
+html.theme-snapshot:not([data-glass="dense"]) .glass,
 html.theme-snapshot .nav-pill {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
 }

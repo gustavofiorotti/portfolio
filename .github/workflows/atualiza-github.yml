@@ -16,14 +16,17 @@ jobs:
   redeploy:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Secrets cannot be read in `if:`, so the hook goes through the job env. Without the secret
+    # the job warns and succeeds, instead of failing (and e-mailing) every 12 hours.
+    env:
+      HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
     steps:
+      - name: Avisa que o segredo não está configurado
+        if: env.HOOK == ''
+        run: echo "::warning::Segredo VERCEL_DEPLOY_HOOK_URL não configurado; deploy pulado."
+
       - name: Dispara o deploy de produção na Vercel
-        env:
-          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        if: env.HOOK != ''
         run: |
-          if [ -z "$HOOK" ]; then
-            echo "::error::Segredo VERCEL_DEPLOY_HOOK_URL não configurado."
-            exit 1
-          fi
           curl -fsS --retry 3 --max-time 30 -X POST "$HOOK" > /dev/null
           echo "Deploy de produção disparado."

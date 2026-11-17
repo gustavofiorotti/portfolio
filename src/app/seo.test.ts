@@ -51,3 +51,17 @@ describe("stable share image", () => {
     expect(size).toEqual({ width: 1200, height: 630 });
   });
 });
+
+describe("icons Safari asks for by fixed path", () => {
+  // Safari (Favorites, frequently visited) and iOS request these at the root without reading the
+  // page; with a 404 they showed a letter tile ("V" for vercel.app) instead of the logo
+  it("apple-touch-icon.png and the precomposed one are the 180x180 logo", async () => {
+    const { readFileSync } = await import("node:fs");
+    const logo = readFileSync("src/app/apple-icon.png");
+    for (const name of ["apple-touch-icon.png", "apple-touch-icon-precomposed.png"]) {
+      const png = readFileSync(`public/${name}`);
+      expect(png.equals(logo)).toBe(true);
+      expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([180, 180]);
+    }
+  });
+});

@@ -1,7 +1,7 @@
 "use client";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { homePath, type Locale } from "@/i18n/locales";
 import { CONTACT } from "@/lib/contact";
@@ -10,6 +10,7 @@ import { smoothScrollTo } from "@/lib/motion-utils";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import { showToast } from "@/components/ui/Toast";
 import { RESUME_URL } from "@/lib/resume";
+import { clientShortcutLabel } from "@/lib/shortcut";
 import { SECTION_IDS } from "./sections";
 
 /** ⌘K / Ctrl+K menu: jump to a section, copy the e-mail, download the résumé, switch theme or language. */
@@ -30,6 +31,8 @@ export function CommandMenu() {
     });
   // read live from html[data-theme], so the label is right however the menu was opened
   const dark = useTheme() === "dark";
+  // ⌘K on Apple devices, Ctrl K elsewhere, nothing on phones (no keyboard to talk about)
+  const key = useSyncExternalStore(noSubscribe, clientShortcutLabel, () => "⌘K");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -53,15 +56,15 @@ export function CommandMenu() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={t("open")}
-        title={t("open")}
+        aria-label={key ? t("openKey", { key }) : t("open")}
+        title={key ? t("openKey", { key }) : t("open")}
         className="btn btn-ghost flex h-11 min-w-11 items-center justify-center rounded-full border border-line px-2.5 font-mono text-xs font-medium text-muted sm:h-9 sm:min-w-0"
       >
         {/* phones get a menu icon (sections live here on small screens); desktops see the shortcut */}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="lg:hidden">
           <path d="M4 7h16M4 12h16M4 17h10" />
         </svg>
-        <span className="hidden lg:inline">⌘K</span>
+        <span className="hidden lg:inline">{key ?? "⌘K"}</span>
       </button>
       <Command.Dialog
         open={open}
@@ -71,14 +74,22 @@ export function CommandMenu() {
         contentClassName="cmd-content"
       >
         <div className="flex items-center gap-2.5 border-b border-line px-4 py-3.5">
+          {/* touch only: first in the DOM so the dialog focuses it on open, not the search (the
+              keyboard covered the list and the locked page could not scroll to the last items);
+              shown at the end of the row */}
+          <button type="button" onClick={() => setOpen(false)} aria-label={t("close")} className="cmd-close order-last -my-1.5 -mr-2 grid size-11 place-items-center rounded-full text-muted">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="text-muted">
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
           <Command.Input placeholder={t("placeholder")} className="flex-1 bg-transparent text-base outline-none placeholder:text-muted" />
-          <kbd className="rounded-md border border-line px-1.5 py-0.5 font-mono text-[11px] text-muted">esc</kbd>
+          <kbd className="cmd-keys rounded-md border border-line px-1.5 py-0.5 font-mono text-[11px] text-muted">esc</kbd>
         </div>
-        <Command.List className="max-h-[360px] overflow-y-auto p-2">
+        <Command.List className="cmd-list overflow-y-auto overscroll-contain p-2">
           <Command.Empty className="px-3 py-5 text-sm text-muted">{t("empty")}</Command.Empty>
           {SECTION_IDS.map((id) => (
             <Item key={id} label={t("goTo", { section: nav(id) })} group={t("groups.navigate")} onSelect={run(() => smoothScrollTo(id, 72))} />
@@ -94,7 +105,7 @@ export function CommandMenu() {
           <Item label={t("openLinkedin")} group={t("groups.link")} onSelect={run(() => window.open(CONTACT.linkedin, "_blank", "noopener"))} />
           <Item label={t("otherLanguage")} group={t("groups.language")} onSelect={run(() => router.push(homePath(other)))} />
         </Command.List>
-        <div className="flex gap-4 border-t border-line px-4 py-2.5 font-mono text-xs text-muted">
+        <div className="cmd-keys flex gap-4 border-t border-line px-4 py-2.5 font-mono text-xs text-muted">
           <span>↑↓ {t("hintNavigate")}</span>
           <span>↵ {t("hintOpen")}</span>
           <span>esc {t("hintClose")}</span>
@@ -103,6 +114,8 @@ export function CommandMenu() {
     </>
   );
 }
+
+const noSubscribe = () => () => {};
 
 function Item({ label, group, onSelect }: { label: string; group: string; onSelect: () => void }) {
   return (

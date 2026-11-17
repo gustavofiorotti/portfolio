@@ -27,7 +27,8 @@
     "turnOn": "Acender a luz (tema claro)"
   },
   "cmd": {
-    "open": "Abrir menu de comandos (⌘K)",
+    "open": "Abrir menu de comandos",
+    "openKey": "Abrir menu de comandos ({key})",
     "label": "Menu de comandos",
     "placeholder": "O que você procura?",
     "empty": "Nada encontrado.",
@@ -43,6 +44,7 @@
     "hintNavigate": "navegar",
     "hintOpen": "abrir",
     "hintClose": "fechar",
+    "close": "Fechar",
     "groups": {
       "navigate": "navegar",
       "action": "ação",

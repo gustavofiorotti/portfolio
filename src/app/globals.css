@@ -249,6 +249,14 @@ html.theme-repaint .nav-pill {
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: blur(10px);
 }
+/* phones: no keyboard hints, a close button instead of "esc" (CommandMenu.tsx) */
+.cmd-close { display: none; }
+@media not (any-pointer: fine) {
+  .cmd-keys { display: none; }
+  .cmd-close { display: grid; }
+}
+/* the list always ends inside the screen, so every item can be reached on a short phone */
+.cmd-list { max-height: min(360px, calc(100dvh - 16vh - 120px)); }
 .cmd-content {
   position: fixed;
   top: 16vh;

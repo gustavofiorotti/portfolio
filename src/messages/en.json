@@ -27,7 +27,8 @@
     "turnOn": "Turn the light on (light theme)"
   },
   "cmd": {
-    "open": "Open command menu (⌘K)",
+    "open": "Open command menu",
+    "openKey": "Open command menu ({key})",
     "label": "Command menu",
     "placeholder": "What are you looking for?",
     "empty": "Nothing found.",
@@ -43,6 +44,7 @@
     "hintNavigate": "navigate",
     "hintOpen": "open",
     "hintClose": "close",
+    "close": "Close",
     "groups": {
       "navigate": "navigate",
       "action": "action",

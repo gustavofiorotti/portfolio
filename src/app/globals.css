@@ -384,7 +384,8 @@ section[tabindex="-1"]:focus {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 17;
+  /* above the hearts (17): they rise from the same head and covered the words ("he♥e") */
+  z-index: 18;
   margin-top: -6px;
   padding: 5px 10px;
   border: 1px solid var(--line);

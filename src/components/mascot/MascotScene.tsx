@@ -11,6 +11,7 @@ import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { FooterGufi } from "./FooterGufi";
 import { Overlays } from "./overlays";
+import { Switch3D } from "./Switch3D";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
@@ -471,6 +472,7 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
         <group ref={root}>
           <Plush {...scene} />
         </group>
+        <Switch3D dark={scene.dark} still={scene.still} />
         <FooterGufi still={scene.still} />
       </Overlays>
     </Canvas>

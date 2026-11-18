@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sleepLine, sleepPose, zzzNow } from "./sleep";
+import { BREATH_NOD, BREATH_SWELL, sleepLine, sleepPose, zzzNow } from "./sleep";
 
 describe("sleepPose", () => {
   it("is awake before getting sleepy", () => {
@@ -58,5 +58,14 @@ describe("zzzNow", () => {
     expect(zzzNow(z, "asleep", null, false, 10)).toBe(false);
     zzzNow(z, null, null, true, 11); // the pointer moved
     expect(zzzNow(z, "asleep", "asleep", false, 20)).toBe(true);
+  });
+
+  it("breathes a little deeper while asleep, without becoming a bob", () => {
+    expect(BREATH_NOD).toBeGreaterThan(0.03);
+    expect(BREATH_NOD).toBeLessThanOrEqual(0.06);
+    expect(BREATH_SWELL).toBeGreaterThan(0.012);
+    expect(BREATH_SWELL).toBeLessThanOrEqual(0.03);
+    const nods = Array.from({ length: 60 }, (_, i) => sleepPose(1000 + i * 0.1)!.nod);
+    expect(Math.max(...nods) - Math.min(...nods)).toBeCloseTo(2 * BREATH_NOD, 2);
   });
 });

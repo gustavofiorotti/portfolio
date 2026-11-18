@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { addBurst, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS } from "./heart-burst";
+import { addBurst, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS, SIDE_PX, TO_CENTRE_PX } from "./heart-burst";
+import { BOBBY_HOME, PPU } from "./ViewRig";
 
 describe("hearts", () => {
   it("limits how often a burst comes", () => {
@@ -14,7 +15,9 @@ describe("hearts", () => {
     expect(b.hearts).toHaveLength(3);
     for (const h of b.hearts) {
       expect(["💕", "❤️"]).toContain(h.glyph);
-      expect(Math.abs(h.dx)).toBeLessThanOrEqual(20);
+      // beside the head, never over its top (where the speech bubble is)
+      expect(Math.abs(h.dx)).toBeGreaterThanOrEqual(SIDE_PX);
+      expect(Math.abs(h.dx)).toBeLessThanOrEqual(SIDE_PX + 8);
       expect(h.size).toBeGreaterThanOrEqual(11);
       expect(h.size).toBeLessThanOrEqual(15);
     }
@@ -25,5 +28,15 @@ describe("hearts", () => {
     for (let i = 1; i < 6; i++) list = addBurst(list, makeBurst(i));
     expect(list).toHaveLength(MAX_BURSTS);
     expect(list.at(-1)!.id).toBe(5);
+  });
+
+  it("alternates left and right, and each burst starts on the other side", () => {
+    const sides = (id: number) => makeBurst(id, () => 0.9).hearts.map((h) => Math.sign(h.dx));
+    expect(sides(2)).toEqual([1, -1, 1]);
+    expect(sides(3)).toEqual([-1, 1, -1]);
+  });
+
+  it("anchors on the head's centre line, wherever the scene puts Bobby", () => {
+    expect(Math.abs(TO_CENTRE_PX - -BOBBY_HOME.x * PPU)).toBeLessThan(1);
   });
 });

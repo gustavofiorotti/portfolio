@@ -13,7 +13,7 @@ import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
 import { heartsDue } from "./heart-burst";
-import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
+import { BREATH_SWELL, SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 export type { PressRequest } from "./press";
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
@@ -248,7 +248,8 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
     s.vel += (1 - s.squash) * 170 * delta;
     s.vel *= Math.exp(-8 * delta);
     s.squash += s.vel * delta;
-    const sy = s.squash * (1 + Math.sin(t * 1.6 + 1.2) * 0.012 * motion) * (1 + (pose?.yawn ?? 0) * 0.09);
+    const swell = pose?.stage === "asleep" ? BREATH_SWELL : 0.012; // deeper breaths while asleep (sleep.ts)
+    const sy = s.squash * (1 + Math.sin(t * 1.6 + 1.2) * swell * motion) * (1 + (pose?.yawn ?? 0) * 0.09);
     body.current.scale.set(1 + (1 - sy) * 0.65, sy, 1 + (1 - sy) * 0.65);
     s.shake = Math.max(0, s.shake - delta * 2.5);
     const tremble = (mood === "furioso" ? Math.sin(t * 62) * 0.03 : mood === "bravo" ? Math.sin(t * 48) * 0.012 : 0) * motion;

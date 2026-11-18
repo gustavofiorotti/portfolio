@@ -58,4 +58,29 @@ describe("CommandMenu", () => {
     expect(html).toMatch(/class="hidden lg:inline invisible"/);
     expect(html).toContain('aria-label="Abrir menu de comandos"');
   });
+
+  it("lists each project link that exists, the résumé twice, and every social in the contact data", async () => {
+    setup("MacIntel", true);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Abrir menu de comandos (⌘K)" })));
+    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    for (const label of ["Mão na Obra: ver online", "Mão na Obra: ver código", "juridiQue: ver código", "Ver currículo", "Baixar currículo (PDF)", "Copiar link do site", "Abrir LinkedIn", "Abrir GitHub", "Abrir X", "Abrir Instagram"]) {
+      expect(options.some((o) => o?.startsWith(label))).toBe(true);
+    }
+    // juridiQue has no live site, so no "ver online" entry
+    expect(options.some((o) => o?.startsWith("juridiQue: ver online"))).toBe(false);
+  });
+
+  it("copies the site link for the current language and confirms it", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { ...navigator, platform: "MacIntel", clipboard: { writeText } });
+    const toasts: string[] = [];
+    const onToast = (e: Event) => toasts.push((e as CustomEvent<string>).detail);
+    window.addEventListener("app-toast", onToast);
+    setup("MacIntel", true);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Abrir menu de comandos/ })));
+    await act(async () => fireEvent.click(screen.getByRole("option", { name: /Copiar link do site/ })));
+    window.removeEventListener("app-toast", onToast);
+    expect(writeText).toHaveBeenCalledWith("https://gufi.vercel.app");
+    expect(toasts).toEqual(["Link copiado"]);
+  });
 });

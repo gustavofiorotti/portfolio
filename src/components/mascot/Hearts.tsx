@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
-import { addBurst, BELOW_TOP_PX, HEART_LIFE_MS, makeBurst, TO_CENTRE_PX, type Burst } from "./heart-burst";
+import { addBurst, BELOW_TOP_PX, HEART_LIFE_MS, makeBurst, type Burst } from "./heart-burst";
 import type { Layout } from "./ViewRig";
 import "./hearts.css";
 
@@ -27,7 +27,7 @@ export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRef
     let raf = 0;
     const follow = () => {
       const { headX, headY } = layout.current;
-      if (el.current) el.current.style.transform = `translate(${headX + TO_CENTRE_PX}px, ${headY + BELOW_TOP_PX}px)`;
+      if (el.current) el.current.style.transform = `translate(${headX}px, ${headY + BELOW_TOP_PX}px)`;
       raf = requestAnimationFrame(follow);
     };
     follow();

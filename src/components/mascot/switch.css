@@ -2,14 +2,6 @@
    Bobby, fixed on the screen. The half of the rocker that is pushed out is the active theme: top
    = light (sun), bottom = dark (moon); its engraved symbol lights up in the accent. */
 .mascot-switch {
-  --sw-plate: linear-gradient(165deg, var(--surface) 0%, #f6f5f2 50%, #e9e7e2 100%);
-  --sw-plate-shadow: inset 0 1px 0 var(--surface), inset 0 -1px 2px rgb(120 110 95 / 0.12), 0 1px 2px rgb(24 24 27 / 0.1), 0 10px 18px -8px rgb(24 24 27 / 0.38);
-  --sw-well: #e3e1dc;
-  --sw-well-shadow: inset 0 2px 4px rgb(90 80 65 / 0.25), 0 1px 0 var(--surface);
-  --sw-key: linear-gradient(180deg, var(--surface) 0%, #fbfaf8 50%, #e2e0da 100%);
-  --sw-key-shadow: inset 0 1px 0 var(--surface), 0 3px 5px -1px rgb(60 50 40 / 0.28);
-  --sw-engrave: rgb(120 110 95 / 0.32);
-  --sw-lit: var(--accent);
   position: absolute;
   right: 6px;
   bottom: 6px;
@@ -22,17 +14,6 @@
   box-shadow: var(--sw-plate-shadow);
   cursor: pointer;
   pointer-events: auto;
-}
-:root[data-theme="dark"] .mascot-switch {
-  --sw-plate: linear-gradient(165deg, #34343a 0%, #26262b 45%, #1d1d21 100%);
-  --sw-plate-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 2px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 18px -8px rgb(0 0 0 / 0.7);
-  --sw-well: #121214;
-  --sw-well-shadow: inset 0 2px 4px rgb(0 0 0 / 0.7), 0 1px 0 rgb(255 255 255 / 0.06);
-  --sw-key: linear-gradient(180deg, #2a2a2f 0%, #2f2f35 50%, #45454d 100%);
-  --sw-key-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.14), 0 -3px 5px rgb(0 0 0 / 0.45);
-  --sw-engrave: rgb(0 0 0 / 0.55);
-  /* the logo red reads too dark on graphite: a lighter step of it */
-  --sw-lit: #ff5a4f;
 }
 .mascot-well {
   position: absolute;
@@ -74,16 +55,21 @@
   color: var(--sw-lit);
   filter: none;
 }
-.mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(11deg); }
-.mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(-11deg); }
-.mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(4deg); }
-.mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(-4deg); }
-/* desktop with the 3D Bobby: right where his scene puts the switch (scene x 1.15, 57 px right of
-   the box center, 15 px below its center, 1.6x), so his hand lands on it */
+/* only the key moves (kit-gustavo); touch screens skip it, a tap would leave it half pressed */
+@media (hover: hover) {
+  .mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(11deg); }
+  .mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(-11deg); }
+  .mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(4deg); }
+  .mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(-4deg); }
+}
+/* desktop with the 3D Bobby: centered on the switch's spot in his scene (switch-spot.ts), so his
+   hand lands on it. The stage box is 200 × 150 at right 4 px, top 50% - 90 px; the scene origin
+   is 0.35 units below its center and the switch at (1.15, 0.05) units, 50.18 px each: center at
+   (right 46.3 px, 50% + 0.05 px). Checked by switch-spot.test.ts. */
 @media (min-width: 1024px) {
   .mascot-switch:not(.is-plain) {
-    right: 20px;
-    top: calc(50% + 15px);
+    right: 24px;
+    top: 50%;
     bottom: auto;
     width: 44px;
     height: 68px;

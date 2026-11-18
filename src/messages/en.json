@@ -19,8 +19,7 @@
   "hero": {
     "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
-    "seeResume": "See résumé",
-    "downloadResume": "Download résumé (PDF)"
+    "seeResume": "See résumé"
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
@@ -259,5 +258,15 @@
       "who?",
       "I'm awake!"
     ]
+  },
+  "resume": {
+    "title": "Résumé",
+    "view": "View",
+    "download": "Download",
+    "downloadPdf": "Download résumé (PDF)",
+    "openNewTab": "Open in new tab",
+    "close": "Close",
+    "page": "Gustavo Fiorotti's résumé, page {n} of {total}",
+    "dialog": "Résumé preview"
   }
 }

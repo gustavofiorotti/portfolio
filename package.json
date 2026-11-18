@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "fetch:github": "node scripts/fetch-github-contributions.mjs"
+    "fetch:github": "node scripts/fetch-github-contributions.mjs",
+    "resume:pages": "node scripts/resume-pages.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.8.2",

@@ -5,9 +5,12 @@
 """Builds the one-page resume PDF served by the site.
 
 Usage: uv run scripts/build_cv.py [output.pdf]
-Default output: public/curriculo-gustavo-fiorotti.pdf. The phone number is intentionally
+Default output: public/curriculo-gustavo-fiorotti.pdf, also copied to iCloud Drive/Drive when that
+folder exists (skipped otherwise). The phone number is intentionally
 left out because this PDF is public; career text mirrors contexto-linkedin-curriculo.md.
 """
+import hashlib
+import shutil
 import sys
 from pathlib import Path
 
@@ -19,8 +22,10 @@ from reportlab.lib.units import mm
 from reportlab.platypus import (HRFlowable, ListFlowable, ListItem, Paragraph,
                                 SimpleDocTemplate, Spacer, Table, TableStyle)
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else str(
-    Path(__file__).resolve().parent.parent / "public" / "curriculo-gustavo-fiorotti.pdf")
+DEFAULT_OUT = Path(__file__).resolve().parent.parent / "public" / "curriculo-gustavo-fiorotti.pdf"
+OUT = sys.argv[1] if len(sys.argv) > 1 else str(DEFAULT_OUT)
+# Gustavo's iCloud Drive copy; skipped when the folder is missing (CI, other machines).
+ICLOUD_DIR = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/Drive"
 ACCENT = HexColor("#1F3A5F")
 MUTED = HexColor("#555555")
 
@@ -139,3 +144,16 @@ story.append(Paragraph("<b>Oracle:</b> Database Foundations", base))
 doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=10 * mm,
                         bottomMargin=9 * mm, title="Currículo - Gustavo Fiorotti", author="Gustavo Fiorotti")
 doc.build(story)
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+# Only the published PDF goes to iCloud, never temp builds (check_cv.py passes its own path).
+if Path(OUT).resolve() == DEFAULT_OUT and ICLOUD_DIR.is_dir():
+    copy = ICLOUD_DIR / DEFAULT_OUT.name
+    shutil.copyfile(OUT, copy)
+    if sha256(copy) != sha256(OUT):
+        sys.exit(f"iCloud copy differs from {OUT}")
+    print(f"Copied to {copy}")

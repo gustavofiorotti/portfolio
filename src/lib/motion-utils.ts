@@ -79,6 +79,8 @@ function glideTo(destination: () => number, onArrive: () => void) {
   cancelGlide?.();
   stopWheelGlide(); // the wheel's own easing would pull the page against this one
   const from = window.scrollY;
+  // already there (the topic of the section on screen): arrive now, not after a 1 s glide
+  if (Math.abs(destination() - from) < 2) return onArrive();
   const duration = jumpDuration(destination() - from, window.innerHeight);
   const start = performance.now();
   let raf = 0;
@@ -95,7 +97,13 @@ function glideTo(destination: () => number, onArrive: () => void) {
     if (arrived) onArrive();
   };
   const cancel = () => stop(false);
-  const interrupt = () => stop(false);
+  // the event that started the jump (⌘K's Enter is still on its way to window) never stops it;
+  // of the keys, only those that scroll the page do
+  const interrupt = (e: Event) => {
+    if (e.timeStamp <= start) return;
+    if (e instanceof KeyboardEvent && !SCROLL_KEYS.has(e.key)) return;
+    stop(false);
+  };
   const place = (now: number) => {
     const to = destination();
     window.scrollTo({ top: Math.round(glideAt(from, to, now - start, duration)), behavior: "instant" });
@@ -113,6 +121,7 @@ function glideTo(destination: () => number, onArrive: () => void) {
 }
 
 const INTERRUPTS = ["wheel", "touchstart", "keydown", "mousedown"] as const;
+const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
 
 /** The furthest the page can scroll. */
 const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);

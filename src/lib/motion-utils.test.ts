@@ -86,6 +86,29 @@ describe("smoothScrollTo", () => {
     expect(isSmoothScrolling()).toBe(false);
   });
 
+  it("the Enter that started the jump (⌘K) does not stop it; a later arrow key does", () => {
+    page(6000);
+    section("alvo", 3000);
+    vi.advanceTimersByTime(50);
+    const enter = new KeyboardEvent("keydown", { key: "Enter" });
+    smoothScrollTo("alvo");
+    window.dispatchEvent(enter); // timeStamp from before the jump started
+    vi.advanceTimersByTime(100);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" }));
+    vi.advanceTimersByTime(100);
+    expect(isSmoothScrolling()).toBe(true);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(isSmoothScrolling()).toBe(false);
+  });
+
+  it("a jump to where the page already is arrives at once", () => {
+    page(6000, 1000);
+    const focus = vi.spyOn(section("alvo", 1000), "focus");
+    smoothScrollTo("alvo");
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(isSmoothScrolling()).toBe(false);
+  });
+
   it("a newer jump takes over: the older one never moves focus", () => {
     page(6000);
     const f1 = vi.spyOn(section("um", 800), "focus");

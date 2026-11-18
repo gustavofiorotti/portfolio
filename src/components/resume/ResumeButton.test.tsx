@@ -146,6 +146,11 @@ describe("ResumeButton", () => {
     expect(dialog().hasAttribute("data-closing")).toBe(true);
     expect(dialog().open).toBe(true); // still fading
     act(() => {
+      // an animation ending inside the dialog bubbles up: not the dialog's fade
+      dialog().querySelector(".resume-close")!.dispatchEvent(new Event("animationend", { bubbles: true }));
+    });
+    expect(dialog().open).toBe(true);
+    act(() => {
       dialog().dispatchEvent(new Event("animationend"));
     });
     expect(dialog().open).toBe(false);

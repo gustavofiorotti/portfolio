@@ -27,6 +27,7 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
   const t = useTranslations("resume");
   const ref = useRef<HTMLDialogElement>(null);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ended = useRef<((e: AnimationEvent) => void) | null>(null);
   const closed = useRef(onClosed);
   useEffect(() => {
     closed.current = onClosed;
@@ -36,6 +37,8 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
     const dialog = ref.current;
     if (!dialog) return;
     const stopClosing = () => {
+      if (ended.current) dialog.removeEventListener("animationend", ended.current);
+      ended.current = null;
       if (closing.current) clearTimeout(closing.current);
       closing.current = null;
       dialog.removeAttribute("data-closing");
@@ -64,7 +67,13 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
       const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (reduce || !anim || anim === "none") finish();
       else {
-        dialog.addEventListener("animationend", finish, { once: true });
+        // only the dialog's own fade: an animation ending inside it (a page, a button) bubbles up too
+        const onEnd = (e: AnimationEvent) => {
+          if (e.target !== dialog) return;
+          finish();
+        };
+        ended.current = onEnd;
+        dialog.addEventListener("animationend", onEnd);
         closing.current = setTimeout(finish, 400); // in case animationend never comes
       }
     } else if (!open && !dialog.open) {

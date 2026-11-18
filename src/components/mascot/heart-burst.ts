@@ -19,6 +19,13 @@ const GLYPHS = ["💕", "❤️"];
 // and covered them for seconds. Px from the point Hearts.tsx anchors to (the head's centre line,
 // a little below its top).
 export const SIDE_PX = 42; // sideways from the centre line, to clear the head
+
+// layout.headX/headY is the speech bubble's anchor: BOBBY_HOME.x (-0.45 units) left of the
+// head's centre line, at the top of the head. Hearts move it onto the centre line and a little
+// lower. Kept as a number (a test pins it to -BOBBY_HOME.x * PPU) so the page bundle does not
+// pull three.js in through ViewRig.
+export const TO_CENTRE_PX = 22;
+export const BELOW_TOP_PX = 24;
 const SIDE_JITTER_PX = 8;
 
 /**

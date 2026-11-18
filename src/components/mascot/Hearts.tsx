@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
-import { addBurst, HEART_LIFE_MS, makeBurst, type Burst } from "./heart-burst";
+import { addBurst, BELOW_TOP_PX, HEART_LIFE_MS, makeBurst, TO_CENTRE_PX, type Burst } from "./heart-burst";
 import type { Layout } from "./ViewRig";
 import "./hearts.css";
 
@@ -17,12 +17,6 @@ export function useHearts() {
   }, []);
   return { bursts, add };
 }
-
-// layout.headX/headY is the bubble's anchor: 0.45 units (≈ 22 px) left of the head's centre
-// line and at the top of the head. The hearts anchor on the centre line, a little lower, so
-// they start beside the head (heart-burst.ts spreads them left and right).
-const TO_CENTRE_PX = 22;
-const BELOW_TOP_PX = 24;
 
 /** Hearts floating up beside Bobby's head (the scene writes the head's screen point into layout). */
 export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRefObject<Layout> }) {

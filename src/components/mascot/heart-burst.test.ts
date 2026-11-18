@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { addBurst, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS, SIDE_PX } from "./heart-burst";
+import { addBurst, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS, SIDE_PX, TO_CENTRE_PX } from "./heart-burst";
+import { BOBBY_HOME, PPU } from "./ViewRig";
 
 describe("hearts", () => {
   it("limits how often a burst comes", () => {
@@ -33,5 +34,9 @@ describe("hearts", () => {
     const sides = (id: number) => makeBurst(id, () => 0.9).hearts.map((h) => Math.sign(h.dx));
     expect(sides(2)).toEqual([1, -1, 1]);
     expect(sides(3)).toEqual([-1, 1, -1]);
+  });
+
+  it("anchors on the head's centre line, wherever the scene puts Bobby", () => {
+    expect(Math.abs(TO_CENTRE_PX - -BOBBY_HOME.x * PPU)).toBeLessThan(1);
   });
 });

@@ -69,8 +69,10 @@ describe("zzzNow", () => {
     expect(Math.max(...nods) - Math.min(...nods)).toBeCloseTo(2 * BREATH_NOD, 2);
   });
 
-  it("is asleep (first Zzz) 20 s after the pointer stops", () => {
-    expect(ZZZ_AFTER).toBe(20);
+  it("yawns 20 s after the pointer stops and is asleep (first Zzz) about 12 s later", () => {
+    expect(SLEEPY_AFTER).toBe(20);
+    expect(ZZZ_AFTER).toBeCloseTo(32.2, 5);
+    expect(sleepPose(0)?.stage).toBe("yawn");
     expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER - 0.05)?.stage).toBe("drop");
     expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER)?.stage).toBe("asleep");
   });

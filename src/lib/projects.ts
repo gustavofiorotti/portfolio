@@ -32,7 +32,7 @@ export const projects: readonly Project[] = [
     name: "Portfólio",
     tags: ["Next.js", "TypeScript", "Tailwind CSS", "Three.js"],
     image: { kind: "self" },
-    online: "https://gus.poke.site",
+    online: "https://gufi.vercel.app",
     code: "https://github.com/gustavofiorotti/portfolio",
   },
   {

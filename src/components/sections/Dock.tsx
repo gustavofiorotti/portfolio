@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { CONTACT } from "@/lib/contact";
+import { CONTACT, SOCIAL_LINKS } from "@/lib/contact";
 import { copyText } from "@/lib/copy";
 import { DOCK, dockSizes, dockWidth, fitDock, hoveredIcon, type Geometry } from "@/lib/dock";
 import { showToast } from "@/components/ui/Toast";
@@ -16,12 +16,7 @@ const SCRUB_PX = 8; // a touch that moves more than this is a scrub, not a tap
 const COPIED_MS = 2000;
 
 // order by importance (kit-gustavo): e-mail first, it copies instead of opening mailto
-const LINKS = [
-  { id: "linkedin", href: CONTACT.linkedin },
-  { id: "x", href: CONTACT.x },
-  { id: "github", href: CONTACT.github },
-  { id: "instagram", href: CONTACT.instagram },
-] as const;
+const LINKS = SOCIAL_LINKS;
 const COUNT = LINKS.length + 1;
 
 const ICON_CLASS =

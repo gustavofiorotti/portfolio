@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BREATH_NOD, BREATH_SWELL, sleepLine, sleepPose, zzzNow } from "./sleep";
+import { BREATH_NOD, BREATH_SWELL, SLEEPY_AFTER, sleepLine, sleepPose, ZZZ_AFTER, zzzNow } from "./sleep";
 
 describe("sleepPose", () => {
   it("is awake before getting sleepy", () => {
@@ -67,5 +67,11 @@ describe("zzzNow", () => {
     expect(BREATH_SWELL).toBeLessThanOrEqual(0.03);
     const nods = Array.from({ length: 60 }, (_, i) => sleepPose(1000 + i * 0.1)!.nod);
     expect(Math.max(...nods) - Math.min(...nods)).toBeCloseTo(2 * BREATH_NOD, 2);
+  });
+
+  it("is asleep (first Zzz) 20 s after the pointer stops", () => {
+    expect(ZZZ_AFTER).toBe(20);
+    expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER - 0.05)?.stage).toBe("drop");
+    expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER)?.stage).toBe("asleep");
   });
 });

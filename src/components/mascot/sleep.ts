@@ -4,8 +4,6 @@
 // dips) each ending in a jolt awake, then he drops off for good: eyes shut, slow breathing,
 // a drop of drool and "Zzz" bubbles.
 
-export const SLEEPY_AFTER = 25; // s without pointer movement before the yawn
-
 const YAWN_END = 1.8;
 const NODS: [number, number][] = [
   [YAWN_END, 5.4], // droop from .. jolt at
@@ -14,6 +12,9 @@ const NODS: [number, number][] = [
 const JOLT = 0.45; // s the jolt lasts
 const DROP_START = 10.1;
 const ASLEEP_AT = 12.2;
+
+export const ZZZ_AFTER = 20; // s without pointer movement until he is asleep and the first "Zzz"
+export const SLEEPY_AFTER = ZZZ_AFTER - ASLEEP_AT; // s before the yawn that starts it (7.8)
 
 export type SleepStage = "yawn" | "nod" | "jolt" | "drop" | "asleep";
 

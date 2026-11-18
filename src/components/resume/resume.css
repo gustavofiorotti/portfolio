@@ -62,26 +62,51 @@
   outline-offset: 3px;
 }
 
-/* touch: the first tap morphs the pill into "Ver | Baixar" (ResumeButton, Motion layout) */
-.resume-duo.is-split {
-  gap: 8px;
+/* touch: the first tap morphs the pill into "Ver | Baixar" (ResumeButton) */
+.resume-label {
+  display: inline-grid;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.resume-pill-icon {
+.resume-label-text {
+  grid-area: 1 / 1;
+  justify-self: start;
+  transition: opacity 0.2s ease;
+}
+.resume-label-text[aria-hidden] {
+  opacity: 0;
+}
+/* Baixar's column: 0 wide while folded, its own width when split */
+.resume-split-slot {
   display: grid;
+  grid-template-columns: 0fr;
+  transition: grid-template-columns 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.resume-half {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  height: 52px;
-  min-width: 112px;
-  padding: 0 22px;
-  border: 1px solid var(--line);
-  background-color: var(--bg);
-  font-size: 16px;
-  font-weight: 500;
+.resume-duo[data-split] .resume-split-slot {
+  grid-template-columns: 1fr;
+}
+.resume-split-clip {
+  min-width: 0;
+  overflow: hidden;
+  /* room for the button's shadow and focus ring inside the clip */
+  padding: 4px 4px 4px 8px;
+  margin: -4px -4px -4px 0;
+}
+.resume-split-dl {
+  opacity: 0;
+  transform: translateX(-24px) scale(0.85);
+  transition: opacity 0.2s ease, transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.resume-duo[data-split] .resume-split-dl {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .resume-label,
+  .resume-label-text,
+  .resume-split-slot,
+  .resume-split-dl { transition: none; }
 }
 
 /* full-screen preview */

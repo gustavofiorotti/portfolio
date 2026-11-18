@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
-import { LightSwitch, SW, SW_SCALE } from "./LightSwitch";
+import { SW, SW_SCALE } from "./switch-spot";
 import { Strands } from "./Strands";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
@@ -58,7 +58,7 @@ type State = {
 };
 
 type SceneProps = {
-  onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>;
+  onContextLost?: () => void; dark: boolean; onToggle: () => void; press: MutableRefObject<PressRequest>;
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
   onSay?: (what: Say, extra?: SayExtra) => void;
@@ -85,7 +85,7 @@ function writeClicks(n: number) {
   }
 }
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
+function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
   const feel = useRef(createFeel());
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
@@ -100,8 +100,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const eyesPivot = useRef<THREE.Group>(null);
   const hands = useRef<(THREE.Group | null)[]>([]);
   const shadow = useRef<THREE.Mesh>(null);
-  const rocker = useRef<THREE.Group | null>(null);
-  const plate = useRef<THREE.Group | null>(null);
   const shadowTex = useShadowTexture();
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const expr = useRef<EyeShape>({ ...MOODS.normal });
@@ -114,7 +112,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const s = st.current;
     const p = pointer.current;
     const t = state.clock.elapsedTime;
-    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !rocker.current || !carrier.current || !scene.current || !drool.current) return;
+    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !carrier.current || !scene.current || !drool.current) return;
 
     // drag and throw: physics in throw.ts; hits squash him, and he runs home behind the cards
     const f = th.current;
@@ -291,7 +289,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       }
       if (sd > 0 && pressing && pp < 0.66) {
         const up = (s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07) * SW_SCALE;
-        tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.2 * SW_SCALE);
+        tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.08 * SW_SCALE); // the switch is flat on the screen plane
         // SW lives in this scene's space, which the view rig moves around the screen: take it to
         // world space before going into the hand's (treating it as world sent the hand far left)
         sceneRoot.updateWorldMatrix(true, false);
@@ -321,14 +319,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const look = pressing && pp < 0.75;
     eyesPivot.current.rotation.y = damp(eyesPivot.current.rotation.y, look ? 0.34 : tx, look ? 14 : 8, delta);
     eyesPivot.current.rotation.x = damp(eyesPivot.current.rotation.x, look ? 0.02 : -ty, 8, delta);
-    // the camera follows Bobby, so with him far away the switch is seen at a steep angle and its
-    // depth would smear: flatten it in z as the angle grows (it is a flat plate from the front)
-    if (plate.current) {
-      plate.current.getWorldPosition(tmp);
-      const tan = Math.hypot(tmp.x - state.camera.position.x, tmp.y - state.camera.position.y) / state.camera.position.z;
-      plate.current.scale.z = Math.min(1, 0.3 / Math.max(tan, 1e-3));
-    }
-    rocker.current.rotation.x = damp(rocker.current.rotation.x, dark ? -0.3 : 0.3, 18, delta);
   });
 
   const poke = (ev: ThreeEvent<MouseEvent>) => {
@@ -383,7 +373,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     <group ref={scene}>
       <ambientLight intensity={1.7} />
       <directionalLight position={[-2, 3, 4]} intensity={1.4} />
-      <LightSwitch dark={dark} rocker={rocker} plate={plate} onPress={onSwitchClick} />
       <group position={[-0.45, 0, 0]}>
         <group ref={carrier}>
           <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>

@@ -23,13 +23,33 @@ function Icon({ d }: { d: string }) {
  * tab". A native modal <dialog>: the page behind is inert (focus stays inside), Esc closes, and
  * focus goes back to the button that opened it.
  */
-export function ResumeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClose: () => void; onClosed?: () => void }) {
   const t = useTranslations("resume");
   const ref = useRef<HTMLDialogElement>(null);
+  const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closed = useRef(onClosed);
+  useEffect(() => {
+    closed.current = onClosed;
+  });
 
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
+    const stopClosing = () => {
+      if (closing.current) clearTimeout(closing.current);
+      closing.current = null;
+      dialog.removeAttribute("data-closing");
+    };
+    // the real close, once the closing animation is over: only then can the focus go back to the
+    // page (a modal dialog keeps it inside while it is open)
+    const finish = () => {
+      if (!dialog.hasAttribute("data-closing")) return;
+      stopClosing();
+      if (dialog.open) dialog.close();
+      document.documentElement.classList.remove("resume-open");
+      closed.current?.();
+    };
+    if (open && dialog.hasAttribute("data-closing")) stopClosing(); // opened again mid-close
     if (open && !dialog.open) {
       dialog.showModal();
       // focus the dialog itself (its name is read out): the first link would get it otherwise and
@@ -37,10 +57,19 @@ export function ResumeDialog({ open, onClose }: { open: boolean; onClose: () => 
       dialog.focus();
       // the page behind must not scroll under the preview (iOS scrolls it through the dialog)
       document.documentElement.classList.add("resume-open");
-    } else if (!open && dialog.open) {
-      dialog.close();
+    } else if (!open && dialog.open && !dialog.hasAttribute("data-closing")) {
+      // fade out first (resume.css); with less motion, or no animation at all, close at once
+      dialog.setAttribute("data-closing", "");
+      const anim = getComputedStyle(dialog).animationName;
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || !anim || anim === "none") finish();
+      else {
+        dialog.addEventListener("animationend", finish, { once: true });
+        closing.current = setTimeout(finish, 400); // in case animationend never comes
+      }
+    } else if (!open && !dialog.open) {
+      document.documentElement.classList.remove("resume-open");
     }
-    if (!open) document.documentElement.classList.remove("resume-open");
   }, [open]);
 
   useEffect(() => () => document.documentElement.classList.remove("resume-open"), []);

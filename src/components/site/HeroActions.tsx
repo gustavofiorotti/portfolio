@@ -5,8 +5,9 @@ import { ResumeButton } from "@/components/resume/ResumeButton";
 
 export function HeroActions() {
   const t = useTranslations("hero");
+  // phones: "Ver currículo" goes under "Ver projetos", both centered
   return (
-    <div className="flex flex-wrap justify-center gap-3">
+    <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
       <a
         href="#projetos"
         onClick={(e) => {

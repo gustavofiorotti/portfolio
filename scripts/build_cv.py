@@ -62,7 +62,7 @@ story = [
     Paragraph("Gustavo Fiorotti", name),
     Paragraph("Desenvolvedor Fullstack Júnior", role),
     Spacer(1, 3),
-    Paragraph("Cariacica, ES &nbsp;·&nbsp; "
+    Paragraph("Espírito Santo &nbsp;·&nbsp; "
               + '<link href="mailto:zgustavof@gmail.com" color="#1F3A5F">zgustavof@gmail.com</link>'
               + " &nbsp;·&nbsp; " + link("linkedin.com/in/gustavofiorotti")
               + " &nbsp;·&nbsp; " + link("github.com/gustavofiorotti"), contact),

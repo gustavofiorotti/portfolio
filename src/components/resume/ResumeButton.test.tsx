@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import pt from "@/messages/pt.json";
-import { ARROW, CHECK_C, EYE, ResumeButton } from "./ResumeButton";
+import { CHECK, DOC, DOWNLOAD, ResumeButton } from "./ResumeButton";
 
 const shape = (d: string) => d.replace(/-?\d*\.?\d+/g, "#");
 
@@ -43,9 +43,9 @@ describe("ResumeButton", () => {
     vi.unstubAllGlobals();
   });
 
-  it("eye, arrow and check share the same commands (the morph interpolates numbers)", () => {
-    expect(shape(ARROW)).toBe(shape(EYE));
-    expect(shape(CHECK_C)).toBe(shape(EYE));
+  it("document, download arrow and check share the same commands (the morph interpolates numbers)", () => {
+    expect(shape(DOWNLOAD)).toBe(shape(DOC));
+    expect(shape(CHECK)).toBe(shape(DOC));
   });
 
   it("a mouse click opens the full preview with every page, download and open in a new tab", () => {
@@ -94,16 +94,20 @@ describe("ResumeButton", () => {
     expect(document.documentElement.classList.contains("resume-open")).toBe(false);
   });
 
-  it("with a mouse the icon downloads the PDF directly and morphs eye → arrow on hover", () => {
+  it("with a mouse the side button downloads the PDF directly, its document morphing into an arrow on hover", () => {
     const { container } = renderButton();
-    const icon = screen.getByRole("link", { name: "Baixar currículo (PDF)" });
-    expect(icon.hasAttribute("download")).toBe(true);
-    const d = () => icon.querySelector("path")!.getAttribute("d");
-    expect(d()).toBe(EYE);
+    const side = screen.getByRole("link", { name: "Baixar currículo (PDF)" });
+    expect(side.hasAttribute("download")).toBe(true);
+    const d = () => side.querySelector("path")!.getAttribute("d");
+    expect(d()).toBe(DOC);
+    expect(container.querySelector(".resume-duo")!.hasAttribute("data-open")).toBe(false);
     fireEvent.pointerEnter(container.querySelector(".resume-wrap")!, { pointerType: "mouse" });
     act(() => vi.advanceTimersByTime(600));
-    expect(d()).toBe(ARROW);
-    mouseClick(icon);
+    expect(container.querySelector(".resume-duo")!.hasAttribute("data-open")).toBe(true);
+    expect(d()).toBe(DOWNLOAD);
+    mouseClick(side);
+    act(() => vi.advanceTimersByTime(600));
+    expect(d()).toBe(CHECK);
     expect(dialog().open).toBe(false);
   });
 
@@ -118,15 +122,4 @@ describe("ResumeButton", () => {
     expect(screen.getByRole("button", { name: "Ver currículo" })).toBeTruthy();
   });
 
-  it("a tap on the icon also splits instead of downloading; Ver then opens the preview", () => {
-    renderButton();
-    const icon = screen.getByRole("link", { name: "Baixar currículo (PDF)" });
-    const ev = fireEvent.pointerDown(icon, { pointerType: "touch" });
-    expect(ev).toBe(true);
-    const click = new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 });
-    act(() => void icon.dispatchEvent(click));
-    expect(click.defaultPrevented).toBe(true);
-    tap(screen.getByRole("button", { name: "Ver" }));
-    expect(dialog().open).toBe(true);
-  });
 });

@@ -90,6 +90,15 @@
     transform: translateY(-50%);
   }
 }
+/* the 3D switch is drawn over the button (Switch3D): the button keeps clicks, focus and its label,
+   its own paint steps aside */
+:root[data-switch3d] .mascot-switch:not(.is-plain) {
+  background: transparent;
+  box-shadow: none;
+}
+:root[data-switch3d] .mascot-switch:not(.is-plain) > * {
+  visibility: hidden;
+}
 .mascot-switch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .mascot-rocker, .mascot-half, .mascot-half::after { transition: none; }

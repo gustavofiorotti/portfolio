@@ -124,6 +124,50 @@ describe("ResumeButton", () => {
   });
 
 
+  it("the split is a morph: the same pill becomes Ver, it is not swapped for another button", () => {
+    renderButton();
+    const pill = screen.getByRole("button", { name: "Ver currículo" });
+    tap(pill);
+    expect(screen.getByRole("button", { name: "Ver" })).toBe(pill);
+    expect(dialog().open).toBe(false); // the tap only offers the two choices
+  });
+
+  it("closing fades the preview out first, and only then closes it and gives the focus back", () => {
+    const real = window.getComputedStyle;
+    vi.stubGlobal("getComputedStyle", (el: Element) =>
+      el.tagName === "DIALOG" && el.hasAttribute("data-closing") ? ({ animationName: "resume-out" } as CSSStyleDeclaration) : real(el),
+    );
+    renderButton();
+    mouseClick(screen.getByRole("button", { name: "Ver currículo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    act(() => {
+      dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(dialog().hasAttribute("data-closing")).toBe(true);
+    expect(dialog().open).toBe(true); // still fading
+    act(() => {
+      dialog().dispatchEvent(new Event("animationend"));
+    });
+    expect(dialog().open).toBe(false);
+    expect(document.documentElement.classList.contains("resume-open")).toBe(false);
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Ver currículo" }));
+  });
+
+  it("with less motion it closes at once, with no fade", () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("reduce"), addEventListener() {}, removeEventListener() {} }));
+    const real = window.getComputedStyle;
+    vi.stubGlobal("getComputedStyle", (el: Element) => (el.tagName === "DIALOG" ? ({ animationName: "resume-out" } as CSSStyleDeclaration) : real(el)));
+    renderButton();
+    mouseClick(screen.getByRole("button", { name: "Ver currículo" }));
+    act(() => {
+      fireEvent(dialog(), new Event("cancel", { cancelable: true }));
+    });
+    act(() => {
+      dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(dialog().open).toBe(false);
+  });
+
   it("the split pill does not fold under the open preview; closing folds it and focuses Ver currículo", () => {
     renderButton();
     tap(screen.getByRole("button", { name: "Ver currículo" }));

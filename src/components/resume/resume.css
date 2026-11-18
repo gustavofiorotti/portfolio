@@ -90,6 +90,8 @@
 /* full-screen preview */
 html.resume-open {
   overflow: hidden;
+  /* the scrollbar's room stays, so the page behind does not jump sideways */
+  scrollbar-gutter: stable;
 }
 .resume-dialog {
   position: fixed;

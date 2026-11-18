@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import pt from "@/messages/pt.json";
 import { CHECK, DOC, DOWNLOAD, ResumeButton } from "./ResumeButton";
+import { openResume } from "./use-resume-dialog";
 
 const shape = (d: string) => d.replace(/-?\d*\.?\d+/g, "#");
 
@@ -122,4 +123,39 @@ describe("ResumeButton", () => {
     expect(screen.getByRole("button", { name: "Ver currículo" })).toBeTruthy();
   });
 
+
+  it("the split pill does not fold under the open preview; closing folds it and focuses Ver currículo", () => {
+    renderButton();
+    tap(screen.getByRole("button", { name: "Ver currículo" }));
+    tap(screen.getByRole("button", { name: "Ver" }));
+    expect(dialog().open).toBe(true);
+    act(() => vi.advanceTimersByTime(8000));
+    expect(screen.getByRole("button", { name: "Ver" })).toBeTruthy();
+    act(() => {
+      history.replaceState(null, "");
+      dispatchEvent(new PopStateEvent("popstate"));
+    });
+    act(() => vi.advanceTimersByTime(50));
+    expect(screen.queryByRole("button", { name: "Ver" })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Ver currículo" }));
+  });
+
+  it("other controls (the ⌘K menu) open the same preview", () => {
+    renderButton();
+    act(() => openResume());
+    expect(dialog().open).toBe(true);
+    expect(history.state).toMatchObject({ resumeDialog: true });
+  });
+
+  it("forward opens it again; after a reload the stale entry is dropped and the page starts closed", () => {
+    history.replaceState({ resumeDialog: true }, "");
+    renderButton();
+    expect(dialog().open).toBe(false);
+    expect(history.state?.resumeDialog).toBeUndefined();
+    act(() => {
+      history.replaceState({ resumeDialog: true }, "");
+      dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(dialog().open).toBe(true);
+  });
 });

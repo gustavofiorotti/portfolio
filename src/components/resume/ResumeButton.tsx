@@ -32,10 +32,23 @@ export function ResumeButton() {
   const [saved, setSaved] = useState(false);
   const pointer = useRef("mouse");
   const root = useRef<HTMLDivElement>(null);
+  const pill = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
 
-  // the split pill folds back after a while, or on a tap anywhere else
+  // closing the preview folds the split pill and gives the focus back to "Ver currículo"
+  // (Safari never focused the button on click, so the dialog had nothing to return to)
   useEffect(() => {
-    if (!split) return;
+    if (dialog.open) wasOpen.current = true;
+    else if (wasOpen.current) {
+      wasOpen.current = false;
+      setSplit(false);
+      requestAnimationFrame(() => pill.current?.focus({ preventScroll: true }));
+    }
+  }, [dialog.open]);
+
+  // the split pill folds back after a while, or on a tap anywhere else; never under the preview
+  useEffect(() => {
+    if (!split || dialog.open) return;
     const timer = setTimeout(() => setSplit(false), SPLIT_MS);
     const away = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setSplit(false);
     addEventListener("pointerdown", away);
@@ -43,7 +56,7 @@ export function ResumeButton() {
       clearTimeout(timer);
       removeEventListener("pointerdown", away);
     };
-  }, [split]);
+  }, [split, dialog.open]);
 
   const markSaved = () => {
     setSaved(true);
@@ -57,7 +70,9 @@ export function ResumeButton() {
       onPointerDown={(e) => (pointer.current = e.pointerType)}
       onPointerEnter={(e) => e.pointerType === "mouse" && setHover(true)}
       onPointerLeave={() => setHover(false)}
-      onFocus={() => setHover(true)}
+      // keyboard focus only: a mouse click focuses the pill too (outside Safari), and the side
+      // button would then stay out after the pointer left
+      onFocus={(e) => e.target.matches(":focus-visible") && setHover(true)}
       onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setHover(false)}
     >
       {split ? (
@@ -74,6 +89,7 @@ export function ResumeButton() {
       ) : (
         <div className="resume-duo" data-open={hover || undefined}>
           <button
+            ref={pill}
             type="button"
             aria-haspopup="dialog"
             onClick={(e) => (isTap(pointer.current, e.detail) ? setSplit(true) : dialog.show())}

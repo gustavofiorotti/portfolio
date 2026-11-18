@@ -1,0 +1,87 @@
+/* Closing scene: question, dock, giant Gufi and the credits over him (Contact.tsx) */
+.contact-stage {
+  /* the ball's width on screen; the frames are squares where it takes 78.1% of the width and
+     starts 14.67% from the top */
+  --ball: min(1040px, 96vw);
+  --stage: calc(var(--ball) / 0.781);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 24px 0;
+  text-align: center;
+  /* the stage is wider than the screen on most sizes: cut it sideways, never scroll */
+  overflow-x: clip;
+}
+.contact-dock {
+  position: relative;
+  z-index: 2;
+  margin-top: clamp(64px, 11vw, 132px);
+}
+.gufi-stage {
+  position: relative;
+  z-index: 1;
+  width: var(--stage);
+  max-width: none;
+  aspect-ratio: 1600 / 1024;
+  /* the top of the ball sits just under the dock, which floats a little above it */
+  margin-top: calc(var(--stage) * -0.1467 - 10px);
+  pointer-events: none;
+}
+/* phones: the "m" frames (GufiSpin picks them at the same width) show more of the ball */
+@media (max-width: 640px) {
+  .gufi-stage {
+    aspect-ratio: 480 / 403;
+  }
+}
+.gufi-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* credits: pulled up over the bottom of the Gufi */
+.site-credits {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin-top: -112px;
+  padding: 0 16px 48px;
+}
+.site-credits-pill {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: var(--fg);
+  font-size: 13px;
+  text-align: center;
+}
+/* denser than the header's glass: the red fur behind would take the text below 4.5:1 */
+.site-credits-pill.glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+.site-credits-dot {
+  opacity: 0.5;
+}
+@media (max-width: 520px) {
+  .site-credits {
+    margin-top: -92px;
+    padding-bottom: 28px;
+  }
+  /* narrow enough to clear the floating buttons in the bottom corners */
+  .site-credits-pill {
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 12px;
+  }
+  /* two lines on phones: no dot left hanging at the end of a line */
+  .site-credits-dot {
+    display: none;
+  }
+  .site-credits-pill {
+    flex-direction: column;
+  }
+}

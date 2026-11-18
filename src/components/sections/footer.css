@@ -1,47 +1,72 @@
-/* Closing scene: question, dock, giant Gufi and the credits over him (Contact.tsx) */
+/* Closing scene: the question, the dock floating in front of the top of a giant Gufi (the header
+   logo's character, only his upper half) and the credits over him (Contact.tsx). On desktop with
+   3D he is drawn live in Bobby's canvas (FooterGufi), which sits over the page (z-index 16): the
+   dock and the credits go above it (17). */
 .contact-stage {
-  /* the ball's width on screen; the frames are squares where it takes 78.1% of the width and
-     starts 14.67% from the top */
-  --ball: min(1040px, 96vw);
-  --stage: calc(var(--ball) / 0.781);
+  /* the ball's width on screen; the stage is 10% wider and shows its upper half */
+  --ball: min(820px, 88vw);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 72px 24px 0;
   text-align: center;
-  /* the stage is wider than the screen on most sizes: cut it sideways, never scroll */
+  /* the stage can be wider than the screen: cut it sideways, never scroll */
   overflow-x: clip;
 }
 .contact-dock {
   position: relative;
-  z-index: 2;
-  margin-top: clamp(64px, 11vw, 132px);
+  z-index: 17;
+  margin-top: clamp(40px, 6vw, 72px);
 }
 .gufi-stage {
   position: relative;
   z-index: 1;
-  width: var(--stage);
+  width: calc(var(--ball) * 1.1);
   max-width: none;
-  aspect-ratio: 1600 / 1024;
-  /* the top of the ball sits just under the dock, which floats a little above it */
-  margin-top: calc(var(--stage) * -0.1467 - 10px);
+  aspect-ratio: 2 / 1;
+  /* the top of his fur sits 5% of the ball under the stage's top: the dock dips ~28 px into it */
+  margin-top: calc(var(--ball) * -0.05 - 28px);
   pointer-events: none;
 }
-/* phones: the "m" frames (GufiSpin picks them at the same width) show more of the ball */
-@media (max-width: 640px) {
-  .gufi-stage {
-    aspect-ratio: 480 / 403;
-  }
+/* the still Gufi (phones, no WebGL, Save-Data) steps aside while the live one is drawn */
+:root[data-gufi3d] .gufi-still {
+  visibility: hidden;
 }
-.gufi-canvas {
-  display: block;
+
+.gufi-still {
+  position: absolute;
+  inset: 0;
+}
+.gufi-still img {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
+}
+/* closed eyes over the open ones for a moment every few seconds; the patch's edge fades into the
+   fur. Box in % of the still (measured on the render: 1128 × 564 px) */
+.gufi-still .gufi-blink {
+  left: 30.319%;
+  top: 33.688%;
+  width: 39.273%;
+  height: auto;
+  opacity: 0;
+  mask-image: radial-gradient(farthest-side, #000 90%, transparent 100%);
+  animation: gufi-blink 4.6s steps(1, end) infinite 1.2s;
+}
+@keyframes gufi-blink {
+  0%, 96.5% { opacity: 0; }
+  97% { opacity: 1; }
+  99.5% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gufi-still .gufi-blink { animation: none; }
 }
 /* credits: pulled up over the bottom of the Gufi */
 .site-credits {
   position: relative;
-  z-index: 2;
+  z-index: 17;
   display: flex;
   justify-content: center;
   margin-top: -112px;
@@ -68,7 +93,8 @@
 }
 @media (max-width: 520px) {
   .site-credits {
-    margin-top: -92px;
+    /* under the Gufi, not over his eyes (his half is short on a phone) */
+    margin-top: 12px;
     /* at the very end the floating switch (60 × 92, 24 px from the bottom) sits in the corner:
        the pill stays above it instead of running under it (360–414 px) */
     padding-bottom: 128px;

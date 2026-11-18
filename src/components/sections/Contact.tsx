@@ -2,13 +2,14 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { CurrentYear } from "./CurrentYear";
 import { Dock } from "./Dock";
-import { GufiSpin } from "./GufiSpin";
+import { GufiStill } from "./GufiStill";
 import "./sections.css";
 import "./footer.css";
 
 /**
- * Contact and footer as one closing scene: the big question, the dock floating just above a giant
- * Gufi who turns with the scroll, and the credits on glass over him. Last section of <main>.
+ * Contact and footer as one closing scene: the big question, the dock floating in front of a giant
+ * Gufi (the header logo's character, upper half only) and the credits on glass over him. On desktop
+ * with 3D he is live in Bobby's canvas (FooterGufi); otherwise a still picture that blinks.
  */
 export async function Contact({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "contact" });
@@ -19,7 +20,7 @@ export async function Contact({ locale }: { locale: Locale }) {
         <Dock />
       </div>
       <div className="gufi-stage">
-        <GufiSpin />
+        <GufiStill />
       </div>
     </section>
   );

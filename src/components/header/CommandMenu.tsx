@@ -159,7 +159,7 @@ function downloadFile(href: string) {
 }
 
 /** Lowercase text without accents, for search. */
-export const plain = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+const plain = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
 function Item({ label, group, onSelect }: { label: string; group: string; onSelect: () => void }) {
   return (

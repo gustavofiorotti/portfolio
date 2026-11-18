@@ -1,6 +1,6 @@
-/* Porcelain wall switch (chosen by Gustavo on 18/11): the same HTML piece with and without the 3D
-   Bobby, fixed on the screen. The half of the rocker that is pushed out is the active theme: top
-   = light (sun), bottom = dark (moon); its engraved symbol lights up in the accent. */
+/* Porcelain wall switch: the same HTML piece with and without the 3D Bobby, fixed on the screen.
+   The half of the rocker that is pushed out is the active theme: top = light, bottom = dark. No
+   symbol on the piece: relief, finish and a red band tell the halves apart. */
 .mascot-switch {
   position: absolute;
   right: 6px;
@@ -28,40 +28,52 @@
   inset: 6%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
+  overflow: hidden;
   border-radius: 22% / 14%;
-  background: var(--sw-key);
-  box-shadow: var(--sw-key-shadow);
   /* a positive rotateX sends the top half away: light (top raised) needs a negative one */
-  transform: rotateX(-14deg);
+  transform: rotateX(-20deg);
   transition: transform 0.32s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .mascot-rocker[data-on="true"] {
-  transform: rotateX(14deg);
+  transform: rotateX(20deg);
 }
-/* engraved sun and moon: pressed into the key, lit only on the active half */
-.mascot-glyph {
-  width: 52%;
-  height: auto;
-  color: var(--sw-engrave);
-  filter: drop-shadow(0 0.5px 0 rgb(255 255 255 / 0.55));
-  transition: color 0.32s ease, filter 0.32s ease;
+/* the two halves: the raised one is glossy and carries a thin red band on its outer edge; the
+   sunken one is matte and sits in its shadow (chosen by Gustavo on 18/11: mockups 8 + 9) */
+.mascot-half {
+  position: relative;
+  flex: 1;
+  background: var(--sw-down);
+  box-shadow: var(--sw-down-shadow);
+  transition: background 0.32s ease, box-shadow 0.32s ease;
 }
-:root[data-theme="dark"] .mascot-glyph {
-  filter: drop-shadow(0 0.5px 0 rgb(255 255 255 / 0.08));
+.mascot-half::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sw-band);
+  opacity: 0;
+  transition: opacity 0.32s ease;
 }
-.mascot-rocker[data-on="false"] .mascot-sun,
-.mascot-rocker[data-on="true"] .mascot-moon {
-  color: var(--sw-lit);
-  filter: none;
+.mascot-half-top::after { top: 18%; }
+.mascot-half-bottom::after { bottom: 18%; }
+.mascot-rocker[data-on="false"] .mascot-half-top,
+.mascot-rocker[data-on="true"] .mascot-half-bottom {
+  background: var(--sw-up);
+  box-shadow: var(--sw-up-shadow);
+}
+.mascot-rocker[data-on="false"] .mascot-half-top::after,
+.mascot-rocker[data-on="true"] .mascot-half-bottom::after {
+  opacity: 1;
 }
 /* only the key moves (kit-gustavo); touch screens skip it, a tap would leave it half pressed */
 @media (hover: hover) {
-  .mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(-11deg); }
-  .mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(11deg); }
-  .mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(-4deg); }
-  .mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(4deg); }
+  .mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(-16deg); }
+  .mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(16deg); }
+  .mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(-6deg); }
+  .mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(6deg); }
 }
 /* desktop with the 3D Bobby: centered on the switch's spot in his scene (switch-spot.ts), so his
    hand lands on it. It is placed inside the stage box (200 × 150, top 50% - 90 px), whose center
@@ -80,5 +92,5 @@
 }
 .mascot-switch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  .mascot-rocker, .mascot-glyph { transition: none; }
+  .mascot-rocker, .mascot-half, .mascot-half::after { transition: none; }
 }

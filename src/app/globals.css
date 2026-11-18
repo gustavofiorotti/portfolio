@@ -31,10 +31,12 @@
   --sw-plate-shadow: inset 0 1px 0 var(--surface), inset 0 -1px 2px rgb(120 110 95 / 0.12), 0 1px 2px rgb(24 24 27 / 0.1), 0 10px 18px -8px rgb(24 24 27 / 0.38);
   --sw-well: #e3e1dc;
   --sw-well-shadow: inset 0 2px 4px rgb(90 80 65 / 0.25), 0 1px 0 var(--surface);
-  --sw-key: linear-gradient(180deg, var(--surface) 0%, #fbfaf8 50%, #e2e0da 100%);
-  --sw-key-shadow: inset 0 1px 0 var(--surface), 0 3px 5px -1px rgb(60 50 40 / 0.28);
-  --sw-engrave: rgb(120 110 95 / 0.32);
-  --sw-lit: var(--accent);
+  /* the raised half: glossy porcelain catching the light; the sunken one: matte, in its shadow */
+  --sw-up: linear-gradient(180deg, var(--surface) 0%, #fbfaf8 70%, #f1efea 100%);
+  --sw-up-shadow: inset 0 1.5px 0 var(--surface), inset 0 -1px 0 rgb(120 110 95 / 0.15), 0 5px 7px -3px rgb(60 50 40 / 0.35);
+  --sw-down: linear-gradient(180deg, #d3d0c9 0%, #cac6be 100%);
+  --sw-down-shadow: inset 0 3px 5px rgb(60 50 40 / 0.35);
+  --sw-band: var(--accent);
   color-scheme: light;
 }
 
@@ -62,11 +64,12 @@
   --sw-plate-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 2px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 18px -8px rgb(0 0 0 / 0.7);
   --sw-well: #121214;
   --sw-well-shadow: inset 0 2px 4px rgb(0 0 0 / 0.7), 0 1px 0 rgb(255 255 255 / 0.06);
-  --sw-key: linear-gradient(180deg, #2a2a2f 0%, #2f2f35 50%, #45454d 100%);
-  --sw-key-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.14), 0 -3px 5px rgb(0 0 0 / 0.45);
-  --sw-engrave: rgb(0 0 0 / 0.55);
-  /* the logo red reads too dark on graphite: a lighter step of it */
-  --sw-lit: #ff5a4f;
+  --sw-up: linear-gradient(180deg, #5a5a62 0%, #4a4a51 70%, #3e3e44 100%);
+  --sw-up-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.22), 0 5px 9px -3px rgb(0 0 0 / 0.7);
+  --sw-down: linear-gradient(180deg, #232327 0%, #1d1d21 100%);
+  --sw-down-shadow: inset 0 3px 6px rgb(0 0 0 / 0.75);
+  /* the logo red reads too dark on graphite: a lighter step of it, for the band */
+  --sw-band: #e0302a;
 }
 
 @theme inline {

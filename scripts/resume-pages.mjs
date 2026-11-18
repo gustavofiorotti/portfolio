@@ -2,7 +2,10 @@
 // in an iframe). PDFKit (Swift, macOS) draws each page to PNG; sharp turns it into WebP.
 import { execFileSync } from "node:child_process";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
-import sharp from "sharp";
+import { createRequire } from "node:module";
+
+// sharp is not a dependency of ours: Next.js already installs it (image optimization)
+const sharp = createRequire(createRequire(import.meta.url).resolve("next/package.json"))("sharp");
 
 const MANIFEST = "src/lib/resume-pages.json";
 execFileSync("swift", ["scripts/render-resume-pages.swift"], { stdio: "inherit" });

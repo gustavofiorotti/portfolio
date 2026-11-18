@@ -9,6 +9,8 @@ import { PRESS_UP, SW } from "./switch-spot";
 import { Strands } from "./Strands";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
+import { FooterGufi } from "./FooterGufi";
+import { Overlays } from "./overlays";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
@@ -465,9 +467,12 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
     >
       <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} layout={scene.layout} greet={scene.greet} />
       <ViewRig anchor={scene.anchor} root={root} th={scene.th} layout={scene.layout} />
-      <group ref={root}>
-        <Plush {...scene} />
-      </group>
+      <Overlays>
+        <group ref={root}>
+          <Plush {...scene} />
+        </group>
+        <FooterGufi still={scene.still} />
+      </Overlays>
     </Canvas>
   );
 }

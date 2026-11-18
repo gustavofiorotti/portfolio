@@ -18,7 +18,13 @@ export function useHearts() {
   return { bursts, add };
 }
 
-/** Hearts floating up from Bobby's head (the scene writes the head's screen point into layout). */
+// layout.headX/headY is the bubble's anchor: 0.45 units (≈ 22 px) left of the head's centre
+// line and at the top of the head. The hearts anchor on the centre line, a little lower, so
+// they start beside the head (heart-burst.ts spreads them left and right).
+const TO_CENTRE_PX = 22;
+const BELOW_TOP_PX = 24;
+
+/** Hearts floating up beside Bobby's head (the scene writes the head's screen point into layout). */
 export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRefObject<Layout> }) {
   const el = useRef<HTMLDivElement>(null);
   const active = bursts.length > 0;
@@ -27,7 +33,7 @@ export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRef
     let raf = 0;
     const follow = () => {
       const { headX, headY } = layout.current;
-      if (el.current) el.current.style.transform = `translate(${headX}px, ${headY}px)`;
+      if (el.current) el.current.style.transform = `translate(${headX + TO_CENTRE_PX}px, ${headY + BELOW_TOP_PX}px)`;
       raf = requestAnimationFrame(follow);
     };
     follow();

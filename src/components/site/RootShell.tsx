@@ -20,6 +20,7 @@ export async function RootShell({ locale, children }: { locale: Locale; children
     <html
       lang={locale === "pt" ? "pt-BR" : "en"}
       className={`${inter.variable} ${interTight.variable} ${mono.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body>

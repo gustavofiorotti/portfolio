@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { homePath, type Locale } from "@/i18n/locales";
-import { CONTACT } from "@/lib/contact";
+import { CONTACT, SOCIAL_LINKS, type SocialId } from "@/lib/contact";
 import { copyText } from "@/lib/copy";
 import { smoothScrollTo } from "@/lib/motion-utils";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
@@ -16,7 +16,10 @@ import { siteUrl } from "@/lib/site";
 import { clientShortcutLabel } from "@/lib/shortcut";
 import { SECTION_IDS } from "./sections";
 
-const PROJECT_LINKS = projectLinks(projects);
+// the portfolio's "live" link is this very site (a redirect back here), so only its code is listed
+const PROJECT_LINKS = projectLinks(projects).filter((l) => l.key !== "portfolio-online");
+// the networks come from the dock's list; only their labels live here
+const SOCIAL_LABEL = { linkedin: "openLinkedin", x: "openX", github: "openGithub", instagram: "openInstagram" } as const satisfies Record<SocialId, string>;
 const openTab = (href: string) => window.open(href, "_blank", "noopener");
 
 /** ⌘K / Ctrl+K menu: sections, project links, e-mail and site link, résumé, theme, socials and language. */
@@ -128,10 +131,9 @@ export function CommandMenu() {
           <Item label={t("downloadResume")} group={t("groups.action")} onSelect={run(() => downloadFile(RESUME_URL))} />
           <Item label={dark ? t("lightOn") : t("lightOff")} group={t("groups.action")} onSelect={run(toggleTheme)} />
           {/* sound on/off goes here, next to the theme switch, once the site has sounds */}
-          <Item label={t("openLinkedin")} group={t("groups.link")} onSelect={run(() => openTab(CONTACT.linkedin))} />
-          <Item label={t("openGithub")} group={t("groups.link")} onSelect={run(() => openTab(CONTACT.github))} />
-          <Item label={t("openX")} group={t("groups.link")} onSelect={run(() => openTab(CONTACT.x))} />
-          <Item label={t("openInstagram")} group={t("groups.link")} onSelect={run(() => openTab(CONTACT.instagram))} />
+          {SOCIAL_LINKS.map(({ id, href }) => (
+            <Item key={id} label={t(SOCIAL_LABEL[id])} group={t("groups.link")} onSelect={run(() => openTab(href))} />
+          ))}
           <Item label={t("otherLanguage")} group={t("groups.language")} onSelect={run(() => router.push(homePath(other)))} />
         </Command.List>
         <div className="cmd-keys flex gap-4 border-t border-line px-4 py-2.5 font-mono text-xs text-muted">
@@ -156,9 +158,13 @@ function downloadFile(href: string) {
   a.remove();
 }
 
+/** Lowercase text without accents, for search. */
+export const plain = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
 function Item({ label, group, onSelect }: { label: string; group: string; onSelect: () => void }) {
   return (
-    <Command.Item value={label} onSelect={onSelect} className="cmd-item flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-[15px]">
+    // keywords without accents, so "curriculo" or "codigo" still find "currículo" and "código"
+    <Command.Item value={label} keywords={[plain(label)]} onSelect={onSelect} className="cmd-item flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-[15px]">
       <span>{label}</span>
       <span className="font-mono text-xs text-muted">{group}</span>
     </Command.Item>

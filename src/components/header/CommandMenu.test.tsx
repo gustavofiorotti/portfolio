@@ -83,4 +83,15 @@ describe("CommandMenu", () => {
     expect(writeText).toHaveBeenCalledWith("https://gufi.vercel.app");
     expect(toasts).toEqual(["Link copiado"]);
   });
+
+  it("finds items typed without accents, and skips the portfolio's own live link", async () => {
+    setup("MacIntel", true);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Abrir menu de comandos (⌘K)" })));
+    expect(screen.queryByRole("option", { name: /Portfólio: ver online/ })).toBeNull();
+    expect(screen.getByRole("option", { name: /Portfólio: ver código/ })).toBeTruthy();
+    await act(async () => fireEvent.change(screen.getByPlaceholderText("O que você procura?"), { target: { value: "curriculo" } }));
+    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(options.some((o) => o?.startsWith("Ver currículo"))).toBe(true);
+    expect(options.some((o) => o?.startsWith("Baixar currículo"))).toBe(true);
+  });
 });

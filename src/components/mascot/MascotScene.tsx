@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
-import { SW, SW_SCALE } from "./switch-spot";
+import { PRESS_UP, SW } from "./switch-spot";
 import { Strands } from "./Strands";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
@@ -30,6 +30,7 @@ export type Say =
   | "yawn" | "doze" | "jolt" | "asleep" | "wake"
   | "hush"; // not a line: the happy face came, so an angry bubble goes away with the angry face
 export type SayExtra = { filled: number; total: number; done: boolean };
+const HAND_Z = 0.13; // the pressing hand, in front of the switch plane (units)
 const PRESS_S = 0.6; // the whole reach-press-return; the theme flips halfway
 const CLICKS_KEY = "bobby-clicks";
 
@@ -53,7 +54,7 @@ type State = {
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
   /** poked since the last time a stroke made him happy: that first happy stroke speaks at once */
-  needsSoothe: boolean; petFace: boolean; heartsAt: number;
+  needsSoothe: boolean; petFace: boolean; heartsAt: number; pressDark: boolean;
   sleep: SleepStage | null; idleSaid: number;
 };
 
@@ -105,7 +106,7 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, heartsAt: -100, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, heartsAt: -100, pressDark: false, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -182,6 +183,7 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
       } else {
         s.pressT0 = t;
         s.pressed = false;
+        s.pressDark = dark;
       }
     }
     const pp = (t - s.pressT0) / PRESS_S;
@@ -289,12 +291,20 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
         kk = 16;
       }
       if (sd > 0 && pressing && pp < 0.66) {
-        const up = (s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07) * SW_SCALE;
-        tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.08 * SW_SCALE); // the switch is flat on the screen plane
+        // the raised half when the press began: top in light, bottom in dark. Not `dark`, which
+        // flips some frames after the press (the theme swap runs in a view transition), and
+        // used to send the hand to the other half right as it pressed
+        const up = s.pressDark ? -PRESS_UP : PRESS_UP;
+        tmp.set(SW.x, SW.y + up, SW.z); // the switch is flat on the screen plane (z = 0)
         // SW lives in this scene's space, which the view rig moves around the screen: take it to
         // world space before going into the hand's (treating it as world sent the hand far left)
         sceneRoot.updateWorldMatrix(true, false);
         sceneRoot.localToWorld(tmp);
+        // the hand floats HAND_Z in front of the switch: pull it towards the camera's axis so that,
+        // seen through the lens, it covers the press point instead of landing to its right
+        const cam = state.camera.position, hz = tmp.z + HAND_Z;
+        const k = (cam.z - hz) / (cam.z - tmp.z);
+        tmp.set(cam.x + (tmp.x - cam.x) * k, cam.y + (tmp.y - cam.y) * k, hz);
         h.parent.updateWorldMatrix(true, false);
         h.parent.worldToLocal(tmp);
         if (pp < 0.28) { x = 0.95; y = -0.28; z = 0.05; }

@@ -16,6 +16,15 @@ const ASLEEP_AT = 12.2;
 export const SLEEPY_AFTER = 20; // s without pointer movement before the yawn (first sign of sleep)
 export const ZZZ_AFTER = SLEEPY_AFTER + ASLEEP_AT; // s until he is asleep and the first "Zzz" (32.2)
 
+// A chatty idle line shows for 2.4 s (SpeechBubble) and must be gone, with a beat of silence,
+// before the yawn: one at 18 s ran straight into it. Closer than this to the yawn, he keeps quiet.
+export const IDLE_LINE_CLEAR = 4;
+
+/** Whether an idle line may start after `idleFor` s without pointer movement. */
+export function idleLineFits(idleFor: number): boolean {
+  return idleFor < SLEEPY_AFTER - IDLE_LINE_CLEAR;
+}
+
 export type SleepStage = "yawn" | "nod" | "jolt" | "drop" | "asleep";
 
 export type SleepPose = {

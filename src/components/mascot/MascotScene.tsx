@@ -13,7 +13,7 @@ import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
 import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
 import { heartsDue } from "./heart-burst";
-import { BREATH_SWELL, SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
+import { BREATH_SWELL, idleLineFits, SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 export type { PressRequest } from "./press";
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
@@ -164,7 +164,8 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
     // he chats now and then by himself; the third line teases the secret (🥚?), never the first
     if (t > s.nextIdle) {
       s.nextIdle = t + 20 + Math.random() * 15;
-      if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6) {
+      const quietFor = (performance.now() - p.lastMove) / 1000;
+      if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6 && idleLineFits(quietFor)) {
         s.idleSaid += 1; // a few lines per visit, not forever
         onSay?.("idle");
       }

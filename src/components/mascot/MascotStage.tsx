@@ -294,7 +294,8 @@ export function MascotStage() {
           onClick={clickSwitchNow}
           // holding Enter/Space repeats the click: only the first press counts
           onKeyDown={(e) => e.repeat && (e.key === "Enter" || e.key === " ") && e.preventDefault()}
-          aria-label={label}
+          aria-label={t("switch")}
+          aria-pressed={dark}
           title={label}
           tabIndex={0}
           className={`mascot-switch ${plain ? "is-plain" : ""}`}

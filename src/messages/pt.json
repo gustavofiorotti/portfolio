@@ -24,7 +24,8 @@
   },
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
-    "turnOn": "Acender a luz (tema claro)"
+    "turnOn": "Acender a luz (tema claro)",
+    "switch": "Luz apagada (tema escuro)"
   },
   "cmd": {
     "open": "Abrir menu de comandos",

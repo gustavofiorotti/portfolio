@@ -24,7 +24,8 @@
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
-    "turnOn": "Turn the light on (light theme)"
+    "turnOn": "Turn the light on (light theme)",
+    "switch": "Lights off (dark theme)"
   },
   "cmd": {
     "open": "Open command menu",

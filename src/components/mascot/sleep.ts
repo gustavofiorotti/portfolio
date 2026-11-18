@@ -59,8 +59,12 @@ export function sleepPose(s: number): SleepPose | null {
     return { stage: "drop", open: 0.55 * (1 - u), nod: 0.3 * u, yawn: 0, drool: 0 };
   }
   const breath = Math.sin((s - ASLEEP_AT) * 1.4);
-  return { stage: "asleep", open: 0, nod: 0.3 + 0.03 * breath, yawn: 0, drool: clamp01((s - ASLEEP_AT) / 2) * (0.85 + 0.15 * breath) };
+  return { stage: "asleep", open: 0, nod: 0.3 + BREATH_NOD * breath, yawn: 0, drool: clamp01((s - ASLEEP_AT) / 2) * (0.85 + 0.15 * breath) };
 }
+
+/** Breathing while asleep, a touch deeper than awake so it reads: head nod (rad) and body swell. */
+export const BREATH_NOD = 0.045;
+export const BREATH_SWELL = 0.02; // awake the body swells by 0.012
 
 /** Which bubble, if any, a change of stage should show. */
 export function sleepLine(prev: SleepStage | null, next: SleepStage | null): "yawn" | "doze" | "jolt" | "asleep" | null {

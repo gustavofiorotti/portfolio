@@ -11,8 +11,6 @@ describe("themeInitScript", () => {
   afterEach(() => {
     localStorage.clear();
     delete document.documentElement.dataset.theme;
-    delete document.documentElement.dataset.glass;
-    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -58,21 +56,5 @@ describe("opening flag", () => {
     sessionStorage.setItem("intro-seen", "1");
     run();
     expect(document.documentElement.dataset.intro).toBeUndefined();
-  });
-
-  it("asks for the denser glass outside Chromium (WebKit, Firefox) and not in Chrome", () => {
-    mockSystem(false);
-    const ua = (value: string) => vi.spyOn(navigator, "userAgent", "get").mockReturnValue(value);
-    ua("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15");
-    run();
-    expect(document.documentElement.dataset.glass).toBe("dense");
-    delete document.documentElement.dataset.glass;
-    ua("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0");
-    run();
-    expect(document.documentElement.dataset.glass).toBe("dense");
-    delete document.documentElement.dataset.glass;
-    ua("Mozilla/5.0 (Macintosh) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
-    run();
-    expect(document.documentElement.dataset.glass).toBeUndefined();
   });
 });

@@ -281,7 +281,16 @@ html { scroll-behavior: smooth; }
   background: var(--surface);
   color: var(--fg);
   box-shadow: 0 40px 80px -30px var(--shadow-lift);
-  animation: cmd-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* open and close both animate: Radix keeps the dialog mounted until a closing animation ends
+   (it waits only when [data-state="closed"] has an animation of its own) */
+.cmd-content[data-state="open"] { animation: cmd-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cmd-content[data-state="closed"] { animation: cmd-out 0.15s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.cmd-overlay[data-state="open"] { animation: cmd-fade-in 0.18s ease-out; }
+.cmd-overlay[data-state="closed"] { animation: cmd-fade-out 0.15s ease-in forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .cmd-content[data-state],
+  .cmd-overlay[data-state] { animation: none; }
 }
 .cmd-item[data-selected="true"] {
   background: var(--chip);
@@ -291,6 +300,15 @@ html { scroll-behavior: smooth; }
 }
 @keyframes cmd-in {
   from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.98); }
+}
+@keyframes cmd-out {
+  to { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.98); }
+}
+@keyframes cmd-fade-in {
+  from { opacity: 0; }
+}
+@keyframes cmd-fade-out {
+  to { opacity: 0; }
 }
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }

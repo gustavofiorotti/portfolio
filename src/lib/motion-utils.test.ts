@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
+import { GLIDE_SCREENS, glideStart, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
 
 describe("motion utils", () => {
   it("interpolates path numbers and keeps commands", () => {
@@ -92,3 +92,14 @@ describe("smoothScrollTo", () => {
     expect(f2).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("glideStart", () => {
+  it("keeps short jumps whole and glides only the last stretch of long ones", () => {
+    const vh = 800;
+    expect(glideStart(0, 1000, vh)).toBe(0);
+    expect(glideStart(0, 5000, vh)).toBe(5000 - GLIDE_SCREENS * vh);
+    expect(glideStart(5000, 0, vh)).toBe(GLIDE_SCREENS * vh);
+    expect(glideStart(300, 300 + GLIDE_SCREENS * vh, vh)).toBe(300);
+  });
+});
+

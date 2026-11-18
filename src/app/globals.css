@@ -115,6 +115,11 @@ html.theme-snapshot .nav-pill {
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* keyboard and in-page jumps (Space, Page Down, Home/End, #anchors) glide instead of cutting;
+   wheel and touch stay native. Next turns it off during route changes (data-scroll-behavior on
+   <html>), and less motion turns it off below */
+html { scroll-behavior: smooth; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -52,6 +52,15 @@ export function isSmoothScrolling(): boolean {
   return smoothScrolling > 0;
 }
 
+export const GLIDE_SCREENS = 1.5; // the smooth part of a topic jump covers at most this many screens
+
+/** Where the smooth part of a jump from `y` to `to` starts: `y` itself unless it is far away. */
+export function glideStart(y: number, to: number, viewport: number): number {
+  const max = GLIDE_SCREENS * viewport;
+  if (Math.abs(to - y) <= max) return y;
+  return to > y ? to - max : to + max;
+}
+
 export function smoothScrollTo(id: string | null, offset = 0) {
   const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;
@@ -61,8 +70,12 @@ export function smoothScrollTo(id: string | null, offset = 0) {
     focusSection(target);
     return;
   }
-  window.scrollTo({ top: to, behavior: "smooth" });
   smoothScrolling++;
+  // long jumps glide only their last stretch: the native smooth scroll of several screens is a
+  // blur that drops frames while the 3D draws; a short glide over the destination reads smoother
+  const from = glideStart(window.scrollY, to, window.innerHeight);
+  if (from !== window.scrollY) window.scrollTo({ top: from, behavior: "instant" });
+  window.scrollTo({ top: to, behavior: "smooth" });
   // focus once it arrives: scrollend where supported, a timer otherwise. WebKit on touch devices
   // can fire an early scrollend, and focusing mid-way (even with preventScroll) cancels its smooth
   // scroll, so a scrollend only counts when the page is really there.

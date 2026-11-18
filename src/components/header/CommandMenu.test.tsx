@@ -70,6 +70,18 @@ describe("CommandMenu", () => {
     expect(options.some((o) => o?.startsWith("juridiQue: ver online"))).toBe(false);
   });
 
+  it("Ver currículo opens the in-site preview (the same dialog as the hero), not the PDF", async () => {
+    const opened = vi.fn();
+    const open = vi.spyOn(window, "open");
+    window.addEventListener("resume:open", opened);
+    setup("MacIntel", true);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Abrir menu de comandos/ })));
+    await act(async () => fireEvent.click(screen.getByRole("option", { name: /^Ver currículo/ })));
+    window.removeEventListener("resume:open", opened);
+    expect(opened).toHaveBeenCalledTimes(1);
+    expect(open).not.toHaveBeenCalled();
+  });
+
   it("copies the site link for the current language and confirms it", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { ...navigator, platform: "MacIntel", clipboard: { writeText } });

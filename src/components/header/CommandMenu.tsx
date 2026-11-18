@@ -9,7 +9,8 @@ import { copyText } from "@/lib/copy";
 import { smoothScrollTo } from "@/lib/motion-utils";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import { showToast } from "@/components/ui/Toast";
-import { RESUME_URL, RESUME_VIEW_URL } from "@/lib/resume";
+import { RESUME_URL } from "@/lib/resume";
+import { openResume } from "@/components/resume/use-resume-dialog";
 import { projectLinks } from "@/lib/command-items";
 import { projects } from "@/lib/projects";
 import { siteUrl } from "@/lib/site";
@@ -127,7 +128,7 @@ export function CommandMenu() {
               showToast((await copyText(url)) ? t("siteLinkCopied") : url);
             })}
           />
-          <Item label={t("viewResume")} group={t("groups.action")} onSelect={run(() => openTab(RESUME_VIEW_URL))} />
+          <Item label={t("viewResume")} group={t("groups.action")} onSelect={run(openResume)} />
           <Item label={t("downloadResume")} group={t("groups.action")} onSelect={run(() => downloadFile(RESUME_URL))} />
           <Item label={dark ? t("lightOn") : t("lightOff")} group={t("groups.action")} onSelect={run(toggleTheme)} />
           {/* sound on/off goes here, next to the theme switch, once the site has sounds */}

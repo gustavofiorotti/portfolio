@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { frameAt, loadOrder, nearestLoaded, spinProgress } from "./gufi-spin";
+import { frameAt, inBatches, loadOrder, nearestLoaded, pickFrames, spinProgress } from "./gufi-spin";
 
 describe("footer Gufi spin", () => {
   it("starts when the stage enters the screen and ends at the bottom of the page", () => {
@@ -31,6 +31,18 @@ describe("footer Gufi spin", () => {
     expect(nearestLoaded(3, [true, false, false, false, false])).toBe(0);
     expect(nearestLoaded(3, [false, false, false, false, true])).toBe(4);
     expect(nearestLoaded(1, [false, false, false])).toBe(-1);
+  });
+});
+
+describe("footer Gufi loading", () => {
+  it("Save-Data keeps every other frame and always the last pose", () => {
+    expect(pickFrames(5, false)).toEqual([0, 1, 2, 3, 4]);
+    expect(pickFrames(5, true)).toEqual([0, 2, 4]);
+    expect(pickFrames(6, true)).toEqual([0, 2, 4, 5]);
+  });
+
+  it("splits the load order into batches", () => {
+    expect(inBatches([4, 5, 3, 6, 2], 2)).toEqual([[4, 5], [3, 6], [2]]);
   });
 });
 

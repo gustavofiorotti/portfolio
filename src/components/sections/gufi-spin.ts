@@ -32,3 +32,16 @@ export function nearestLoaded(wanted: number, loaded: readonly boolean[]): numbe
   }
   return -1;
 }
+
+/** Frames used: all of them, or every other one (plus the last pose) when the visitor saves data. */
+export function pickFrames(count: number, saveData: boolean): number[] {
+  const all = Array.from({ length: count }, (_, i) => i);
+  return saveData ? all.filter((i) => i % 2 === 0 || i === count - 1) : all;
+}
+
+/** Splits a load order into batches fetched one after the other. */
+export function inBatches<T>(items: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}

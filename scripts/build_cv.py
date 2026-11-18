@@ -62,7 +62,7 @@ story = [
     Paragraph("Gustavo Fiorotti", name),
     Paragraph("Desenvolvedor Fullstack Júnior", role),
     Spacer(1, 3),
-    Paragraph("Espírito Santo &nbsp;·&nbsp; " + link("gufi.vercel.app") + " &nbsp;·&nbsp; "
+    Paragraph("Espírito Santo &nbsp;·&nbsp; " + link("gus.poke.site") + " &nbsp;·&nbsp; "
               + '<link href="mailto:zgustavof@gmail.com" color="#1F3A5F">zgustavof@gmail.com</link>'
               + " &nbsp;·&nbsp; " + link("linkedin.com/in/gustavofiorotti")
               + " &nbsp;·&nbsp; " + link("github.com/gustavofiorotti"), contact),
@@ -96,7 +96,7 @@ story.append(bullets([
 
 story += heading("Projetos")
 projects = [
-    ("Portfólio", "nov/2026 – atual", "gufi.vercel.app",
+    ("Portfólio", "nov/2026 – atual", "gus.poke.site",
      "Site pessoal bilíngue (PT/EN) com Next.js, React e TypeScript, com cena 3D interativa em React Three "
      "Fiber, animações com Motion e deploy na Vercel."),
     ("juridiQue", "mai/2026 – jul/2026", "github.com/gustavofiorotti/juridiQue",

@@ -5,8 +5,8 @@
   position: absolute;
   right: 6px;
   bottom: 6px;
-  width: 52px;
-  height: 80px;
+  width: 60px;
+  height: 92px;
   padding: 0;
   border: 0;
   border-radius: 22% / 14.5%;
@@ -33,11 +33,12 @@
   border-radius: 22% / 14%;
   background: var(--sw-key);
   box-shadow: var(--sw-key-shadow);
-  transform: rotateX(14deg);
+  /* a positive rotateX sends the top half away: light (top raised) needs a negative one */
+  transform: rotateX(-14deg);
   transition: transform 0.32s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .mascot-rocker[data-on="true"] {
-  transform: rotateX(-14deg);
+  transform: rotateX(14deg);
 }
 /* engraved sun and moon: pressed into the key, lit only on the active half */
 .mascot-glyph {
@@ -57,22 +58,23 @@
 }
 /* only the key moves (kit-gustavo); touch screens skip it, a tap would leave it half pressed */
 @media (hover: hover) {
-  .mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(11deg); }
-  .mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(-11deg); }
-  .mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(4deg); }
-  .mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(-4deg); }
+  .mascot-switch:hover .mascot-rocker[data-on="false"] { transform: rotateX(-11deg); }
+  .mascot-switch:hover .mascot-rocker[data-on="true"] { transform: rotateX(11deg); }
+  .mascot-switch:active .mascot-rocker[data-on="false"] { transform: rotateX(-4deg); }
+  .mascot-switch:active .mascot-rocker[data-on="true"] { transform: rotateX(4deg); }
 }
 /* desktop with the 3D Bobby: centered on the switch's spot in his scene (switch-spot.ts), so his
-   hand lands on it. The stage box is 200 × 150 at right 4 px, top 50% - 90 px; the scene origin
-   is 0.35 units below its center and the switch at (1.15, 0.05) units, 50.18 px each: center at
-   (right 46.3 px, 50% + 0.05 px). Checked by switch-spot.test.ts. */
+   hand lands on it. It is placed inside the stage box (200 × 150, top 50% - 90 px), whose center
+   is the scene origin (0.35 units higher); the switch sits at (1.714, 0.05) units, 50.18 px each:
+   86 px right of the box center, so its right edge is 16 px past the box (right: -16px), and
+   vertically at 50% + 0.05 px of the screen. Checked by switch-spot.test.ts. */
 @media (min-width: 1024px) {
   .mascot-switch:not(.is-plain) {
-    right: 24px;
+    right: -16px;
     top: 50%;
     bottom: auto;
-    width: 44px;
-    height: 68px;
+    width: 60px;
+    height: 92px;
     transform: translateY(-50%);
   }
 }

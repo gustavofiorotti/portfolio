@@ -381,7 +381,8 @@ section[tabindex="-1"]:focus {
 }
 @media (min-width: 1024px) {
   .mascot-stage {
-    right: 4px;
+    /* 32 px: room for the 60 px switch on Bobby's right without touching his hand (switch-spot.ts) */
+    right: 32px;
     /* the wall switch sits 15 px below the box center: this puts it at the middle of the screen */
     top: calc(50% - 90px);
     bottom: auto;

@@ -26,20 +26,17 @@ function applyTheme(theme: Theme) {
 }
 
 /**
- * Turns element transitions back on two frames after the switch. After a dry switch (WebKit)
- * the glass also repaints for one frame: WebKit can keep the old backdrop under it, and the
- * header looked see-through. A one-frame change of the blur radius makes it rebuild the
- * backdrop, and the glass stays glass (no denser fill).
+ * Turns element transitions back on two frames after the switch. Nothing touches the glass's
+ * backdrop-filter here: changing it (a one-frame blur radius bump used to "repaint" it after the
+ * dry switch) makes WebKit rebuild the backdrop layer, and for a moment the header showed the
+ * page through it, unblurred. Screenshots of WebKit (Playwright, portals) never draw
+ * backdrop-filter, so check this only on real compositing (Safari, or the iOS Simulator video).
  */
-function endSwitch(id: number, dry: boolean) {
+function endSwitch(id: number) {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       if (id !== switchId) return;
-      const html = document.documentElement;
-      html.classList.remove("theme-switching", "theme-snapshot");
-      if (!dry) return;
-      html.classList.add("theme-repaint");
-      requestAnimationFrame(() => html.classList.remove("theme-repaint"));
+      document.documentElement.classList.remove("theme-switching", "theme-snapshot");
     }),
   );
 }
@@ -62,10 +59,10 @@ export function setTheme(theme: Theme) {
     const vt = document.startViewTransition(() => applyTheme(theme));
     // a switch started during another one skips the older transition: that rejection is expected
     vt.ready.catch(() => {});
-    vt.finished.catch(() => {}).finally(() => endSwitch(id, false));
+    vt.finished.catch(() => {}).finally(() => endSwitch(id));
   } else {
     applyTheme(theme);
-    endSwitch(id, true);
+    endSwitch(id);
   }
   try {
     localStorage.setItem(THEME_KEY, theme);

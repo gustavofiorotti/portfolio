@@ -90,13 +90,6 @@ html.theme-snapshot .glass,
 html.theme-snapshot .nav-pill {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
 }
-/* one frame after a dry switch (WebKit): a different radius forces the backdrop to repaint */
-html.theme-repaint .glass {
-  backdrop-filter: blur(20.5px) saturate(180%);
-}
-html.theme-repaint .nav-pill {
-  backdrop-filter: blur(12.5px) saturate(200%);
-}
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.3s;

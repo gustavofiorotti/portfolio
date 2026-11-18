@@ -30,7 +30,7 @@ describe("setTheme", () => {
     expect(document.documentElement.classList.contains("theme-switching")).toBe(false);
   });
 
-  it("after a dry switch the glass repaints for one frame, without a denser fill", async () => {
+  it("a dry switch never touches the glass (no denser fill, no backdrop-filter change)", async () => {
     const frames: FrameRequestCallback[] = [];
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => (frames.push(cb), 0));
     const { setTheme } = await import("./theme-client");
@@ -41,9 +41,9 @@ describe("setTheme", () => {
     frames.shift()!(0);
     frames.shift()!(0); // two frames: transitions back on
     expect(html.classList.contains("theme-switching")).toBe(false);
-    expect(html.classList.contains("theme-repaint")).toBe(true);
-    frames.shift()!(0);
+    // the old one-frame blur bump rebuilt WebKit's backdrop and the header flashed see-through
     expect(html.classList.contains("theme-repaint")).toBe(false);
+    expect(frames).toHaveLength(0);
   });
 
   it("without View Transitions applies at once and turns transitions back on", async () => {

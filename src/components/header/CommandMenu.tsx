@@ -17,7 +17,7 @@ import { siteUrl } from "@/lib/site";
 import { clientShortcutLabel } from "@/lib/shortcut";
 import { SECTION_IDS } from "./sections";
 
-// the portfolio's "live" link is this very site, so only its code is listed
+// the portfolio's "live" link (gus.poke.site) redirects back to this very site, so only its code is listed
 const PROJECT_LINKS = projectLinks(projects).filter((l) => l.key !== "portfolio-online");
 // the networks come from the dock's list; only their labels live here
 const SOCIAL_LABEL = { linkedin: "openLinkedin", x: "openX", github: "openGithub", instagram: "openInstagram" } as const satisfies Record<SocialId, string>;

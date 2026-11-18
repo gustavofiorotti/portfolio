@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable react-hooks/immutability -- three.js frame loop: camera and groups are mutated per frame by design */
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useOverlay } from "./overlays";
@@ -111,6 +111,9 @@ export function Switch3D({ dark, still }: { dark: boolean; still: boolean }) {
     invalidate();
   }, [dark, mat, invalidate]);
 
+  // read once, not every frame: a mouse (hover) or a touch screen does not change mid-visit
+  const [canHover] = useState(() => matchMedia("(hover: hover)").matches);
+
   useOverlay({
     scene,
     camera,
@@ -123,7 +126,7 @@ export function Switch3D({ dark, still }: { dark: boolean; still: boolean }) {
     prepare: (r, delta) => {
       const el = button.current!;
       const hover = el.matches(":hover"), active = el.matches(":active");
-      const target = THREE.MathUtils.degToRad(tiltFor(dark, hover && matchMedia("(hover: hover)").matches, active));
+      const target = THREE.MathUtils.degToRad(tiltFor(dark, hover && canHover, active));
       const a = angle.current === null || still ? target : THREE.MathUtils.damp(angle.current, target, 14, delta);
       angle.current = Math.abs(a - target) < 1e-4 ? target : a;
       if (angle.current !== target) invalidate();

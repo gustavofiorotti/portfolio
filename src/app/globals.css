@@ -461,7 +461,10 @@ html[data-bobby="behind"] .bobby-bubble { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .bobby-bubble { animation: none; opacity: 1; }
 }
-main { position: relative; z-index: 1; }
+/* main makes its own layer only while Bobby runs behind the page (canvas at 0): otherwise its
+   children stack with the canvas (16), so the footer's dock (17) stays in front of the 3D Gufi */
+main { position: relative; }
+html[data-bobby="behind"] main { z-index: 1; }
 html[data-bobby-hover="1"] body { cursor: grab; }
 html[data-bobby-drag] body { cursor: grabbing; user-select: none; -webkit-user-select: none; }
 /* running home, he goes behind the page and the surfaces turn to frosted glass over him */

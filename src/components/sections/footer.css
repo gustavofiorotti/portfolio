@@ -103,14 +103,15 @@
 .site-credits-dot {
   opacity: 0.5;
 }
-@media (max-width: 520px) {
+/* up to 720 px the pill is too wide to clear the floating switch in the corner (60 × 92, 24 px
+   from the bottom): under the Gufi, not over his eyes, and above the switch at the very end */
+@media (max-width: 720px) {
   .site-credits {
-    /* under the Gufi, not over his eyes (his half is short on a phone) */
     margin-top: 12px;
-    /* at the very end the floating switch (60 × 92, 24 px from the bottom) sits in the corner:
-       the pill stays above it instead of running under it (360–414 px) */
     padding-bottom: 128px;
   }
+}
+@media (max-width: 520px) {
   /* narrow enough to clear the floating buttons in the bottom corners */
   .site-credits-pill {
     padding: 8px 14px;

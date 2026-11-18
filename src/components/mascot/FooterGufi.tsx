@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { Strands } from "./Strands";
 import { useOverlay } from "./overlays";
-import { blinkOpen, frameUpperHalf, strandsFor, turnAt } from "./gufi-frame";
+import { adaptStrands, blinkOpen, frameUpperHalf, strandsFor, turnAt } from "./gufi-frame";
 
 // the logo's Gufi (header): the red face with the darker rim, same seed as the logo render
 const RED = "#C41E1A";
@@ -31,27 +31,32 @@ export function FooterGufi({ still }: { still: boolean }) {
   const visible = useRef(false);
   const turn = useRef(0);
   const blinkAt = useRef(3);
-  const slow = useRef({ frames: 0, time: 0 });
-  const [count, setCount] = useState(() => {
+  const pace = useRef({ frames: 0, time: 0, good: 0 });
+  const [base] = useState(() => {
     const info = gl.getContext().getExtension("WEBGL_debug_renderer_info");
     const name = info ? String(gl.getContext().getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
-    return strandsFor(name);
+    return strandsFor(name, navigator.maxTouchPoints > 0);
   });
+  const [count, setCount] = useState(base);
 
   useEffect(() => {
     const el = document.querySelector(".gufi-stage");
     stage.current = el;
     if (!el) return;
     document.documentElement.dataset.gufi3d = "on";
-    const io = new IntersectionObserver(([e]) => (visible.current = e.isIntersecting));
-    io.observe(el);
-    // he moves (breath, blinks, eyes) only while the footer is on screen
+    // he moves (breath, blinks, eyes) only while the footer is on screen: the loop runs only then
     let raf = 0;
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      if (visible.current) invalidate();
+      invalidate();
     };
-    raf = requestAnimationFrame(loop);
+    const io = new IntersectionObserver(([e]) => {
+      visible.current = e.isIntersecting;
+      cancelAnimationFrame(raf);
+      if (e.isIntersecting) raf = requestAnimationFrame(loop);
+      else invalidate(); // one last frame clears his box
+    });
+    io.observe(el);
     return () => {
       io.disconnect();
       cancelAnimationFrame(raf);
@@ -84,12 +89,17 @@ export function FooterGufi({ still }: { still: boolean }) {
       camera.lookAt(0, f.y, 0);
       camera.updateProjectionMatrix();
 
-      // too slow for this GPU: half the strands, once or twice
-      const s = slow.current;
-      s.frames += 1;
-      s.time += delta;
+      // quality follows the frame rate: fewer strands when slow, back up when smooth again
+      // (a long gap is the footer coming back on screen, not a slow frame: left out)
+      const s = pace.current;
+      if (delta < 0.25) {
+        s.frames += 1;
+        s.time += delta;
+      }
       if (s.frames === 90) {
-        if (s.time / s.frames > 1 / 40 && count > 30000) setCount((c) => Math.round(c / 2));
+        const next = adaptStrands({ count, good: s.good }, s.time / s.frames, base);
+        s.good = next.good;
+        if (next.count !== count) setCount(next.count);
         s.frames = 0;
         s.time = 0;
       }

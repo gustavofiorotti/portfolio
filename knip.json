@@ -1,4 +1,4 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["scripts/gufi-frames.mjs", "scripts/resume-pages.mjs", "scripts/fetch-github-contributions.mjs"]
+  "entry": ["scripts/resume-pages.mjs", "scripts/fetch-github-contributions.mjs"]
 }

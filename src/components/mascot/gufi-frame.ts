@@ -24,13 +24,28 @@ export function turnAt(progress: number): number {
 
 /**
  * Strands for this GPU: the frames he replaces had 420k, far too many live. A desktop GPU (Apple
- * silicon, discrete cards) gets 120k, an integrated or unknown one 50k; the component halves it
- * again if frames come slow.
+ * silicon, discrete cards) gets 120k, an integrated or unknown one 50k, and a touch screen (iPad,
+ * wide phones in 3D) 40k at most: a tablet GPU at 2x is not a laptop's. adaptStrands moves it from
+ * there.
  */
-export function strandsFor(renderer: string): number {
+export function strandsFor(renderer: string, touch = false): number {
   const r = renderer.toLowerCase();
-  if (/apple m\d|apple gpu|nvidia|geforce|radeon(?! (vega|graphics))|rtx|arc a/.test(r)) return 120000;
-  return 50000;
+  const base = /apple m\d|apple gpu|nvidia|geforce|radeon(?! (vega|graphics))|rtx|arc a/.test(r) ? 120000 : 50000;
+  return touch ? Math.min(base, 40000) : base;
+}
+
+export const MIN_STRANDS = 20000;
+
+/**
+ * Quality that follows the frame rate, measured over windows of frames: a slow window (under
+ * 40 fps) halves the strands, down to MIN_STRANDS; three smooth windows in a row (over 55 fps)
+ * double them again, up to the GPU's base. `good` counts the smooth windows.
+ */
+export function adaptStrands(state: { count: number; good: number }, avgFrame: number, base: number): { count: number; good: number } {
+  if (avgFrame > 1 / 40) return { count: Math.max(MIN_STRANDS, Math.round(state.count / 2)), good: 0 };
+  if (avgFrame >= 1 / 55 || state.count >= base) return { count: state.count, good: 0 };
+  const good = state.good + 1;
+  return good >= 3 ? { count: Math.min(base, state.count * 2), good: 0 } : { count: state.count, good };
 }
 
 /** Eye openness for a blink that started at `at` (s), 0.16 s long; 1 when not blinking. */

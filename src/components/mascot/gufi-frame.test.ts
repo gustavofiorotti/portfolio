@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BALL_R, STAGE_OVER_BALL, blinkOpen, frameUpperHalf, strandsFor, turnAt } from "./gufi-frame";
+import { BALL_R, STAGE_OVER_BALL, MIN_STRANDS, adaptStrands, blinkOpen, frameUpperHalf, strandsFor, turnAt } from "./gufi-frame";
 import { clip } from "./overlays";
 
 describe("footer Gufi framing", () => {
@@ -22,6 +22,23 @@ describe("footer Gufi framing", () => {
     expect(strandsFor("ANGLE (NVIDIA GeForce RTX 3060)")).toBe(120000);
     expect(strandsFor("ANGLE (Intel, Intel(R) UHD Graphics 620)")).toBe(50000);
     expect(strandsFor("")).toBe(50000);
+  });
+  it("caps touch screens (iPad, wide phones) at 40k", () => {
+    expect(strandsFor("Apple GPU", true)).toBe(40000);
+    expect(strandsFor("", true)).toBe(40000);
+  });
+  it("halves on slow windows and restores after three smooth ones", () => {
+    const base = 120000;
+    let s = adaptStrands({ count: base, good: 0 }, 1 / 30, base);
+    expect(s).toEqual({ count: 60000, good: 0 });
+    expect(adaptStrands({ count: 25000, good: 0 }, 1 / 20, base).count).toBe(MIN_STRANDS);
+    s = adaptStrands(s, 1 / 60, base);
+    s = adaptStrands(s, 1 / 60, base);
+    expect(s).toEqual({ count: 60000, good: 2 });
+    expect(adaptStrands(s, 1 / 50, base)).toEqual({ count: 60000, good: 0 }); // a so-so window resets
+    s = adaptStrands(s, 1 / 60, base);
+    expect(s).toEqual({ count: 120000, good: 0 });
+    expect(adaptStrands(s, 1 / 60, base)).toEqual(s); // never above the base
   });
   it("blinks for 0.16 s and is open otherwise", () => {
     expect(blinkOpen(1, 2)).toBe(1);

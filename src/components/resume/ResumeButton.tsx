@@ -73,9 +73,12 @@ export function ResumeButton() {
     };
   }, [split, dialog.open]);
 
+  const savedTimer = useRef(0);
+  useEffect(() => () => clearTimeout(savedTimer.current), []);
   const markSaved = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    clearTimeout(savedTimer.current);
+    savedTimer.current = window.setTimeout(() => setSaved(false), 2200);
   };
 
   return (

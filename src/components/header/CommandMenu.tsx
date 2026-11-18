@@ -31,12 +31,15 @@ export function CommandMenu() {
   const router = useRouter();
   const [open, setOpenState] = useState(false);
   const opener = useRef<HTMLElement | null>(null);
+  // set when the chosen action takes the focus itself (a dialog): the closing menu leaves it alone
+  const keepFocus = useRef(false);
   // remember who opened the menu and give focus back to it when it closes (Esc included)
   const setOpen = (next: boolean | ((o: boolean) => boolean)) =>
     setOpenState((o) => {
       const value = typeof next === "function" ? next(o) : next;
       if (value && !o) opener.current = document.activeElement as HTMLElement | null;
-      if (!value && o) requestAnimationFrame(() => opener.current?.focus?.());
+      if (!value && o && !keepFocus.current) requestAnimationFrame(() => opener.current?.focus?.());
+      if (!value) keepFocus.current = false;
       return value;
     });
   // read live from html[data-theme], so the label is right however the menu was opened
@@ -60,6 +63,19 @@ export function CommandMenu() {
   const run = (fn: () => void) => () => {
     setOpen(false);
     fn();
+  };
+  // for actions that open a modal: wait until the menu is gone (its 150 ms exit keeps Radix's focus
+  // trap and body pointer-events:none alive), then open it, so it gets the focus and the clicks
+  const runAfterClose = (fn: () => void) => () => {
+    keepFocus.current = true;
+    setOpen(false);
+    const start = performance.now();
+    const wait = () => {
+      const closing = document.querySelector(".cmd-content") || document.body.style.pointerEvents === "none";
+      if (closing && performance.now() - start < 1000) requestAnimationFrame(wait);
+      else fn();
+    };
+    requestAnimationFrame(wait);
   };
   const other: Locale = locale === "pt" ? "en" : "pt";
 
@@ -128,7 +144,7 @@ export function CommandMenu() {
               showToast((await copyText(url)) ? t("siteLinkCopied") : url);
             })}
           />
-          <Item label={t("viewResume")} group={t("groups.action")} onSelect={run(openResume)} />
+          <Item label={t("viewResume")} group={t("groups.action")} onSelect={runAfterClose(openResume)} />
           <Item label={t("downloadResume")} group={t("groups.action")} onSelect={run(() => downloadFile(RESUME_URL))} />
           <Item label={dark ? t("lightOn") : t("lightOff")} group={t("groups.action")} onSelect={run(toggleTheme)} />
           {/* sound on/off goes here, next to the theme switch, once the site has sounds */}

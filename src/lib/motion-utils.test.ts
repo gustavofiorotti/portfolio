@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GLIDE_SCREENS, glideStart, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
+import { glideAt, isSmoothScrolling, jumpDuration, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
 
 describe("motion utils", () => {
   it("interpolates path numbers and keeps commands", () => {
@@ -32,85 +32,131 @@ describe("smoothScrollTo", () => {
     document.body.append(el);
     return el;
   };
-  const at = (y: number) => {
+  // a page as tall as `height`, whose scrollTo really moves scrollY; returns every position set
+  const page = (height: number, y = 0) => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame", "performance"] });
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 800 });
+    Object.defineProperty(document.documentElement, "scrollHeight", { configurable: true, value: height });
     Object.defineProperty(window, "scrollY", { configurable: true, value: y });
-    window.dispatchEvent(new Event("scrollend"));
+    const tops: number[] = [];
+    window.scrollTo = ((o: ScrollToOptions) => {
+      expect(o.behavior).toBe("instant");
+      tops.push(o.top!);
+      Object.defineProperty(window, "scrollY", { configurable: true, value: o.top });
+    }) as typeof window.scrollTo;
+    return tops;
   };
 
-  it("ignores an early scrollend (WebKit touch) and moves focus only when the page arrives", () => {
-    vi.useFakeTimers();
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-    const focus = vi.spyOn(section("alvo", 1000), "focus");
-
+  it("glides the whole way with no cut: no frame moves more than a quarter of a screen", () => {
+    const tops = page(6000);
+    const focus = vi.spyOn(section("alvo", 4600), "focus");
     smoothScrollTo("alvo");
-    at(0); // fired mid-way: focusing now would cancel the scroll
+    vi.advanceTimersByTime(jumpDuration(4600, 800) - 50);
     expect(focus).not.toHaveBeenCalled();
-
-    at(1000);
+    vi.advanceTimersByTime(100);
+    expect(window.scrollY).toBe(4600);
     expect(focus).toHaveBeenCalledTimes(1);
+    const steps = tops.map((y, i) => y - (tops[i - 1] ?? 0));
+    expect(steps.every((d) => d >= 0)).toBe(true); // never backwards
+    expect(Math.max(...steps)).toBeLessThan(800 / 4);
   });
 
-  it("still moves focus after the timer if scrollend never comes", () => {
-    vi.useFakeTimers();
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-    const focus = vi.spyOn(section("alvo", 500), "focus");
-    smoothScrollTo("alvo");
-    vi.advanceTimersByTime(2000);
-    expect(focus).toHaveBeenCalledTimes(1);
-  });
-
-  it("near the end of the page it counts as arrived where the scroll range ends", () => {
-    vi.useFakeTimers();
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-    Object.defineProperty(document.documentElement, "scrollHeight", { configurable: true, value: window.innerHeight + 900 });
-    const last = section("fim", 1400); // can never reach 1400: the page ends at 900
-    const focus = vi.spyOn(last, "focus");
+  it("near the end of the page it stops where the scroll range ends", () => {
+    page(800 + 900);
+    const focus = vi.spyOn(section("fim", 1400), "focus"); // can never reach 1400
     smoothScrollTo("fim");
-    at(600);
-    expect(focus).not.toHaveBeenCalled();
-    at(900);
+    vi.advanceTimersByTime(1500);
+    expect(window.scrollY).toBe(900);
     expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("the wheel or a touch hands the page back to the visitor, without moving focus", () => {
+    const tops = page(6000);
+    const focus = vi.spyOn(section("alvo", 3000), "focus");
+    smoothScrollTo("alvo");
+    vi.advanceTimersByTime(200);
+    window.dispatchEvent(new Event("wheel"));
+    const stoppedAt = window.scrollY;
+    const frames = tops.length;
+    vi.advanceTimersByTime(2000);
+    expect(tops.length).toBe(frames);
+    expect(window.scrollY).toBe(stoppedAt);
+    expect(focus).not.toHaveBeenCalled();
+    expect(isSmoothScrolling()).toBe(false);
+  });
+
+  it("the Enter that started the jump (⌘K) does not stop it; a later arrow key does", () => {
+    page(6000);
+    section("alvo", 3000);
+    vi.advanceTimersByTime(50);
+    const enter = new KeyboardEvent("keydown", { key: "Enter" });
+    smoothScrollTo("alvo");
+    window.dispatchEvent(enter); // timeStamp from before the jump started
+    vi.advanceTimersByTime(100);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Shift" }));
+    vi.advanceTimersByTime(100);
+    expect(isSmoothScrolling()).toBe(true);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(isSmoothScrolling()).toBe(false);
+  });
+
+  it("a jump to where the page already is arrives at once", () => {
+    page(6000, 1000);
+    const focus = vi.spyOn(section("alvo", 1000), "focus");
+    smoothScrollTo("alvo");
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(isSmoothScrolling()).toBe(false);
   });
 
   it("a newer jump takes over: the older one never moves focus", () => {
-    vi.useFakeTimers();
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-    const first = section("um", 800);
-    const second = section("dois", 2000);
-    const f1 = vi.spyOn(first, "focus");
-    const f2 = vi.spyOn(second, "focus");
+    page(6000);
+    const f1 = vi.spyOn(section("um", 800), "focus");
+    const f2 = vi.spyOn(section("dois", 2000), "focus");
     smoothScrollTo("um");
+    vi.advanceTimersByTime(100);
     smoothScrollTo("dois");
-    at(800); // passes the first section on the way
-    at(2000);
+    expect(isSmoothScrolling()).toBe(true);
     vi.advanceTimersByTime(3000);
+    expect(window.scrollY).toBe(2000);
     expect(f1).not.toHaveBeenCalled();
     expect(f2).toHaveBeenCalledTimes(1);
+    expect(isSmoothScrolling()).toBe(false);
+  });
+
+  it("with less motion it goes straight there", () => {
+    const tops = page(6000);
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    const focus = vi.spyOn(section("alvo", 3000), "focus");
+    smoothScrollTo("alvo");
+    expect(tops).toEqual([3000]);
+    expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("Home and End glide the whole page the same way", () => {
+    const tops = page(5600, 4800);
+    jumpToEdge("top");
+    vi.advanceTimersByTime(1500);
+    expect(window.scrollY).toBe(0);
+    const steps = tops.map((y, i) => (tops[i - 1] ?? 4800) - y);
+    expect(Math.max(...steps)).toBeLessThan(800 / 4);
   });
 });
 
-describe("glideStart", () => {
-  it("keeps short jumps whole and glides only the last stretch of long ones", () => {
-    const vh = 800;
-    expect(glideStart(0, 1000, vh)).toBe(0);
-    expect(glideStart(0, 5000, vh)).toBe(5000 - GLIDE_SCREENS * vh);
-    expect(glideStart(5000, 0, vh)).toBe(GLIDE_SCREENS * vh);
-    expect(glideStart(300, 300 + GLIDE_SCREENS * vh, vh)).toBe(300);
+describe("jumpDuration", () => {
+  it("takes 1.0 s plus 0.1 s per screen, up to 1.4 s", () => {
+    expect(jumpDuration(0, 800)).toBe(1000);
+    expect(jumpDuration(-1600, 800)).toBe(1200);
+    expect(jumpDuration(99999, 800)).toBe(1400);
   });
+});
 
-  it("Home and End glide only the last stretch of a long page", () => {
-    const calls: ScrollToOptions[] = [];
-    vi.spyOn(window, "scrollTo").mockImplementation(((o: ScrollToOptions) => calls.push(o)) as typeof window.scrollTo);
-    vi.stubGlobal("matchMedia", () => ({ matches: false }));
-    Object.defineProperty(window, "scrollY", { value: 9000, configurable: true });
-    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
-    jumpToEdge("top");
-    expect(calls).toEqual([{ top: GLIDE_SCREENS * 800, behavior: "instant" }, { top: 0, behavior: "smooth" }]);
-    vi.unstubAllGlobals();
+describe("glideAt", () => {
+  it("starts at the origin, eases in and out and lands on the destination", () => {
+    expect(glideAt(0, 1000, 0, 800)).toBe(0);
+    expect(glideAt(0, 1000, 400, 800)).toBeCloseTo(500);
+    expect(glideAt(0, 1000, 800, 800)).toBe(1000);
+    expect(glideAt(1000, 0, 9999, 800)).toBe(0);
   });
 
   it("leaves Home/End to fields, menus and the ⌘K list", () => {

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { jumpToEdge, keyIsForPage, smoothScrollTo } from "@/lib/motion-utils";
 
 /**
- * Long in-page jumps glide only their last stretch (motion-utils): Home/End, and links to an
+ * Long in-page jumps glide like the header topics (motion-utils): Home/End, and links to an
  * anchor on this page that do not handle the click themselves. Renders nothing.
  */
 export function ScrollJumps() {

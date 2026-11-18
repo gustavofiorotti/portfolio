@@ -1,3 +1,5 @@
+import { stopWheelGlide } from "./smooth-wheel";
+
 /** easeOutQuart: fast start, gentle stop. */
 export const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
@@ -36,17 +38,17 @@ function focusSection(el: HTMLElement | null) {
   el.focus({ preventScroll: true });
 }
 
-/**
- * easeInOutSine: of the usual curves, the lowest top speed (1.57× the average; cubic curves
- * reach 3×), so even a jump across the whole page never moves a frame by more than about a
- * fifth of a screen, while it still starts moving within a frame or two.
- */
-export const easeInOutSine = (t: number) => (1 - Math.cos(Math.PI * t)) / 2;
+/** easeInOutCubic: eases in and out softly, the curve of the topic jumps. */
+export const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+/** Topic jumps take 1.0 s plus 0.1 s per screen of distance, up to 1.4 s (asked on 18/11). */
+export const jumpDuration = (distance: number, viewport: number) =>
+  Math.min(1400, 1000 + (100 * Math.abs(distance)) / Math.max(1, viewport));
 
 /** Where a jump from `from` to `to` is after `elapsed` ms of a `duration` ms glide. */
 export function glideAt(from: number, to: number, elapsed: number, duration: number): number {
   if (duration <= 0 || elapsed >= duration) return to;
-  return from + (to - from) * easeInOutSine(Math.max(0, elapsed) / duration);
+  return from + (to - from) * easeInOutCubic(Math.max(0, elapsed) / duration);
 }
 
 let scrollCall = 0; // only the latest jump may move focus
@@ -64,7 +66,7 @@ export function isSmoothScrolling(): boolean {
 
 /**
  * Glides the page to `destination()` over the whole distance, whatever its length, in
- * scrollDuration (0.42–0.85 s) with easeInOutSine. Each frame places the page where the time says
+ * jumpDuration (1.0–1.4 s) with easeInOutCubic. Each frame places the page where the time says
  * it should be, so a frame the 3D delays is skipped, never slowed down.
  *
  * It replaced the browser's smooth scroll after an instant pre-jump: that jump (up to 4 screens
@@ -75,8 +77,9 @@ export function isSmoothScrolling(): boolean {
  */
 function glideTo(destination: () => number, onArrive: () => void) {
   cancelGlide?.();
+  stopWheelGlide(); // the wheel's own easing would pull the page against this one
   const from = window.scrollY;
-  const duration = scrollDuration(destination() - from);
+  const duration = jumpDuration(destination() - from, window.innerHeight);
   const start = performance.now();
   let raf = 0;
   let done = false;

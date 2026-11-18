@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { glideAt, isSmoothScrolling, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
+import { glideAt, isSmoothScrolling, jumpDuration, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
 
 describe("motion utils", () => {
   it("interpolates path numbers and keeps commands", () => {
@@ -48,25 +48,25 @@ describe("smoothScrollTo", () => {
     return tops;
   };
 
-  it("glides the whole way with no cut: no frame moves more than a fifth of a screen", () => {
+  it("glides the whole way with no cut: no frame moves more than a quarter of a screen", () => {
     const tops = page(6000);
     const focus = vi.spyOn(section("alvo", 4600), "focus");
     smoothScrollTo("alvo");
-    vi.advanceTimersByTime(scrollDuration(4600) - 50);
+    vi.advanceTimersByTime(jumpDuration(4600, 800) - 50);
     expect(focus).not.toHaveBeenCalled();
     vi.advanceTimersByTime(100);
     expect(window.scrollY).toBe(4600);
     expect(focus).toHaveBeenCalledTimes(1);
     const steps = tops.map((y, i) => y - (tops[i - 1] ?? 0));
     expect(steps.every((d) => d >= 0)).toBe(true); // never backwards
-    expect(Math.max(...steps)).toBeLessThan(800 / 5);
+    expect(Math.max(...steps)).toBeLessThan(800 / 4);
   });
 
   it("near the end of the page it stops where the scroll range ends", () => {
     page(800 + 900);
     const focus = vi.spyOn(section("fim", 1400), "focus"); // can never reach 1400
     smoothScrollTo("fim");
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1500);
     expect(window.scrollY).toBe(900);
     expect(focus).toHaveBeenCalledTimes(1);
   });
@@ -113,10 +113,18 @@ describe("smoothScrollTo", () => {
   it("Home and End glide the whole page the same way", () => {
     const tops = page(5600, 4800);
     jumpToEdge("top");
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1500);
     expect(window.scrollY).toBe(0);
     const steps = tops.map((y, i) => (tops[i - 1] ?? 4800) - y);
-    expect(Math.max(...steps)).toBeLessThan(800 / 5);
+    expect(Math.max(...steps)).toBeLessThan(800 / 4);
+  });
+});
+
+describe("jumpDuration", () => {
+  it("takes 1.0 s plus 0.1 s per screen, up to 1.4 s", () => {
+    expect(jumpDuration(0, 800)).toBe(1000);
+    expect(jumpDuration(-1600, 800)).toBe(1200);
+    expect(jumpDuration(99999, 800)).toBe(1400);
   });
 });
 

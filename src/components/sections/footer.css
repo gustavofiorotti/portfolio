@@ -2,9 +2,20 @@
    logo's character, only his upper half) and the credits over him (Contact.tsx). On desktop with
    3D he is drawn live in Bobby's canvas (FooterGufi), which sits over the page (z-index 16): the
    dock and the credits go above it (17). */
-.contact-stage {
+.contact-stage,
+.site-credits {
   /* the ball's width on screen; the stage is 10% wider and shows its upper half */
   --ball: min(820px, 88vw);
+  /* how far the top of his fur rises behind the dock */
+  --dip: 28px;
+}
+/* variant (footer-variant.ts): bigger, the fur reaching up behind the dock's glass */
+:root[data-gufi-big] .contact-stage,
+:root[data-gufi-big] .site-credits {
+  --ball: min(960px, 96vw);
+  --dip: 52px;
+}
+.contact-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,8 +35,8 @@
   width: calc(var(--ball) * 1.1);
   max-width: none;
   aspect-ratio: 2 / 1;
-  /* the top of his fur sits 5% of the ball under the stage's top: the dock dips ~28 px into it */
-  margin-top: calc(var(--ball) * -0.05 - 28px);
+  /* the top of his fur sits 5% of the ball under the stage's top: the dock dips --dip into it */
+  margin-top: calc(var(--ball) * -0.05 - var(--dip));
   pointer-events: none;
 }
 /* the still Gufi (phones, no WebGL, Save-Data) steps aside while the live one is drawn */
@@ -63,14 +74,15 @@
 @media (prefers-reduced-motion: reduce) {
   .gufi-still .gufi-blink { animation: none; }
 }
-/* credits: pulled up over the bottom of the Gufi */
+/* credits: pulled up over the bottom of the Gufi, well under his eyes (their bottom is ~16% of the
+   ball above the cut); the page still ends at his waist */
 .site-credits {
   position: relative;
   z-index: 17;
   display: flex;
   justify-content: center;
-  margin-top: -112px;
-  padding: 0 16px 48px;
+  margin-top: calc(var(--ball) * -0.1);
+  padding: 0 16px 24px;
 }
 .site-credits-pill {
   display: flex;

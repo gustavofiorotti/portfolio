@@ -396,7 +396,7 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
           </mesh>
           <group ref={float}>
             <group ref={body}>
-              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
+              <Strands radius={0.92} count={20000} length={0.2} width={0.022} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
               <mesh ref={drool} position={[0.36, -0.3, 0.9]} visible={false}>
                 <sphereGeometry args={[1, 16, 12]} />
                 <meshStandardMaterial color="#cfe3f2" roughness={0.1} metalness={0.1} transparent opacity={0.85} />
@@ -412,7 +412,7 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
               </group>
               {[-1, 1].map((sd, i) => (
                 <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
-                  <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} gain={GAIN} seed={sd > 0 ? 11 : 13} still={still} />
+                  <Strands radius={0.17} count={1800} length={0.09} width={0.013} color={BODY} gain={GAIN} seed={sd > 0 ? 11 : 13} still={still} />
                 </group>
               ))}
             </group>

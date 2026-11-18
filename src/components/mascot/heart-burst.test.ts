@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { addBurst, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS, SIDE_PX, TO_CENTRE_PX } from "./heart-burst";
-import { BOBBY_HOME, PPU } from "./ViewRig";
+import { addBurst, ANCHOR_UP, BELOW_TOP_PX, BODY_R, EDGE_PX, GAP_PX, HEART_GAP_S, heartsDue, makeBurst, MAX_BURSTS } from "./heart-burst";
+import { PPU } from "./ViewRig";
+
+/** Gap (px) between the body's edge and the heart's near edge. */
+const gapOf = (h: { dx: number; size: number }) => Math.abs(h.dx) - h.size / 2 - EDGE_PX;
 
 describe("hearts", () => {
   it("limits how often a burst comes", () => {
@@ -16,8 +19,8 @@ describe("hearts", () => {
     for (const h of b.hearts) {
       expect(["💕", "❤️"]).toContain(h.glyph);
       // beside the head, never over its top (where the speech bubble is)
-      expect(Math.abs(h.dx)).toBeGreaterThanOrEqual(SIDE_PX);
-      expect(Math.abs(h.dx)).toBeLessThanOrEqual(SIDE_PX + 8);
+      expect(gapOf(h)).toBeGreaterThanOrEqual(GAP_PX);
+      expect(gapOf(h)).toBeLessThanOrEqual(GAP_PX + 6);
       expect(h.size).toBeGreaterThanOrEqual(11);
       expect(h.size).toBeLessThanOrEqual(15);
     }
@@ -36,7 +39,16 @@ describe("hearts", () => {
     expect(sides(3)).toEqual([-1, 1, -1]);
   });
 
-  it("anchors on the head's centre line, wherever the scene puts Bobby", () => {
-    expect(Math.abs(TO_CENTRE_PX - -BOBBY_HOME.x * PPU)).toBeLessThan(1);
+  it("measures the gap from the body's edge, the same on both sides", () => {
+    // the anchor is BELOW_TOP_PX under headY, which is 1.3 units over the body's centre
+    expect(Math.abs(ANCHOR_UP - (1.3 - BELOW_TOP_PX / PPU))).toBeLessThan(0.01);
+    expect(Math.abs(EDGE_PX - Math.sqrt(BODY_R ** 2 - ANCHOR_UP ** 2) * PPU)).toBeLessThan(1);
+    for (let id = 0; id < 40; id++) {
+      const r = ((id * 7919) % 100) / 100;
+      for (const h of makeBurst(id, () => r).hearts) {
+        const mirror = { ...h, dx: -h.dx };
+        expect(gapOf(mirror)).toBe(gapOf(h));
+      }
+    }
   });
 });

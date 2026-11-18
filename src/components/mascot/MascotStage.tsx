@@ -4,6 +4,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer } from "./MascotScene";
+import "./switch.css";
 import { clickSwitch, createPressRequest, type PressRequest } from "./press";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
@@ -266,7 +267,6 @@ export function MascotStage() {
             <MascotScene
               dark={dark}
               onToggle={toggleTheme}
-              onSwitchClick={clickSwitchNow}
               onContextLost={disable3d}
               press={press}
               pointer={pointer}
@@ -287,8 +287,8 @@ export function MascotStage() {
       {ready && shown && <SpeechBubble line={line} layout={layout} />}
       {ready && shown && <Hearts bursts={bursts} layout={layout} />}
       <div ref={stage} className="mascot-stage">
-        {/* on desktop the button is an invisible hit area over the 3D switch: it joins the tab order
-            only once the switch is visible (the theme is always reachable from the ⌘K menu) */}
+        {/* the porcelain switch is this button, with or without the 3D Bobby: fixed on the screen
+            (the 3D one followed his camera and slid as he walked with the scroll) */}
         <button
           type="button"
           onClick={clickSwitchNow}
@@ -296,10 +296,20 @@ export function MascotStage() {
           onKeyDown={(e) => e.repeat && (e.key === "Enter" || e.key === " ") && e.preventDefault()}
           aria-label={label}
           title={label}
-          tabIndex={plain || shown ? 0 : -1}
+          tabIndex={0}
           className={`mascot-switch ${plain ? "is-plain" : ""}`}
         >
-          <span className="mascot-rocker" data-on={dark} />
+          <span className="mascot-well">
+            <span className="mascot-rocker" data-on={dark}>
+              <svg className="mascot-glyph mascot-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+                <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" />
+              </svg>
+              <svg className="mascot-glyph mascot-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />
+              </svg>
+            </span>
+          </span>
         </button>
       </div>
     </>

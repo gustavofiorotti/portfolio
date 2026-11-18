@@ -13,8 +13,8 @@ const JOLT = 0.45; // s the jolt lasts
 const DROP_START = 10.1;
 const ASLEEP_AT = 12.2;
 
-export const ZZZ_AFTER = 20; // s without pointer movement until he is asleep and the first "Zzz"
-export const SLEEPY_AFTER = ZZZ_AFTER - ASLEEP_AT; // s before the yawn that starts it (7.8)
+export const SLEEPY_AFTER = 20; // s without pointer movement before the yawn (first sign of sleep)
+export const ZZZ_AFTER = SLEEPY_AFTER + ASLEEP_AT; // s until he is asleep and the first "Zzz" (32.2)
 
 export type SleepStage = "yawn" | "nod" | "jolt" | "drop" | "asleep";
 

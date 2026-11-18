@@ -24,12 +24,12 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else str(
 ACCENT = HexColor("#1F3A5F")
 MUTED = HexColor("#555555")
 
-base = ParagraphStyle("base", fontName="Helvetica", fontSize=9.4, leading=12.4, alignment=TA_LEFT)
+base = ParagraphStyle("base", fontName="Helvetica", fontSize=9.4, leading=12.1, alignment=TA_LEFT)
 name = ParagraphStyle("name", parent=base, fontName="Helvetica-Bold", fontSize=20, leading=23, textColor=ACCENT)
 role = ParagraphStyle("role", parent=base, fontSize=11, leading=14, textColor=MUTED)
 contact = ParagraphStyle("contact", parent=base, fontSize=9, leading=12, textColor=MUTED)
 section = ParagraphStyle("section", parent=base, fontName="Helvetica-Bold", fontSize=10.5, leading=13,
-                         textColor=ACCENT, spaceBefore=7, spaceAfter=2)
+                         textColor=ACCENT, spaceBefore=6, spaceAfter=2)
 item_title = ParagraphStyle("item_title", parent=base, fontName="Helvetica-Bold", fontSize=9.8)
 item_right = ParagraphStyle("item_right", parent=base, fontSize=9, textColor=MUTED, alignment=2)
 sub = ParagraphStyle("sub", parent=base, textColor=MUTED, fontSize=9)
@@ -62,7 +62,7 @@ story = [
     Paragraph("Gustavo Fiorotti", name),
     Paragraph("Desenvolvedor Fullstack Júnior", role),
     Spacer(1, 3),
-    Paragraph("Espírito Santo &nbsp;·&nbsp; "
+    Paragraph("Espírito Santo &nbsp;·&nbsp; " + link("gufi.vercel.app") + " &nbsp;·&nbsp; "
               + '<link href="mailto:zgustavof@gmail.com" color="#1F3A5F">zgustavof@gmail.com</link>'
               + " &nbsp;·&nbsp; " + link("linkedin.com/in/gustavofiorotti")
               + " &nbsp;·&nbsp; " + link("github.com/gustavofiorotti"), contact),
@@ -96,6 +96,9 @@ story.append(bullets([
 
 story += heading("Projetos")
 projects = [
+    ("Portfólio", "nov/2026 – atual", "gufi.vercel.app",
+     "Site pessoal bilíngue (PT/EN) com Next.js, React e TypeScript, com cena 3D interativa em React Three "
+     "Fiber, animações com Motion e deploy na Vercel."),
     ("juridiQue", "mai/2026 – jul/2026", "github.com/gustavofiorotti/juridiQue",
      "Aplicação web que traduz documentos jurídicos em PDF para linguagem simples com IA generativa. "
      "Python, Flask, SQL Server e Google Gemini."),
@@ -112,7 +115,7 @@ projects = [
 for title, dates, url, desc in projects:
     story.append(row(f"{title} &nbsp;<font name='Helvetica' size='8.6' color='#1F3A5F'>{link(url)}</font>", dates))
     story.append(Paragraph(desc, base))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
 
 story += heading("Formação")
 story.append(row("Universidade Vila Velha (UVV) · Bacharelado em Ciência da Computação", "jan/2024 – dez/2027"))
@@ -133,6 +136,6 @@ story += heading("Idiomas e certificações")
 story.append(Paragraph("<b>Inglês avançado:</b> EF SET C1 (70/100) e TOEIC Bridge (94/100)", base))
 story.append(Paragraph("<b>Oracle:</b> Database Foundations", base))
 
-doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=11 * mm,
+doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=10 * mm,
                         bottomMargin=9 * mm, title="Currículo - Gustavo Fiorotti", author="Gustavo Fiorotti")
 doc.build(story)

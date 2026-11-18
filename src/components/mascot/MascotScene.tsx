@@ -7,6 +7,9 @@ import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { SW, SW_SCALE } from "./switch-spot";
 import { Strands } from "./Strands";
+import { GufiPass } from "./GufiPass";
+// SPIKE: ?gufi3d=<strands> draws the footer Gufi live in this canvas
+const GUFI3D = typeof location === "undefined" ? 0 : Number(new URLSearchParams(location.search).get("gufi3d") || 0);
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
@@ -457,6 +460,7 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
       <group ref={root}>
         <Plush {...scene} />
       </group>
+      {GUFI3D > 0 && <GufiPass count={GUFI3D} />}
     </Canvas>
   );
 }

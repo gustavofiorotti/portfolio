@@ -85,3 +85,6 @@
     flex-direction: column;
   }
 }
+
+/* SPIKE: the dock and the credits above Bobby's canvas (z 16), where the live Gufi is drawn */
+.contact-dock, .site-credits { position: relative; z-index: 17; }

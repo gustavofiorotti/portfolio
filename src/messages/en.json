@@ -33,13 +33,20 @@
     "placeholder": "What are you looking for?",
     "empty": "Nothing found.",
     "goTo": "Go to {section}",
+    "projectOnline": "{name}: view live",
+    "projectCode": "{name}: view code",
     "copyEmail": "Copy e-mail",
     "emailCopied": "E-mail copied",
+    "copySiteLink": "Copy site link",
+    "siteLinkCopied": "Link copied",
+    "viewResume": "View résumé",
     "downloadResume": "Download résumé (PDF)",
     "lightOn": "Turn the light on (light theme)",
     "lightOff": "Turn the light off (dark theme)",
     "openGithub": "Open GitHub",
     "openLinkedin": "Open LinkedIn",
+    "openX": "Open X",
+    "openInstagram": "Open Instagram",
     "otherLanguage": "Versão em português",
     "hintNavigate": "navigate",
     "hintOpen": "open",
@@ -49,7 +56,8 @@
       "navigate": "navigate",
       "action": "action",
       "link": "link",
-      "language": "language"
+      "language": "language",
+      "project": "project"
     }
   },
   "projects": {

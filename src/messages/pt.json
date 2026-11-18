@@ -33,13 +33,20 @@
     "placeholder": "O que você procura?",
     "empty": "Nada encontrado.",
     "goTo": "Ir para {section}",
+    "projectOnline": "{name}: ver online",
+    "projectCode": "{name}: ver código",
     "copyEmail": "Copiar e-mail",
     "emailCopied": "E-mail copiado",
+    "copySiteLink": "Copiar link do site",
+    "siteLinkCopied": "Link copiado",
+    "viewResume": "Ver currículo",
     "downloadResume": "Baixar currículo (PDF)",
     "lightOn": "Acender a luz (tema claro)",
     "lightOff": "Apagar a luz (tema escuro)",
     "openGithub": "Abrir GitHub",
     "openLinkedin": "Abrir LinkedIn",
+    "openX": "Abrir X",
+    "openInstagram": "Abrir Instagram",
     "otherLanguage": "English version",
     "hintNavigate": "navegar",
     "hintOpen": "abrir",
@@ -49,7 +56,8 @@
       "navigate": "navegar",
       "action": "ação",
       "link": "link",
-      "language": "idioma"
+      "language": "idioma",
+      "project": "projeto"
     }
   },
   "projects": {

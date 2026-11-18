@@ -52,6 +52,38 @@ export function isSmoothScrolling(): boolean {
   return smoothScrolling > 0;
 }
 
+export const GLIDE_SCREENS = 1.5; // the smooth part of a topic jump covers at most this many screens
+
+/** Where the smooth part of a jump from `y` to `to` starts: `y` itself unless it is far away. */
+export function glideStart(y: number, to: number, viewport: number): number {
+  const max = GLIDE_SCREENS * viewport;
+  if (Math.abs(to - y) <= max) return y;
+  return to > y ? to - max : to + max;
+}
+
+/**
+ * Home and End: the page's top or bottom, gliding only the last GLIDE_SCREENS like a topic jump.
+ * The global `scroll-behavior: smooth` turned them into a glide of the whole page (1.1 s, with
+ * a 100–250 ms frame while the 3D drew); Space and Page Up/Down move a screen and stay native.
+ */
+export function jumpToEdge(edge: "top" | "bottom") {
+  const to = edge === "top" ? 0 : Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  if (prefersReducedMotion()) return window.scrollTo({ top: to, behavior: "instant" });
+  const from = glideStart(window.scrollY, to, window.innerHeight);
+  if (from !== window.scrollY) window.scrollTo({ top: from, behavior: "instant" });
+  window.scrollTo({ top: to, behavior: "smooth" });
+}
+
+/** Whether a key press belongs to a field or a widget (its own Home/End), not to the page. */
+export function keyIsForPage(e: KeyboardEvent): boolean {
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return false;
+  const el = e.target as HTMLElement | null;
+  if (!el || el === document.body || el === document.documentElement) return true;
+  if (el.isContentEditable || el.closest("input, textarea, select, [role=listbox], [role=menu], [role=tablist], [role=slider], [cmdk-root], dialog")) return false;
+  // a scrollable box with the focus scrolls itself
+  return !el.closest("[data-own-keys]");
+}
+
 export function smoothScrollTo(id: string | null, offset = 0) {
   const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;
@@ -61,8 +93,12 @@ export function smoothScrollTo(id: string | null, offset = 0) {
     focusSection(target);
     return;
   }
-  window.scrollTo({ top: to, behavior: "smooth" });
   smoothScrolling++;
+  // long jumps glide only their last stretch: the native smooth scroll of several screens is a
+  // blur that drops frames while the 3D draws; a short glide over the destination reads smoother
+  const from = glideStart(window.scrollY, to, window.innerHeight);
+  if (from !== window.scrollY) window.scrollTo({ top: from, behavior: "instant" });
+  window.scrollTo({ top: to, behavior: "smooth" });
   // focus once it arrives: scrollend where supported, a timer otherwise. WebKit on touch devices
   // can fire an early scrollend, and focusing mid-way (even with preventScroll) cancels its smooth
   // scroll, so a scrollend only counts when the page is really there.

@@ -115,6 +115,11 @@ html.theme-snapshot .nav-pill {
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* keyboard jumps of a screen (Space, Page Up/Down) glide instead of cutting; wheel and touch
+   stay native. Home/End and #anchors are long: ScrollJumps glides only their last stretch. Next turns it off during route changes (data-scroll-behavior on
+   <html>), and less motion turns it off below */
+html { scroll-behavior: smooth; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -375,8 +380,9 @@ section[tabindex="-1"]:focus {
   bottom: 18px;
   /* under Bobby's canvas (16): his hand reaches over the switch when he presses it */
   z-index: 15;
-  width: 64px;
-  height: 92px;
+  /* the 60 × 92 switch with its 6 px margin (switch.css) */
+  width: 72px;
+  height: 104px;
   pointer-events: none;
 }
 @media (min-width: 1024px) {

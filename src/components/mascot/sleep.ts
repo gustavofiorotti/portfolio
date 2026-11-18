@@ -4,8 +4,6 @@
 // dips) each ending in a jolt awake, then he drops off for good: eyes shut, slow breathing,
 // a drop of drool and "Zzz" bubbles.
 
-export const SLEEPY_AFTER = 25; // s without pointer movement before the yawn
-
 const YAWN_END = 1.8;
 const NODS: [number, number][] = [
   [YAWN_END, 5.4], // droop from .. jolt at
@@ -14,6 +12,18 @@ const NODS: [number, number][] = [
 const JOLT = 0.45; // s the jolt lasts
 const DROP_START = 10.1;
 const ASLEEP_AT = 12.2;
+
+export const SLEEPY_AFTER = 20; // s without pointer movement before the yawn (first sign of sleep)
+export const ZZZ_AFTER = SLEEPY_AFTER + ASLEEP_AT; // s until he is asleep and the first "Zzz" (32.2)
+
+// A chatty idle line shows for 2.4 s (SpeechBubble) and must be gone, with a beat of silence,
+// before the yawn: one at 18 s ran straight into it. Closer than this to the yawn, he keeps quiet.
+export const IDLE_LINE_CLEAR = 4;
+
+/** Whether an idle line may start after `idleFor` s without pointer movement. */
+export function idleLineFits(idleFor: number): boolean {
+  return idleFor < SLEEPY_AFTER - IDLE_LINE_CLEAR;
+}
 
 export type SleepStage = "yawn" | "nod" | "jolt" | "drop" | "asleep";
 

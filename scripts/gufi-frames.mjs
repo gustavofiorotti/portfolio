@@ -5,14 +5,17 @@
 // Desktop gets every frame; phones every other frame, smaller.
 // Run: node scripts/gufi-frames.mjs <dir with the PNGs>
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
-import sharp from "sharp";
+import { createRequire } from "node:module";
+
+// sharp is not a dependency of ours: Next.js already installs it (image optimization)
+const sharp = createRequire(createRequire(import.meta.url).resolve("next/package.json"))("sharp");
 
 const src = process.argv[2];
 if (!src) throw new Error("usage: node scripts/gufi-frames.mjs <png dir>");
 const files = readdirSync(src).filter((f) => /^f\d+\.png$/.test(f)).sort();
 // crop: share of the square, from the top, that the footer shows. Phones show more of the ball,
 // so the credits (two lines there) sit below his eyes.
-const sets = { d: { size: 900, step: 1, quality: 72, crop: 0.64 }, m: { size: 480, step: 2, quality: 70, crop: 0.84 } };
+const sets = { d: { size: 1600, step: 1, quality: 58, crop: 0.64 }, m: { size: 480, step: 2, quality: 70, crop: 0.84 } };
 const manifest = {};
 for (const [key, { size, step, quality, crop }] of Object.entries(sets)) {
   mkdirSync(`public/gufi/${key}`, { recursive: true });

@@ -22,7 +22,7 @@
   z-index: 1;
   width: var(--stage);
   max-width: none;
-  aspect-ratio: 900 / 576;
+  aspect-ratio: 1600 / 1024;
   /* the top of the ball sits just under the dock, which floats a little above it */
   margin-top: calc(var(--stage) * -0.1467 - 10px);
   pointer-events: none;
@@ -58,6 +58,10 @@
   color: var(--fg);
   font-size: 13px;
   text-align: center;
+}
+/* denser than the header's glass: the red fur behind would take the text below 4.5:1 */
+.site-credits-pill.glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
 }
 .site-credits-dot {
   opacity: 0.5;

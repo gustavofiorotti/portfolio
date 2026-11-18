@@ -116,8 +116,9 @@ html.theme-snapshot .nav-pill {
 }
 
 /* keyboard jumps of a screen (Space, Page Up/Down) glide instead of cutting; wheel and touch
-   stay native. Home/End and #anchors are long: ScrollJumps glides only their last stretch. Next turns it off during route changes (data-scroll-behavior on
-   <html>), and less motion turns it off below */
+   stay native. Home/End and #anchors are long: ScrollJumps glides them in JS (motion-utils).
+   Next turns it off during route changes (data-scroll-behavior on <html>), and less motion
+   turns it off below */
 html { scroll-behavior: smooth; }
 
 @media (prefers-reduced-motion: reduce) {

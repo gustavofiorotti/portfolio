@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GLIDE_SCREENS, glideStart, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
+import { GLIDE_SCREENS, glideStart, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
 
 describe("motion utils", () => {
   it("interpolates path numbers and keeps commands", () => {
@@ -101,5 +101,32 @@ describe("glideStart", () => {
     expect(glideStart(5000, 0, vh)).toBe(GLIDE_SCREENS * vh);
     expect(glideStart(300, 300 + GLIDE_SCREENS * vh, vh)).toBe(300);
   });
-});
 
+  it("Home and End glide only the last stretch of a long page", () => {
+    const calls: ScrollToOptions[] = [];
+    vi.spyOn(window, "scrollTo").mockImplementation(((o: ScrollToOptions) => calls.push(o)) as typeof window.scrollTo);
+    vi.stubGlobal("matchMedia", () => ({ matches: false }));
+    Object.defineProperty(window, "scrollY", { value: 9000, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    jumpToEdge("top");
+    expect(calls).toEqual([{ top: GLIDE_SCREENS * 800, behavior: "instant" }, { top: 0, behavior: "smooth" }]);
+    vi.unstubAllGlobals();
+  });
+
+  it("leaves Home/End to fields, menus and the ⌘K list", () => {
+    const key = (target: Element, extra: Partial<KeyboardEventInit> = {}) => {
+      const e = new KeyboardEvent("keydown", { key: "End", bubbles: true, ...extra });
+      Object.defineProperty(e, "target", { value: target });
+      return keyIsForPage(e);
+    };
+    const input = document.createElement("input");
+    const div = document.createElement("div");
+    document.body.append(input, div);
+    expect(key(document.body)).toBe(true);
+    expect(key(div)).toBe(true);
+    expect(key(input)).toBe(false);
+    expect(key(div, { metaKey: true })).toBe(false);
+    input.remove();
+    div.remove();
+  });
+});

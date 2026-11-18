@@ -61,6 +61,29 @@ export function glideStart(y: number, to: number, viewport: number): number {
   return to > y ? to - max : to + max;
 }
 
+/**
+ * Home and End: the page's top or bottom, gliding only the last GLIDE_SCREENS like a topic jump.
+ * The global `scroll-behavior: smooth` turned them into a glide of the whole page (1.1 s, with
+ * a 100–250 ms frame while the 3D drew); Space and Page Up/Down move a screen and stay native.
+ */
+export function jumpToEdge(edge: "top" | "bottom") {
+  const to = edge === "top" ? 0 : Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  if (prefersReducedMotion()) return window.scrollTo({ top: to, behavior: "instant" });
+  const from = glideStart(window.scrollY, to, window.innerHeight);
+  if (from !== window.scrollY) window.scrollTo({ top: from, behavior: "instant" });
+  window.scrollTo({ top: to, behavior: "smooth" });
+}
+
+/** Whether a key press belongs to a field or a widget (its own Home/End), not to the page. */
+export function keyIsForPage(e: KeyboardEvent): boolean {
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return false;
+  const el = e.target as HTMLElement | null;
+  if (!el || el === document.body || el === document.documentElement) return true;
+  if (el.isContentEditable || el.closest("input, textarea, select, [role=listbox], [role=menu], [role=tablist], [role=slider], [cmdk-root], dialog")) return false;
+  // a scrollable box with the focus scrolls itself
+  return !el.closest("[data-own-keys]");
+}
+
 export function smoothScrollTo(id: string | null, offset = 0) {
   const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;

@@ -4,8 +4,13 @@
    dock and the credits go above it (17). */
 .contact-stage,
 .site-credits {
-  /* the ball's width on screen; the stage is 10% wider and shows its upper half */
-  --ball: min(960px, 96vw);
+  /* the ball's width on screen; the stage is 10% wider and shows its upper half. On short screens
+     (laptops at 600 px, phones lying down) it also follows the height, so the page's end shows the
+     whole title under the header: the scene from the title to the end is about 182 px + half a
+     ball, and the header with some room takes 78 px (Gustavo, 19/11) */
+  --ball: max(240px, min(960px, 96vw, calc(200vh - 520px)));
+  /* the small viewport: a phone's toolbar coming and going never resizes him */
+  --ball: max(240px, min(960px, 96vw, calc(200svh - 520px)));
   /* how far the top of his fur rises behind the dock's glass */
   --dip: 52px;
 }
@@ -76,7 +81,9 @@
   z-index: 17;
   display: flex;
   justify-content: center;
-  margin-top: -66px;
+  /* a small ball (short screens) has his eyes lower than the pill: then it pulls up only to 14 px
+     under them, and the page ends a little under his waist */
+  margin-top: calc(-1 * min(66px, var(--ball) * 0.16 - 14px));
   padding: 0 16px 20px;
 }
 .site-credits-pill {

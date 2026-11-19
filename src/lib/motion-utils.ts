@@ -148,11 +148,33 @@ export function keyIsForPage(e: KeyboardEvent): boolean {
   return !el.closest("[data-own-keys]");
 }
 
+/**
+ * Whether a jump to `el` should end at the bottom of the page: the closing section
+ * (data-scroll-end) is shown whole with the footer under it, not aligned to the top with the
+ * footer cut off (Gustavo, 19/11).
+ */
+export const scrollsToEnd = (el: Element | null) => !!el?.hasAttribute("data-scroll-end");
+
+/** A page opened at a closing section's anchor (/#contato) lands at the bottom, like a jump to it. */
+export function settleHashAtEnd() {
+  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+  if (!scrollsToEnd(target)) return;
+  const settle = () => {
+    if (!isSmoothScrolling()) window.scrollTo({ top: maxScroll(), behavior: "instant" });
+  };
+  settle();
+  // late fonts and images grow the page after the browser's own jump
+  if (document.readyState !== "complete") addEventListener("load", settle, { once: true });
+  void document.fonts?.ready.then(settle);
+}
+
 export function smoothScrollTo(id: string | null, offset = 0) {
   const call = ++scrollCall;
   const target = id ? document.getElementById(id) : null;
+  const toEnd = scrollsToEnd(target);
   // near the bottom the page stops short of the target, at the end of the scroll range
   const destination = () => {
+    if (toEnd) return maxScroll();
     const top = Math.max(0, target ? target.getBoundingClientRect().top + window.scrollY - offset : 0);
     const max = maxScroll();
     return max > 0 ? Math.min(top, max) : top;

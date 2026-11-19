@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { jumpToEdge, keyIsForPage, smoothScrollTo } from "@/lib/motion-utils";
+import { jumpToEdge, keyIsForPage, settleHashAtEnd, smoothScrollTo } from "@/lib/motion-utils";
 import { startSmoothWheel, stopSmoothWheel, wantsSmoothWheel } from "@/lib/smooth-wheel";
 
 /**
@@ -10,6 +10,7 @@ import { startSmoothWheel, stopSmoothWheel, wantsSmoothWheel } from "@/lib/smoot
  */
 export function ScrollJumps() {
   useEffect(() => {
+    settleHashAtEnd();
     const onKey = (e: KeyboardEvent) => {
       if ((e.key !== "Home" && e.key !== "End") || !keyIsForPage(e)) return;
       e.preventDefault();

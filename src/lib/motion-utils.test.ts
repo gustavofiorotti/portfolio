@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { glideAt, isSmoothScrolling, jumpDuration, jumpToEdge, keyIsForPage, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
+import { glideAt, isSmoothScrolling, jumpDuration, jumpToEdge, keyIsForPage, settleHashAtEnd, lerpPath, scrollDuration, smoothScrollTo } from "./motion-utils";
 
 describe("motion utils", () => {
   it("interpolates path numbers and keeps commands", () => {
@@ -69,6 +69,29 @@ describe("smoothScrollTo", () => {
     vi.advanceTimersByTime(1500);
     expect(window.scrollY).toBe(900);
     expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("the closing section (data-scroll-end) ends at the bottom of the page, not at its top", () => {
+    page(800 + 3000);
+    const end = section("contato", 2500);
+    end.setAttribute("data-scroll-end", "");
+    smoothScrollTo("contato", 72);
+    vi.advanceTimersByTime(1500);
+    expect(window.scrollY).toBe(3000);
+  });
+
+  it("a page opened at the closing section's anchor lands at the bottom", () => {
+    page(800 + 3000, 2428);
+    section("contato", 2500).setAttribute("data-scroll-end", "");
+    history.replaceState(null, "", "#contato");
+    settleHashAtEnd();
+    expect(window.scrollY).toBe(3000);
+    history.replaceState(null, "", "#outra");
+    section("outra", 1000);
+    window.scrollTo({ top: 928, behavior: "instant" });
+    settleHashAtEnd();
+    expect(window.scrollY).toBe(928);
+    history.replaceState(null, "", location.pathname);
   });
 
   it("the wheel or a touch hands the page back to the visitor, without moving focus", () => {

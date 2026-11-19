@@ -7,6 +7,7 @@ import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
 import { PRESS_UP, SW } from "./switch-spot";
 import { Strands } from "./Strands";
+import { bobbyFur } from "./bobby-fur";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { FooterGufi } from "./FooterGufi";
@@ -91,6 +92,8 @@ function writeClicks(n: number) {
 
 function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
   const feel = useRef(createFeel());
+  // coat variants to compare in development (?pelo=), always the current one in production
+  const fur = useMemo(() => bobbyFur(location.search, process.env.NODE_ENV !== "production"), []);
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
   const scene = useRef<THREE.Group>(null);
@@ -396,7 +399,7 @@ function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, on
           </mesh>
           <group ref={float}>
             <group ref={body}>
-              <Strands radius={0.92} count={20000} length={0.2} width={0.022} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
+              <Strands radius={0.92} count={fur.count} length={fur.length} width={fur.width} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
               <mesh ref={drool} position={[0.36, -0.3, 0.9]} visible={false}>
                 <sphereGeometry args={[1, 16, 12]} />
                 <meshStandardMaterial color="#cfe3f2" roughness={0.1} metalness={0.1} transparent opacity={0.85} />

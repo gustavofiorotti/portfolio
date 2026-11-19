@@ -6,7 +6,7 @@ import type Lenis from "lenis";
  * dialogs, the topic strip) keep their own scrolling, and while a modal is open the wheel is left
  * to the browser, which keeps the page behind it still.
  */
-export const WHEEL_LERP = 0.1;
+const WHEEL_LERP = 0.1;
 
 let lenis: Lenis | null = null;
 

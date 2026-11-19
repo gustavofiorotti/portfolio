@@ -1,8 +1,5 @@
 import { stopWheelGlide } from "./smooth-wheel";
 
-/** easeOutQuart: fast start, gentle stop. */
-export const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
-
 /** easeOutBack: overshoots a little, then settles (used by morphing icons). */
 export const easeOutBack = (t: number) => {
   const c1 = 1.70158;
@@ -39,7 +36,7 @@ function focusSection(el: HTMLElement | null) {
 }
 
 /** easeInOutCubic: eases in and out softly, the curve of the topic jumps. */
-export const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 /** Topic jumps take 1.0 s plus 0.1 s per screen of distance, up to 1.4 s (asked on 18/11). */
 export const jumpDuration = (distance: number, viewport: number) =>
@@ -153,7 +150,7 @@ export function keyIsForPage(e: KeyboardEvent): boolean {
  * (data-scroll-end) is shown whole with the footer under it, not aligned to the top with the
  * footer cut off (Gustavo, 19/11).
  */
-export const scrollsToEnd = (el: Element | null) => !!el?.hasAttribute("data-scroll-end");
+const scrollsToEnd = (el: Element | null) => !!el?.hasAttribute("data-scroll-end");
 
 /** A page opened at a closing section's anchor (/#contato) lands at the bottom, like a jump to it. */
 export function settleHashAtEnd() {

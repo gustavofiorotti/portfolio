@@ -18,10 +18,12 @@ function renderButton() {
 const dialog = () => document.querySelector("dialog")!;
 const tap = (el: Element) => {
   fireEvent.pointerDown(el, { pointerType: "touch" });
+  fireEvent.pointerUp(el, { pointerType: "touch" });
   fireEvent.click(el, { detail: 1 });
 };
 const mouseClick = (el: Element) => {
   fireEvent.pointerDown(el, { pointerType: "mouse" });
+  fireEvent.pointerUp(el, { pointerType: "mouse" });
   fireEvent.click(el, { detail: 1 });
 };
 
@@ -95,7 +97,7 @@ describe("ResumeButton", () => {
     expect(document.documentElement.classList.contains("resume-open")).toBe(false);
   });
 
-  it("a click or tap beside the pages closes it, a click on a page or a drag from it does not", () => {
+  it("a click or tap beside the pages closes it; a click on a page, or a press that starts or ends on one, does not", () => {
     renderButton();
     mouseClick(screen.getByRole("button", { name: "Ver currículo" }));
     const around = document.querySelector(".resume-pages")!;
@@ -103,6 +105,12 @@ describe("ResumeButton", () => {
     mouseClick(page);
     // a text selection that starts on the page and ends beside it: the click lands on the container
     fireEvent.pointerDown(page);
+    fireEvent.pointerUp(around);
+    fireEvent.click(around);
+    expect(dialog().open).toBe(true);
+    // the other way round: pressed beside the page, released on it
+    fireEvent.pointerDown(around);
+    fireEvent.pointerUp(page);
     fireEvent.click(around);
     expect(dialog().open).toBe(true);
     tap(around);

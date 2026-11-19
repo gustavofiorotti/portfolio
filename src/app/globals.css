@@ -345,6 +345,15 @@ html[data-intro="play"] .site-header {
 html[data-intro="play"] main {
   animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards;
 }
+/* the closing scene and the credits live outside main (HomePage) and get the same fade, on their
+   children: a fade on .contact-stage itself would make it a layer at z 0 and put its dock (17)
+   under Bobby's canvas (16). The dock, the Gufi's stage and the credits are layers already */
+html[data-intro="wait"] .contact-stage > *,
+html[data-intro="wait"] .site-credits { opacity: 0; }
+html[data-intro="play"] .contact-stage > *,
+html[data-intro="play"] .site-credits {
+  animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards;
+}
 /* handoff: the header logo turns on under the flying one as it lands (88%), which then fades out,
    and its eyes hold still (glance and blink paused at their first frame) until the opening ends */
 html[data-intro="play"] .brand-logo { animation: intro-reveal 2.3s linear backwards; }

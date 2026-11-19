@@ -157,10 +157,19 @@ export const scrollsToEnd = (el: Element | null) => !!el?.hasAttribute("data-scr
 
 /** A page opened at a closing section's anchor (/#contato) lands at the bottom, like a jump to it. */
 export function settleHashAtEnd() {
-  const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
-  if (!scrollsToEnd(target)) return;
+  let id = location.hash.slice(1);
+  try {
+    id = decodeURIComponent(id);
+  } catch {
+    // a malformed escape (/#%E0%A4%A): look it up as written
+  }
+  if (!id || !scrollsToEnd(document.getElementById(id))) return;
+  // once the visitor scrolls on their own, a late settle never pulls the page back
+  let touched = false;
+  const touch = () => (touched = true);
+  for (const type of INTERRUPTS) addEventListener(type, touch, { once: true, passive: true });
   const settle = () => {
-    if (!isSmoothScrolling()) window.scrollTo({ top: maxScroll(), behavior: "instant" });
+    if (!touched && !isSmoothScrolling()) window.scrollTo({ top: maxScroll(), behavior: "instant" });
   };
   settle();
   // late fonts and images grow the page after the browser's own jump

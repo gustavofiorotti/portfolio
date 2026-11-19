@@ -9,7 +9,8 @@
      whole title under the header: the scene from the title to the end is about 182 px + half a
      ball, and the header with some room takes 78 px (Gustavo, 19/11) */
   --ball: max(240px, min(960px, 96vw, calc(200vh - 520px)));
-  /* the small viewport: a phone's toolbar coming and going never resizes him */
+  /* svh where supported (the line above stays for older browsers): a phone's toolbar coming and
+     going never resizes him */
   --ball: max(240px, min(960px, 96vw, calc(200svh - 520px)));
   /* how far the top of his fur rises behind the dock's glass */
   --dip: 52px;

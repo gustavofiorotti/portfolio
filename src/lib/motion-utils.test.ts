@@ -94,6 +94,21 @@ describe("smoothScrollTo", () => {
     history.replaceState(null, "", location.pathname);
   });
 
+  it("a malformed anchor does not throw, and a visitor who scrolled is never pulled back", () => {
+    page(800 + 3000, 0);
+    section("contato", 2500).setAttribute("data-scroll-end", "");
+    history.replaceState(null, "", "#%E0%A4%A");
+    expect(() => settleHashAtEnd()).not.toThrow();
+    history.replaceState(null, "", "#contato");
+    settleHashAtEnd();
+    expect(window.scrollY).toBe(3000);
+    window.dispatchEvent(new Event("wheel"));
+    window.scrollTo({ top: 1200, behavior: "instant" });
+    window.dispatchEvent(new Event("load"));
+    expect(window.scrollY).toBe(1200);
+    history.replaceState(null, "", location.pathname);
+  });
+
   it("the wheel or a touch hands the page back to the visitor, without moving focus", () => {
     const tops = page(6000);
     const focus = vi.spyOn(section("alvo", 3000), "focus");

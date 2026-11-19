@@ -26,6 +26,17 @@
   --gh-2: #40c463;
   --gh-3: #30a14e;
   --gh-4: #216e39;
+  /* porcelain wall switch (mascot/switch.css) */
+  --sw-plate: linear-gradient(165deg, var(--surface) 0%, #f6f5f2 50%, #e9e7e2 100%);
+  --sw-plate-shadow: inset 0 1px 0 var(--surface), inset 0 -1px 2px rgb(120 110 95 / 0.12), 0 1px 2px rgb(24 24 27 / 0.1), 0 10px 18px -8px rgb(24 24 27 / 0.38);
+  --sw-well: #e3e1dc;
+  --sw-well-shadow: inset 0 2px 4px rgb(90 80 65 / 0.25), 0 1px 0 var(--surface);
+  /* the raised half: glossy porcelain catching the light; the sunken one: matte, in its shadow */
+  --sw-up: linear-gradient(180deg, var(--surface) 0%, #fbfaf8 70%, #f1efea 100%);
+  --sw-up-shadow: inset 0 1.5px 0 var(--surface), inset 0 -1px 0 rgb(120 110 95 / 0.15), 0 5px 7px -3px rgb(60 50 40 / 0.35);
+  --sw-down: linear-gradient(180deg, #d3d0c9 0%, #cac6be 100%);
+  --sw-down-shadow: inset 0 3px 5px rgb(60 50 40 / 0.35);
+  --sw-band: var(--accent);
   color-scheme: light;
 }
 
@@ -48,6 +59,17 @@
   --gh-3: #26a641;
   --gh-4: #39d353;
   color-scheme: dark;
+  /* porcelain wall switch: graphite */
+  --sw-plate: linear-gradient(165deg, #34343a 0%, #26262b 45%, #1d1d21 100%);
+  --sw-plate-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 -1px 2px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 18px -8px rgb(0 0 0 / 0.7);
+  --sw-well: #121214;
+  --sw-well-shadow: inset 0 2px 4px rgb(0 0 0 / 0.7), 0 1px 0 rgb(255 255 255 / 0.06);
+  --sw-up: linear-gradient(180deg, #5a5a62 0%, #4a4a51 70%, #3e3e44 100%);
+  --sw-up-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.22), 0 5px 9px -3px rgb(0 0 0 / 0.7);
+  --sw-down: linear-gradient(180deg, #232327 0%, #1d1d21 100%);
+  --sw-down-shadow: inset 0 3px 6px rgb(0 0 0 / 0.75);
+  /* the logo red reads too dark on graphite: a lighter step of it, for the band */
+  --sw-band: #e0302a;
 }
 
 @theme inline {
@@ -95,6 +117,12 @@ html.theme-snapshot .nav-pill {
   animation-duration: 0.3s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* keyboard jumps of a screen (Space, Page Up/Down) glide instead of cutting; the wheel and
+   trackpad glide through Lenis (smooth-wheel.ts) and touch stays native. Home/End and
+   #anchors are long: ScrollJumps glides them in JS (motion-utils). Next turns it off during route changes (data-scroll-behavior on <html>), and less motion
+   turns it off below */
+html { scroll-behavior: smooth; }
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -257,7 +285,16 @@ html.theme-snapshot .nav-pill {
   background: var(--surface);
   color: var(--fg);
   box-shadow: 0 40px 80px -30px var(--shadow-lift);
-  animation: cmd-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* open and close both animate: Radix keeps the dialog mounted until a closing animation ends
+   (it waits only when [data-state="closed"] has an animation of its own) */
+.cmd-content[data-state="open"] { animation: cmd-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cmd-content[data-state="closed"] { animation: cmd-out 0.15s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.cmd-overlay[data-state="open"] { animation: cmd-fade-in 0.18s ease-out; }
+.cmd-overlay[data-state="closed"] { animation: cmd-fade-out 0.15s ease-in forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .cmd-content[data-state],
+  .cmd-overlay[data-state] { animation: none; }
 }
 .cmd-item[data-selected="true"] {
   background: var(--chip);
@@ -267,6 +304,15 @@ html.theme-snapshot .nav-pill {
 }
 @keyframes cmd-in {
   from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.98); }
+}
+@keyframes cmd-out {
+  to { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.98); }
+}
+@keyframes cmd-fade-in {
+  from { opacity: 0; }
+}
+@keyframes cmd-fade-out {
+  to { opacity: 0; }
 }
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }
@@ -297,6 +343,15 @@ html[data-intro="play"] .site-header {
   animation: intro-focus-flat 0.75s cubic-bezier(0.25, 0.7, 0.25, 1) 1.25s backwards;
 }
 html[data-intro="play"] main {
+  animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards;
+}
+/* the closing scene and the credits live outside main (HomePage) and get the same fade, on their
+   children: a fade on .contact-stage itself would make it a layer at z 0 and put its dock (17)
+   under Bobby's canvas (16). The dock, the Gufi's stage and the credits are layers already */
+html[data-intro="wait"] .contact-stage > *,
+html[data-intro="wait"] .site-credits { opacity: 0; }
+html[data-intro="play"] .contact-stage > *,
+html[data-intro="play"] .site-credits {
   animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards;
 }
 /* handoff: the header logo turns on under the flying one as it lands (88%), which then fades out,
@@ -354,14 +409,17 @@ section[tabindex="-1"]:focus {
   position: fixed;
   right: 12px;
   bottom: 18px;
-  z-index: 16;
-  width: 64px;
-  height: 92px;
+  /* under Bobby's canvas (16): his hand reaches over the switch when he presses it */
+  z-index: 15;
+  /* the 60 × 92 switch with its 6 px margin (switch.css) */
+  width: 72px;
+  height: 104px;
   pointer-events: none;
 }
 @media (min-width: 1024px) {
   .mascot-stage {
-    right: 4px;
+    /* 32 px: room for the 60 px switch on Bobby's right without touching his hand (switch-spot.ts) */
+    right: 32px;
     /* the wall switch sits 15 px below the box center: this puts it at the middle of the screen */
     top: calc(50% - 90px);
     bottom: auto;
@@ -412,6 +470,8 @@ html[data-bobby="behind"] .bobby-bubble { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .bobby-bubble { animation: none; opacity: 1; }
 }
+/* while Bobby runs behind the page (canvas at 0), main goes over him. The footer's closing scene
+   is outside main (HomePage), so its dock (17) never depends on this layer */
 main { position: relative; z-index: 1; }
 html[data-bobby-hover="1"] body { cursor: grab; }
 html[data-bobby-drag] body { cursor: grabbing; user-select: none; -webkit-user-select: none; }
@@ -431,51 +491,4 @@ html[data-bobby="behind"] .project-card {
 }
 html[data-intro="wait"] .mascot-stage { opacity: 0; }
 html[data-intro="play"] .mascot-stage { animation: intro-focus 1.1s cubic-bezier(0.25, 0.7, 0.25, 1) 1.75s backwards; }
-/* plain switch (small screens, before the 3D loads, or without WebGL) */
-.mascot-switch {
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  width: 52px;
-  height: 80px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: 0 10px 24px -14px var(--shadow-lift);
-  cursor: pointer;
-}
-.mascot-rocker {
-  position: absolute;
-  inset: 22px 14px;
-  border-radius: 6px;
-  background: var(--chip);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-.mascot-rocker::after {
-  content: "";
-  position: absolute;
-  inset: 3px 3px 50% 3px;
-  border-radius: 4px;
-  background: var(--surface);
-  box-shadow: 0 2px 3px var(--shadow-lift);
-  transition: inset 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-.mascot-rocker[data-on="true"]::after { inset: 50% 3px 3px 3px; }
-/* desktop that can run the 3D: the HTML button is an invisible hit area over the 3D switch
-   from the start (no flash of the drawn switch); .is-plain brings the drawn one back */
-@media (min-width: 1024px) {
-  .mascot-switch:not(.is-plain) {
-    /* over the 3D switch: scene x 1.15 (57 px right of the box center), 15 px below center, 1.6x */
-    right: 20px;
-    top: calc(50% + 15px);
-    bottom: auto;
-    width: 46px;
-    height: 68px;
-    transform: translateY(-50%);
-    border-color: transparent;
-    background: transparent;
-    box-shadow: none;
-}
-  .mascot-switch:not(.is-plain) .mascot-rocker { display: none; }
-}
-.mascot-switch:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+/* the wall switch itself: src/components/mascot/switch.css */

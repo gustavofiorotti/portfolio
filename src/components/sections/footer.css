@@ -1,0 +1,131 @@
+/* Closing scene: the question, the dock floating in front of the top of a giant Gufi (the header
+   logo's character, only his upper half) and the credits over him (Contact.tsx). On desktop with
+   3D he is drawn live in Bobby's canvas (FooterGufi), which sits over the page (z-index 16): the
+   dock and the credits go above it (17). */
+.contact-stage,
+.site-credits {
+  /* the ball's width on screen; the stage is 10% wider and shows its upper half. On short screens
+     (laptops at 600 px, phones lying down) it also follows the height, so the page's end shows the
+     whole title under the header: the scene from the title to the end is about 182 px + half a
+     ball, and the header with some room takes 78 px (Gustavo, 19/11) */
+  --ball: max(240px, min(960px, 96vw, calc(200vh - 520px)));
+  /* svh where supported (the line above stays for older browsers): a phone's toolbar coming and
+     going never resizes him */
+  --ball: max(240px, min(960px, 96vw, calc(200svh - 520px)));
+  /* how far the top of his fur rises behind the dock's glass */
+  --dip: 52px;
+}
+.contact-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 24px 0;
+  text-align: center;
+  /* the stage can be wider than the screen: cut it sideways, never scroll */
+  overflow-x: clip;
+}
+.contact-dock {
+  position: relative;
+  z-index: 17;
+  margin-top: clamp(40px, 6vw, 72px);
+}
+.gufi-stage {
+  position: relative;
+  z-index: 1;
+  width: calc(var(--ball) * 1.1);
+  max-width: none;
+  aspect-ratio: 2 / 1;
+  /* the top of his fur sits 5% of the ball under the stage's top: the dock dips --dip into it */
+  margin-top: calc(var(--ball) * -0.05 - var(--dip));
+  pointer-events: none;
+}
+/* the still Gufi (phones, no WebGL, Save-Data) steps aside while the live one is drawn */
+:root[data-gufi3d] .gufi-still {
+  visibility: hidden;
+}
+
+.gufi-still {
+  position: absolute;
+  inset: 0;
+}
+.gufi-still img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+/* closed eyes over the open ones for a moment every few seconds; the patch's edge fades into the
+   fur. Box in % of the still (measured on the render: 1128 × 564 px) */
+.gufi-still .gufi-blink {
+  left: 30.319%;
+  top: 33.688%;
+  width: 39.273%;
+  height: auto;
+  opacity: 0;
+  mask-image: radial-gradient(farthest-side, #000 90%, transparent 100%);
+  animation: gufi-blink 4.6s steps(1, end) infinite 1.2s;
+}
+@keyframes gufi-blink {
+  0%, 96.5% { opacity: 0; }
+  97% { opacity: 1; }
+  99.5% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gufi-still .gufi-blink { animation: none; }
+}
+/* credits: low over the bottom of the Gufi, far under his eyes (their bottom is ~16% of the ball
+   above the cut, 110 px or more here). The pull-up (66 px) is a little more than the pill (~40 px)
+   plus its bottom room (20 px), so the page still ends at his waist and never under it */
+.site-credits {
+  position: relative;
+  z-index: 17;
+  display: flex;
+  justify-content: center;
+  /* a small ball (short screens) has his eyes lower than the pill: then it pulls up only to 14 px
+     under them, and the page ends a little under his waist */
+  margin-top: calc(-1 * min(66px, var(--ball) * 0.16 - 14px));
+  padding: 0 16px 20px;
+}
+.site-credits-pill {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: var(--fg);
+  font-size: 13px;
+  text-align: center;
+}
+/* denser than the header's glass: the red fur behind would take the text below 4.5:1 */
+.site-credits-pill.glass {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+.site-credits-dot {
+  opacity: 0.5;
+}
+/* up to 720 px the pill is too wide to clear the floating switch in the corner (60 × 92, 24 px
+   from the bottom): under the Gufi, not over his eyes, and above the switch at the very end */
+@media (max-width: 720px) {
+  .site-credits {
+    margin-top: 12px;
+    padding-bottom: 128px;
+  }
+}
+@media (max-width: 520px) {
+  /* narrow enough to clear the floating buttons in the bottom corners */
+  .site-credits-pill {
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 12px;
+  }
+  /* two lines on phones: no dot left hanging at the end of a line */
+  .site-credits-dot {
+    display: none;
+  }
+  .site-credits-pill {
+    flex-direction: column;
+  }
+}

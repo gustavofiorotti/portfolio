@@ -4,6 +4,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import { useTranslations } from "next-intl";
 import { toggleTheme, useTheme } from "@/lib/theme-client";
 import type { Pointer } from "./MascotScene";
+import "./switch.css";
 import { clickSwitch, createPressRequest, type PressRequest } from "./press";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
@@ -266,7 +267,6 @@ export function MascotStage() {
             <MascotScene
               dark={dark}
               onToggle={toggleTheme}
-              onSwitchClick={clickSwitchNow}
               onContextLost={disable3d}
               press={press}
               pointer={pointer}
@@ -287,19 +287,26 @@ export function MascotStage() {
       {ready && shown && <SpeechBubble line={line} layout={layout} />}
       {ready && shown && <Hearts bursts={bursts} layout={layout} />}
       <div ref={stage} className="mascot-stage">
-        {/* on desktop the button is an invisible hit area over the 3D switch: it joins the tab order
-            only once the switch is visible (the theme is always reachable from the ⌘K menu) */}
+        {/* the porcelain switch is this button, with or without the 3D Bobby: fixed on the screen
+            (the 3D one followed his camera and slid as he walked with the scroll) */}
         <button
           type="button"
           onClick={clickSwitchNow}
           // holding Enter/Space repeats the click: only the first press counts
           onKeyDown={(e) => e.repeat && (e.key === "Enter" || e.key === " ") && e.preventDefault()}
-          aria-label={label}
+          aria-label={t("switch")}
+          aria-pressed={dark}
           title={label}
-          tabIndex={plain || shown ? 0 : -1}
+          tabIndex={0}
           className={`mascot-switch ${plain ? "is-plain" : ""}`}
         >
-          <span className="mascot-rocker" data-on={dark} />
+          <span className="mascot-well">
+            <span className="mascot-rocker" data-on={dark}>
+              {/* no symbol: the raised half (glossy, red band) is the active theme */}
+              <span className="mascot-half mascot-half-top" />
+              <span className="mascot-half mascot-half-bottom" />
+            </span>
+          </span>
         </button>
       </div>
     </>

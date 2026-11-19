@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
-import { addBurst, HEART_LIFE_MS, makeBurst, type Burst } from "./heart-burst";
+import { addBurst, BELOW_TOP_PX, HEART_LIFE_MS, makeBurst, type Burst } from "./heart-burst";
 import type { Layout } from "./ViewRig";
 import "./hearts.css";
 
@@ -18,7 +18,7 @@ export function useHearts() {
   return { bursts, add };
 }
 
-/** Hearts floating up from Bobby's head (the scene writes the head's screen point into layout). */
+/** Hearts floating up beside Bobby's head (the scene writes the head's screen point into layout). */
 export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRefObject<Layout> }) {
   const el = useRef<HTMLDivElement>(null);
   const active = bursts.length > 0;
@@ -27,7 +27,7 @@ export function Hearts({ bursts, layout }: { bursts: Burst[]; layout: MutableRef
     let raf = 0;
     const follow = () => {
       const { headX, headY } = layout.current;
-      if (el.current) el.current.style.transform = `translate(${headX}px, ${headY}px)`;
+      if (el.current) el.current.style.transform = `translate(${headX}px, ${headY + BELOW_TOP_PX}px)`;
       raf = requestAnimationFrame(follow);
     };
     follow();

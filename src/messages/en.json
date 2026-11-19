@@ -19,12 +19,12 @@
   "hero": {
     "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
-    "seeResume": "See résumé",
-    "downloadResume": "Download résumé (PDF)"
+    "seeResume": "See résumé"
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
-    "turnOn": "Turn the light on (light theme)"
+    "turnOn": "Turn the light on (light theme)",
+    "switch": "Lights off (dark theme)"
   },
   "cmd": {
     "open": "Open command menu",
@@ -33,13 +33,20 @@
     "placeholder": "What are you looking for?",
     "empty": "Nothing found.",
     "goTo": "Go to {section}",
+    "projectOnline": "{name}: view live",
+    "projectCode": "{name}: view code",
     "copyEmail": "Copy e-mail",
     "emailCopied": "E-mail copied",
+    "copySiteLink": "Copy site link",
+    "siteLinkCopied": "Link copied",
+    "viewResume": "View résumé",
     "downloadResume": "Download résumé (PDF)",
     "lightOn": "Turn the light on (light theme)",
     "lightOff": "Turn the light off (dark theme)",
     "openGithub": "Open GitHub",
     "openLinkedin": "Open LinkedIn",
+    "openX": "Open X",
+    "openInstagram": "Open Instagram",
     "otherLanguage": "Versão em português",
     "hintNavigate": "navigate",
     "hintOpen": "open",
@@ -49,7 +56,8 @@
       "navigate": "navigate",
       "action": "action",
       "link": "link",
-      "language": "language"
+      "language": "language",
+      "project": "project"
     }
   },
   "projects": {
@@ -251,5 +259,15 @@
       "who?",
       "I'm awake!"
     ]
+  },
+  "resume": {
+    "title": "Résumé",
+    "view": "View",
+    "download": "Download",
+    "downloadPdf": "Download résumé (PDF)",
+    "openNewTab": "Open in new tab",
+    "close": "Close",
+    "page": "Gustavo Fiorotti's résumé, page {n} of {total}",
+    "dialog": "Résumé preview"
   }
 }

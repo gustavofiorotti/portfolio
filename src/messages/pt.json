@@ -19,12 +19,12 @@
   "hero": {
     "lead": "Desenvolvedor Fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
     "seeProjects": "Ver projetos",
-    "seeResume": "Ver currículo",
-    "downloadResume": "Baixar currículo (PDF)"
+    "seeResume": "Ver currículo"
   },
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
-    "turnOn": "Acender a luz (tema claro)"
+    "turnOn": "Acender a luz (tema claro)",
+    "switch": "Luz apagada (tema escuro)"
   },
   "cmd": {
     "open": "Abrir menu de comandos",
@@ -33,13 +33,20 @@
     "placeholder": "O que você procura?",
     "empty": "Nada encontrado.",
     "goTo": "Ir para {section}",
+    "projectOnline": "{name}: ver online",
+    "projectCode": "{name}: ver código",
     "copyEmail": "Copiar e-mail",
     "emailCopied": "E-mail copiado",
+    "copySiteLink": "Copiar link do site",
+    "siteLinkCopied": "Link copiado",
+    "viewResume": "Ver currículo",
     "downloadResume": "Baixar currículo (PDF)",
     "lightOn": "Acender a luz (tema claro)",
     "lightOff": "Apagar a luz (tema escuro)",
     "openGithub": "Abrir GitHub",
     "openLinkedin": "Abrir LinkedIn",
+    "openX": "Abrir X",
+    "openInstagram": "Abrir Instagram",
     "otherLanguage": "English version",
     "hintNavigate": "navegar",
     "hintOpen": "abrir",
@@ -49,7 +56,8 @@
       "navigate": "navegar",
       "action": "ação",
       "link": "link",
-      "language": "idioma"
+      "language": "idioma",
+      "project": "projeto"
     }
   },
   "projects": {
@@ -251,5 +259,15 @@
       "quem?",
       "tô acordado!"
     ]
+  },
+  "resume": {
+    "title": "Currículo",
+    "view": "Ver",
+    "download": "Baixar",
+    "downloadPdf": "Baixar currículo (PDF)",
+    "openNewTab": "Abrir em nova aba",
+    "close": "Fechar",
+    "page": "Currículo de Gustavo Fiorotti, página {n} de {total}",
+    "dialog": "Prévia do currículo"
   }
 }

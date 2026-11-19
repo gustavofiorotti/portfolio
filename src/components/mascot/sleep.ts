@@ -4,8 +4,6 @@
 // dips) each ending in a jolt awake, then he drops off for good: eyes shut, slow breathing,
 // a drop of drool and "Zzz" bubbles.
 
-export const SLEEPY_AFTER = 25; // s without pointer movement before the yawn
-
 const YAWN_END = 1.8;
 const NODS: [number, number][] = [
   [YAWN_END, 5.4], // droop from .. jolt at
@@ -14,6 +12,18 @@ const NODS: [number, number][] = [
 const JOLT = 0.45; // s the jolt lasts
 const DROP_START = 10.1;
 const ASLEEP_AT = 12.2;
+
+export const SLEEPY_AFTER = 20; // s without pointer movement before the yawn (first sign of sleep)
+export const ZZZ_AFTER = SLEEPY_AFTER + ASLEEP_AT; // s until he is asleep and the first "Zzz" (32.2)
+
+// A chatty idle line shows for 2.4 s (SpeechBubble) and must be gone, with a beat of silence,
+// before the yawn: one at 18 s ran straight into it. Closer than this to the yawn, he keeps quiet.
+export const IDLE_LINE_CLEAR = 4;
+
+/** Whether an idle line may start after `idleFor` s without pointer movement. */
+export function idleLineFits(idleFor: number): boolean {
+  return idleFor < SLEEPY_AFTER - IDLE_LINE_CLEAR;
+}
 
 export type SleepStage = "yawn" | "nod" | "jolt" | "drop" | "asleep";
 
@@ -59,8 +69,12 @@ export function sleepPose(s: number): SleepPose | null {
     return { stage: "drop", open: 0.55 * (1 - u), nod: 0.3 * u, yawn: 0, drool: 0 };
   }
   const breath = Math.sin((s - ASLEEP_AT) * 1.4);
-  return { stage: "asleep", open: 0, nod: 0.3 + 0.03 * breath, yawn: 0, drool: clamp01((s - ASLEEP_AT) / 2) * (0.85 + 0.15 * breath) };
+  return { stage: "asleep", open: 0, nod: 0.3 + BREATH_NOD * breath, yawn: 0, drool: clamp01((s - ASLEEP_AT) / 2) * (0.85 + 0.15 * breath) };
 }
+
+/** Breathing while asleep, a touch deeper than awake so it reads: head nod (rad) and body swell. */
+export const BREATH_NOD = 0.045;
+export const BREATH_SWELL = 0.02; // awake the body swells by 0.012
 
 /** Which bubble, if any, a change of stage should show. */
 export function sleepLine(prev: SleepStage | null, next: SleepStage | null): "yawn" | "doze" | "jolt" | "asleep" | null {

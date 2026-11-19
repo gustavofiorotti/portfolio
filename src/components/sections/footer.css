@@ -5,14 +5,8 @@
 .contact-stage,
 .site-credits {
   /* the ball's width on screen; the stage is 10% wider and shows its upper half */
-  --ball: min(820px, 88vw);
-  /* how far the top of his fur rises behind the dock */
-  --dip: 28px;
-}
-/* variant (footer-variant.ts): bigger, the fur reaching up behind the dock's glass */
-:root[data-gufi-big] .contact-stage,
-:root[data-gufi-big] .site-credits {
   --ball: min(960px, 96vw);
+  /* how far the top of his fur rises behind the dock's glass */
   --dip: 52px;
 }
 .contact-stage {
@@ -74,15 +68,16 @@
 @media (prefers-reduced-motion: reduce) {
   .gufi-still .gufi-blink { animation: none; }
 }
-/* credits: pulled up over the bottom of the Gufi, well under his eyes (their bottom is ~16% of the
-   ball above the cut); the page still ends at his waist */
+/* credits: low over the bottom of the Gufi, far under his eyes (their bottom is ~16% of the ball
+   above the cut, 110 px or more here). The pull-up (66 px) is a little more than the pill (~40 px)
+   plus its bottom room (20 px), so the page still ends at his waist and never under it */
 .site-credits {
   position: relative;
   z-index: 17;
   display: flex;
   justify-content: center;
-  margin-top: calc(var(--ball) * -0.1);
-  padding: 0 16px 24px;
+  margin-top: -66px;
+  padding: 0 16px 20px;
 }
 .site-credits-pill {
   display: flex;

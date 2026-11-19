@@ -34,8 +34,12 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <GithubActivity locale={locale} />
         <Experience locale={locale} />
         <About locale={locale} />
-        <Contact locale={locale} />
       </main>
+      {/* the closing scene stays out of <main> on purpose: its dock and credits (z-index 17) must
+          stack against Bobby's canvas (16) at the root, and anything that gives <main> a layer of
+          its own (z-index while Bobby runs behind, the intro's fade) would push them under the
+          3D Gufi drawn in that canvas */}
+      <Contact locale={locale} />
       <SiteFooter locale={locale} />
     </>
   );

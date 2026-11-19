@@ -6,3 +6,13 @@ export const CONTACT = {
   github: "https://github.com/gustavofiorotti",
   instagram: "https://www.instagram.com/gufiorotti",
 } as const;
+
+/** Social links shown by the dock (after the e-mail) and the ⌘K menu, in this order. */
+export const SOCIAL_LINKS = [
+  { id: "linkedin", href: CONTACT.linkedin },
+  { id: "x", href: CONTACT.x },
+  { id: "github", href: CONTACT.github },
+  { id: "instagram", href: CONTACT.instagram },
+] as const;
+
+export type SocialId = (typeof SOCIAL_LINKS)[number]["id"];

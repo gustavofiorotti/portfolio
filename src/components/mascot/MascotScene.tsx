@@ -5,14 +5,18 @@ import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import type { PressRequest } from "./press";
 import { Eye, MOODS, type EyeShape } from "./Eye";
-import { LightSwitch, SW, SW_SCALE } from "./LightSwitch";
+import { PRESS_UP, SW } from "./switch-spot";
 import { Strands } from "./Strands";
 import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
+import { FooterGufi } from "./FooterGufi";
+import { Overlays } from "./overlays";
+import { Switch3D } from "./Switch3D";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
-import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
-import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
+import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
+import { heartsDue } from "./heart-burst";
+import { BREATH_SWELL, idleLineFits, SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 export type { PressRequest } from "./press";
 export type Pointer = { x: number; y: number; lastMove: number; speed: number };
@@ -26,8 +30,10 @@ type Mood = "normal" | "feliz" | "dor" | "irritado" | "bravo" | "furioso" | "sus
 /** What Bobby says in a bubble; the stage picks the words (messages bobby.*). */
 export type Say =
   | "hello" | "poke" | "angry" | "egg" | "eggStep" | "pet" | "soothed" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
-  | "yawn" | "doze" | "jolt" | "asleep" | "wake";
+  | "yawn" | "doze" | "jolt" | "asleep" | "wake"
+  | "hush"; // not a line: the happy face came, so an angry bubble goes away with the angry face
 export type SayExtra = { filled: number; total: number; done: boolean };
+const HAND_Z = 0.13; // the pressing hand, in front of the switch plane (units)
 const PRESS_S = 0.6; // the whole reach-press-return; the theme flips halfway
 const CLICKS_KEY = "bobby-clicks";
 
@@ -51,18 +57,22 @@ type State = {
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
   /** poked since the last time a stroke made him happy: that first happy stroke speaks at once */
-  needsSoothe: boolean;
+  needsSoothe: boolean; petFace: boolean; heartsAt: number; pressDark: boolean;
   sleep: SleepStage | null; idleSaid: number;
 };
 
 type SceneProps = {
-  onContextLost?: () => void; dark: boolean; onToggle: () => void; onSwitchClick: () => void; press: MutableRefObject<PressRequest>;
+  onContextLost?: () => void; dark: boolean; onToggle: () => void; press: MutableRefObject<PressRequest>;
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
   onSay?: (what: Say, extra?: SayExtra) => void;
+  /** a burst of hearts over his head (petting, rate-limited here) */
+  onHearts?: () => void;
   /** greeting wave: the left hand waves until this time (performance.now ms) */
   greet: MutableRefObject<number>;
 };
+
+const wallS = () => performance.now() / 1000;
 
 function readClicks(): number {
   try {
@@ -79,13 +89,14 @@ function writeClicks(n: number) {
   }
 }
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, greet }: SceneProps) {
+function Plush({ dark, onToggle, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
   const feel = useRef(createFeel());
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
   const scene = useRef<THREE.Group>(null);
   const drool = useRef<THREE.Mesh>(null);
-  const clicks = useRef<number | null>(null); // clicks this visit, towards the secret
+  const clicks = useRef<number | null>(null); // clicks in a row, towards the secret
+  const clickAt = useRef(-Infinity); // last click (wall clock s): a pause resets the count
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
   const float = useRef<THREE.Group>(null);
@@ -93,21 +104,19 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const eyesPivot = useRef<THREE.Group>(null);
   const hands = useRef<(THREE.Group | null)[]>([]);
   const shadow = useRef<THREE.Mesh>(null);
-  const rocker = useRef<THREE.Group | null>(null);
-  const plate = useRef<THREE.Group | null>(null);
   const shadowTex = useShadowTexture();
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, heartsAt: -100, pressDark: false, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
     const s = st.current;
     const p = pointer.current;
     const t = state.clock.elapsedTime;
-    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !rocker.current || !carrier.current || !scene.current || !drool.current) return;
+    if (!float.current || !body.current || !eyesPivot.current || !shadow.current || !carrier.current || !scene.current || !drool.current) return;
 
     // drag and throw: physics in throw.ts; hits squash him, and he runs home behind the cards
     const f = th.current;
@@ -155,10 +164,11 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (f.mode === "dizzy") onSay?.("landed");
       s.lastMode = f.mode;
     }
-    // he chats now and then by himself; the first line teases the secret (🥚?)
+    // he chats now and then by himself; the third line teases the secret (🥚?), never the first
     if (t > s.nextIdle) {
       s.nextIdle = t + 20 + Math.random() * 15;
-      if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6) {
+      const quietFor = (performance.now() - p.lastMove) / 1000;
+      if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6 && idleLineFits(quietFor)) {
         s.idleSaid += 1; // a few lines per visit, not forever
         onSay?.("idle");
       }
@@ -177,6 +187,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       } else {
         s.pressT0 = t;
         s.pressed = false;
+        s.pressDark = dark;
       }
     }
     const pp = (t - s.pressT0) / PRESS_S;
@@ -195,6 +206,9 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (s.sleep === "asleep" || s.sleep === "drop") onSay?.("wake");
     }
     const petting = s.pet > 0.35;
+    // the petting face just came: an angry bubble must not outlive the angry face
+    if (petting && !s.petFace) onSay?.("hush");
+    s.petFace = petting;
     const waving = performance.now() < greet.current; // hello when he first shows up
     let mood: Mood = "normal";
     if (pressing) mood = "normal";
@@ -240,7 +254,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     s.vel += (1 - s.squash) * 170 * delta;
     s.vel *= Math.exp(-8 * delta);
     s.squash += s.vel * delta;
-    const sy = s.squash * (1 + Math.sin(t * 1.6 + 1.2) * 0.012 * motion) * (1 + (pose?.yawn ?? 0) * 0.09);
+    const swell = pose?.stage === "asleep" ? BREATH_SWELL : 0.012; // deeper breaths while asleep (sleep.ts)
+    const sy = s.squash * (1 + Math.sin(t * 1.6 + 1.2) * swell * motion) * (1 + (pose?.yawn ?? 0) * 0.09);
     body.current.scale.set(1 + (1 - sy) * 0.65, sy, 1 + (1 - sy) * 0.65);
     s.shake = Math.max(0, s.shake - delta * 2.5);
     const tremble = (mood === "furioso" ? Math.sin(t * 62) * 0.03 : mood === "bravo" ? Math.sin(t * 48) * 0.012 : 0) * motion;
@@ -280,12 +295,20 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
         kk = 16;
       }
       if (sd > 0 && pressing && pp < 0.66) {
-        const up = (s.pressed ? (dark ? 0.07 : -0.07) : dark ? -0.07 : 0.07) * SW_SCALE;
-        tmp.set(SW.x + 0.07 * SW_SCALE, SW.y + up, SW.z + 0.2 * SW_SCALE);
+        // the raised half when the press began: top in light, bottom in dark. Not `dark`, which
+        // flips some frames after the press (the theme swap runs in a view transition), and
+        // used to send the hand to the other half right as it pressed
+        const up = s.pressDark ? -PRESS_UP : PRESS_UP;
+        tmp.set(SW.x, SW.y + up, SW.z); // the switch is flat on the screen plane (z = 0)
         // SW lives in this scene's space, which the view rig moves around the screen: take it to
         // world space before going into the hand's (treating it as world sent the hand far left)
         sceneRoot.updateWorldMatrix(true, false);
         sceneRoot.localToWorld(tmp);
+        // the hand floats HAND_Z in front of the switch: pull it towards the camera's axis so that,
+        // seen through the lens, it covers the press point instead of landing to its right
+        const cam = state.camera.position, hz = tmp.z + HAND_Z;
+        const k = (cam.z - hz) / (cam.z - tmp.z);
+        tmp.set(cam.x + (tmp.x - cam.x) * k, cam.y + (tmp.y - cam.y) * k, hz);
         h.parent.updateWorldMatrix(true, false);
         h.parent.worldToLocal(tmp);
         if (pp < 0.28) { x = 0.95; y = -0.28; z = 0.05; }
@@ -311,14 +334,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     const look = pressing && pp < 0.75;
     eyesPivot.current.rotation.y = damp(eyesPivot.current.rotation.y, look ? 0.34 : tx, look ? 14 : 8, delta);
     eyesPivot.current.rotation.x = damp(eyesPivot.current.rotation.x, look ? 0.02 : -ty, 8, delta);
-    // the camera follows Bobby, so with him far away the switch is seen at a steep angle and its
-    // depth would smear: flatten it in z as the angle grows (it is a flat plate from the front)
-    if (plate.current) {
-      plate.current.getWorldPosition(tmp);
-      const tan = Math.hypot(tmp.x - state.camera.position.x, tmp.y - state.camera.position.y) / state.camera.position.z;
-      plate.current.scale.z = Math.min(1, 0.3 / Math.max(tan, 1e-3));
-    }
-    rocker.current.rotation.x = damp(rocker.current.rotation.x, dark ? -0.3 : 0.3, 18, delta);
   });
 
   const poke = (ev: ThreeEvent<MouseEvent>) => {
@@ -326,15 +341,21 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (dragged.current || !reachable(th.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) return; // a drag, or a control on top
     const s = st.current;
     const before = levelOf(angerAt(feel.current, clock.elapsedTime));
-    const lvl = addPoke(feel.current, clock.elapsedTime);
+    // hit while being petted: the happy face goes at once and he turns angry (feelings.ts)
+    const petting = s.pet > 0.35;
+    if (petting) s.pet = 0;
+    const lvl = addPoke(feel.current, clock.elapsedTime, petting, wallS());
     s.vel -= 3 + lvl * 0.6;
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
     s.needsSoothe = true;
     if (clicks.current === null) clicks.current = readClicks();
-    clicks.current += 1;
-    writeClicks(clicks.current);
-    const egg = eggProgress(clicks.current);
+    // wall clock, not the scene clock: that one runs at ~1 fps while he is still
+    const next = nextEggCount(clicks.current, clickAt.current, wallS());
+    clickAt.current = wallS();
+    clicks.current = next.n;
+    writeClicks(next.n);
+    const egg = next.dropped ? EGG_EMPTY : eggProgress(next.n);
     if (egg) onSay?.("eggStep", egg); // the secret filling up beats any other line
     else if (lvl > before) onSay?.(lvl === 4 ? "egg" : lvl >= 2 ? "angry" : "poke");
     else if (lvl === 4) onSay?.("angry"); // still poking him while furious: the lines keep escalating
@@ -342,9 +363,14 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    if (stroke(feel.current, ev.nativeEvent.clientX)) {
+    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY) && pettable(feel.current, wallS())) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
+      // he likes it: hearts float up with the happy face, now and then (heart-burst.ts)
+      if (s.pet > 0.35 && heartsDue(s.heartsAt, clock.elapsedTime)) {
+        s.heartsAt = clock.elapsedTime;
+        onHearts?.();
+      }
       if (s.needsSoothe && s.pet > 0.35) {
         // the first stroke that cheers him up after the pokes answers at once (one urgent line)
         s.needsSoothe = false;
@@ -362,7 +388,6 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     <group ref={scene}>
       <ambientLight intensity={1.7} />
       <directionalLight position={[-2, 3, 4]} intensity={1.4} />
-      <LightSwitch dark={dark} rocker={rocker} plate={plate} onPress={onSwitchClick} />
       <group position={[-0.45, 0, 0]}>
         <group ref={carrier}>
           <mesh ref={shadow} rotation-x={-Math.PI / 2} position={[0, -1.08, 0]}>
@@ -371,7 +396,8 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
           </mesh>
           <group ref={float}>
             <group ref={body}>
-              <Strands radius={0.92} count={20000} length={0.2} width={0.012} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
+              {/* fewer, thicker, longer strands: at Bobby's size fine fur blurred into a smooth surface (Gustavo, 19/11) */}
+              <Strands radius={0.92} count={9000} length={0.25} width={0.033} color={BODY} gain={GAIN} faceTrim={0.3} still={still} onClick={poke} onPointerMove={petMove} onPointerDown={grab} onPointerOver={hover(true)} onPointerOut={(e) => (hover(false)(e), petEnd())} />
               <mesh ref={drool} position={[0.36, -0.3, 0.9]} visible={false}>
                 <sphereGeometry args={[1, 16, 12]} />
                 <meshStandardMaterial color="#cfe3f2" roughness={0.1} metalness={0.1} transparent opacity={0.85} />
@@ -387,7 +413,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
               </group>
               {[-1, 1].map((sd, i) => (
                 <group key={sd} ref={(g) => { hands.current[i] = g; }} position={[sd * 1.02, -0.36, 0.22]}>
-                  <Strands radius={0.17} count={1800} length={0.09} width={0.008} color={BODY} gain={GAIN} seed={sd > 0 ? 11 : 13} still={still} />
+                  <Strands radius={0.17} count={1800} length={0.09} width={0.013} color={BODY} gain={GAIN} seed={sd > 0 ? 11 : 13} still={still} />
                 </group>
               ))}
             </group>
@@ -443,9 +469,13 @@ export default function MascotScene(props: SceneProps & { running: boolean }) {
     >
       <FrameDriver pointer={scene.pointer} press={scene.press} still={scene.still} th={scene.th} layout={scene.layout} greet={scene.greet} />
       <ViewRig anchor={scene.anchor} root={root} th={scene.th} layout={scene.layout} />
-      <group ref={root}>
-        <Plush {...scene} />
-      </group>
+      <Overlays>
+        <group ref={root}>
+          <Plush {...scene} />
+        </group>
+        <Switch3D dark={scene.dark} still={scene.still} />
+        <FooterGufi still={scene.still} />
+      </Overlays>
     </Canvas>
   );
 }

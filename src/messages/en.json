@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "Gustavo Fiorotti · Fullstack developer",
-    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
+    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV.",
+    "shareTitle": "Gustavo Fiorotti: from database to interface",
+    "shareDescription": "I build complete web systems, from the API to the screen, with clean code and a focus on products that work in production. Projects, experience and résumé in one place."
   },
   "nav": {
     "switchLanguage": "Português",
@@ -17,35 +19,45 @@
   "hero": {
     "lead": "Fullstack developer working with <stack>TypeScript, React, Next.js, NestJS and PostgreSQL</stack>. Computer Science student at UVV.",
     "seeProjects": "See projects",
-    "seeResume": "See résumé",
-    "downloadResume": "Download résumé (PDF)"
+    "seeResume": "See résumé"
   },
   "theme": {
     "turnOff": "Turn the light off (dark theme)",
-    "turnOn": "Turn the light on (light theme)"
+    "turnOn": "Turn the light on (light theme)",
+    "switch": "Lights off (dark theme)"
   },
   "cmd": {
-    "open": "Open command menu (⌘K)",
+    "open": "Open command menu",
+    "openKey": "Open command menu ({key})",
     "label": "Command menu",
     "placeholder": "What are you looking for?",
     "empty": "Nothing found.",
     "goTo": "Go to {section}",
+    "projectOnline": "{name}: view live",
+    "projectCode": "{name}: view code",
     "copyEmail": "Copy e-mail",
     "emailCopied": "E-mail copied",
+    "copySiteLink": "Copy site link",
+    "siteLinkCopied": "Link copied",
+    "viewResume": "View résumé",
     "downloadResume": "Download résumé (PDF)",
     "lightOn": "Turn the light on (light theme)",
     "lightOff": "Turn the light off (dark theme)",
     "openGithub": "Open GitHub",
     "openLinkedin": "Open LinkedIn",
+    "openX": "Open X",
+    "openInstagram": "Open Instagram",
     "otherLanguage": "Versão em português",
     "hintNavigate": "navigate",
     "hintOpen": "open",
     "hintClose": "close",
+    "close": "Close",
     "groups": {
       "navigate": "navigate",
       "action": "action",
       "link": "link",
-      "language": "language"
+      "language": "language",
+      "project": "project"
     }
   },
   "projects": {
@@ -134,7 +146,7 @@
     "oracle": "Oracle certification",
     "oracleName": "Database Foundations",
     "base": "Based in",
-    "place": "Cariacica, ES, Brazil",
+    "place": "Espírito Santo, Brazil",
     "now": "UTC−3 · now {time}",
     "skills": {
       "languages": {
@@ -218,9 +230,9 @@
       "shh"
     ],
     "idle": [
-      "🥚?",
       "✻ Pondering…",
       "psst",
+      "🥚?",
       "guarding the switch",
       "✻ Noodling…",
       "where's the coffee?",
@@ -247,5 +259,15 @@
       "who?",
       "I'm awake!"
     ]
+  },
+  "resume": {
+    "title": "Résumé",
+    "view": "View",
+    "download": "Download",
+    "downloadPdf": "Download résumé (PDF)",
+    "openNewTab": "Open in new tab",
+    "close": "Close",
+    "page": "Gustavo Fiorotti's résumé, page {n} of {total}",
+    "dialog": "Résumé preview"
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sleepLine, sleepPose, zzzNow } from "./sleep";
+import { BREATH_NOD, BREATH_SWELL, IDLE_LINE_CLEAR, idleLineFits, SLEEPY_AFTER, sleepLine, sleepPose, ZZZ_AFTER, zzzNow } from "./sleep";
 
 describe("sleepPose", () => {
   it("is awake before getting sleepy", () => {
@@ -58,5 +58,32 @@ describe("zzzNow", () => {
     expect(zzzNow(z, "asleep", null, false, 10)).toBe(false);
     zzzNow(z, null, null, true, 11); // the pointer moved
     expect(zzzNow(z, "asleep", "asleep", false, 20)).toBe(true);
+  });
+
+  it("breathes a little deeper while asleep, without becoming a bob", () => {
+    expect(BREATH_NOD).toBeGreaterThan(0.03);
+    expect(BREATH_NOD).toBeLessThanOrEqual(0.06);
+    expect(BREATH_SWELL).toBeGreaterThan(0.012);
+    expect(BREATH_SWELL).toBeLessThanOrEqual(0.03);
+    const nods = Array.from({ length: 60 }, (_, i) => sleepPose(1000 + i * 0.1)!.nod);
+    expect(Math.max(...nods) - Math.min(...nods)).toBeCloseTo(2 * BREATH_NOD, 2);
+  });
+
+  it("yawns 20 s after the pointer stops and is asleep (first Zzz) about 12 s later", () => {
+    expect(SLEEPY_AFTER).toBe(20);
+    expect(ZZZ_AFTER).toBeCloseTo(32.2, 5);
+    expect(sleepPose(0)?.stage).toBe("yawn");
+    expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER - 0.05)?.stage).toBe("drop");
+    expect(sleepPose(ZZZ_AFTER - SLEEPY_AFTER)?.stage).toBe("asleep");
+  });
+});
+
+describe("idle lines and the yawn", () => {
+  it("keeps quiet when a line would still be on screen as he yawns (18 s vs 20 s)", () => {
+    expect(idleLineFits(10)).toBe(true);
+    expect(idleLineFits(18)).toBe(false);
+    expect(idleLineFits(25)).toBe(false); // already sleepy
+    // the bubble (2.4 s) plus a beat must fit before the yawn
+    expect(IDLE_LINE_CLEAR).toBeGreaterThan(2.4 + 1);
   });
 });

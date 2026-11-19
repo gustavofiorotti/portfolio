@@ -2,14 +2,16 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { MotionValue } from "motion/react";
 import { follow, touchTilt, viewportOffset } from "@/lib/touch-tilt";
+import { armGyroOnTap, canListenToGyro, onGyroGranted } from "@/lib/gyro-permission";
 
 type Springs = { rotateX: MotionValue<number>; rotateY: MotionValue<number>; scale: MotionValue<number> };
 
 /**
  * Touch screens have no hover: the card tilts with the scroll as it crosses the middle of the
  * screen and, where the browser hands out the phone's orientation without asking (Android),
- * with the phone's tilt too. iOS asks for permission, so there it stays scroll only. Returns
- * whether the card is in focus (for the sheen and the shadow).
+ * with the phone's tilt too. iOS asks for permission: the first tap on the page outside links
+ * and buttons asks, and once granted every card follows the phone. Returns whether the card is in focus (for the sheen and
+ * the shadow).
  */
 export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Springs, reduce: boolean | null): boolean {
   const [featured, setFeatured] = useState(false);
@@ -43,10 +45,20 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
       schedule();
     };
 
-    // only listen to the gyroscope where it needs no permission prompt
-    // (the constructor itself is missing in some browsers: check before touching it)
-    const DOE = typeof DeviceOrientationEvent === "undefined" ? undefined : (DeviceOrientationEvent as unknown as { requestPermission?: unknown });
-    const needsPermission = !DOE || typeof DOE.requestPermission === "function";
+    let visible = false;
+    let listening = false;
+    const listen = () => {
+      if (listening || !visible || !canListenToGyro()) return;
+      listening = true;
+      window.addEventListener("deviceorientation", onOrientation);
+    };
+    const unlisten = () => {
+      listening = false;
+      window.removeEventListener("deviceorientation", onOrientation);
+    };
+    // iOS: the first tap on the page outside links and buttons asks (gyro-permission.ts)
+    armGyroOnTap();
+    const stopWaiting = onGyroGranted(listen);
     const rest = () => {
       rotateX.set(0);
       rotateY.set(0);
@@ -57,13 +69,14 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
     const io = new IntersectionObserver((entries) => {
       const entry = entries.at(-1);
       if (!entry) return;
-      if (entry.isIntersecting) {
+      visible = entry.isIntersecting;
+      if (visible) {
         window.addEventListener("scroll", schedule, { passive: true });
-        if (!needsPermission) window.addEventListener("deviceorientation", onOrientation);
+        listen();
         schedule();
       } else {
         window.removeEventListener("scroll", schedule);
-        window.removeEventListener("deviceorientation", onOrientation);
+        unlisten();
         rest();
       }
     });
@@ -71,8 +84,9 @@ export function useTouchTilt(ref: RefObject<HTMLElement | null>, springs: Spring
     return () => {
       io.disconnect();
       cancelAnimationFrame(raf);
+      stopWaiting();
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("deviceorientation", onOrientation);
+      unlisten();
       // unmount, or reduced motion switched on while mounted: never leave the card tilted
       rest();
     };

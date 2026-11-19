@@ -5,9 +5,12 @@
 """Builds the one-page resume PDF served by the site.
 
 Usage: uv run scripts/build_cv.py [output.pdf]
-Default output: public/curriculo-gustavo-fiorotti.pdf. The phone number is intentionally
+Default output: public/curriculo-gustavo-fiorotti.pdf, also copied to iCloud Drive/Drive when that
+folder exists (skipped otherwise). The phone number is intentionally
 left out because this PDF is public; career text mirrors contexto-linkedin-curriculo.md.
 """
+import hashlib
+import shutil
 import sys
 from pathlib import Path
 
@@ -19,17 +22,19 @@ from reportlab.lib.units import mm
 from reportlab.platypus import (HRFlowable, ListFlowable, ListItem, Paragraph,
                                 SimpleDocTemplate, Spacer, Table, TableStyle)
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else str(
-    Path(__file__).resolve().parent.parent / "public" / "curriculo-gustavo-fiorotti.pdf")
+DEFAULT_OUT = Path(__file__).resolve().parent.parent / "public" / "curriculo-gustavo-fiorotti.pdf"
+OUT = sys.argv[1] if len(sys.argv) > 1 else str(DEFAULT_OUT)
+# Gustavo's iCloud Drive copy; skipped when the folder is missing (CI, other machines).
+ICLOUD_DIR = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/Drive"
 ACCENT = HexColor("#1F3A5F")
 MUTED = HexColor("#555555")
 
-base = ParagraphStyle("base", fontName="Helvetica", fontSize=9.4, leading=12.4, alignment=TA_LEFT)
+base = ParagraphStyle("base", fontName="Helvetica", fontSize=9.4, leading=12.1, alignment=TA_LEFT)
 name = ParagraphStyle("name", parent=base, fontName="Helvetica-Bold", fontSize=20, leading=23, textColor=ACCENT)
 role = ParagraphStyle("role", parent=base, fontSize=11, leading=14, textColor=MUTED)
 contact = ParagraphStyle("contact", parent=base, fontSize=9, leading=12, textColor=MUTED)
 section = ParagraphStyle("section", parent=base, fontName="Helvetica-Bold", fontSize=10.5, leading=13,
-                         textColor=ACCENT, spaceBefore=7, spaceAfter=2)
+                         textColor=ACCENT, spaceBefore=6, spaceAfter=2)
 item_title = ParagraphStyle("item_title", parent=base, fontName="Helvetica-Bold", fontSize=9.8)
 item_right = ParagraphStyle("item_right", parent=base, fontSize=9, textColor=MUTED, alignment=2)
 sub = ParagraphStyle("sub", parent=base, textColor=MUTED, fontSize=9)
@@ -62,7 +67,7 @@ story = [
     Paragraph("Gustavo Fiorotti", name),
     Paragraph("Desenvolvedor Fullstack Júnior", role),
     Spacer(1, 3),
-    Paragraph("Cariacica, ES &nbsp;·&nbsp; "
+    Paragraph("Espírito Santo &nbsp;·&nbsp; " + link("gus.poke.site") + " &nbsp;·&nbsp; "
               + '<link href="mailto:zgustavof@gmail.com" color="#1F3A5F">zgustavof@gmail.com</link>'
               + " &nbsp;·&nbsp; " + link("linkedin.com/in/gustavofiorotti")
               + " &nbsp;·&nbsp; " + link("github.com/gustavofiorotti"), contact),
@@ -96,6 +101,9 @@ story.append(bullets([
 
 story += heading("Projetos")
 projects = [
+    ("Portfólio", "nov/2026 – atual", "gus.poke.site",
+     "Site pessoal bilíngue (PT/EN) com Next.js, React e TypeScript, com cena 3D interativa em React Three "
+     "Fiber, animações com Motion e deploy na Vercel."),
     ("juridiQue", "mai/2026 – jul/2026", "github.com/gustavofiorotti/juridiQue",
      "Aplicação web que traduz documentos jurídicos em PDF para linguagem simples com IA generativa. "
      "Python, Flask, SQL Server e Google Gemini."),
@@ -112,7 +120,7 @@ projects = [
 for title, dates, url, desc in projects:
     story.append(row(f"{title} &nbsp;<font name='Helvetica' size='8.6' color='#1F3A5F'>{link(url)}</font>", dates))
     story.append(Paragraph(desc, base))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
 
 story += heading("Formação")
 story.append(row("Universidade Vila Velha (UVV) · Bacharelado em Ciência da Computação", "jan/2024 – dez/2027"))
@@ -133,6 +141,19 @@ story += heading("Idiomas e certificações")
 story.append(Paragraph("<b>Inglês avançado:</b> EF SET C1 (70/100) e TOEIC Bridge (94/100)", base))
 story.append(Paragraph("<b>Oracle:</b> Database Foundations", base))
 
-doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=11 * mm,
+doc = SimpleDocTemplate(OUT, pagesize=A4, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=10 * mm,
                         bottomMargin=9 * mm, title="Currículo - Gustavo Fiorotti", author="Gustavo Fiorotti")
 doc.build(story)
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+# Only the published PDF goes to iCloud, never temp builds (check_cv.py passes its own path).
+if Path(OUT).resolve() == DEFAULT_OUT and ICLOUD_DIR.is_dir():
+    copy = ICLOUD_DIR / DEFAULT_OUT.name
+    shutil.copyfile(OUT, copy)
+    if sha256(copy) != sha256(OUT):
+        sys.exit(f"iCloud copy differs from {OUT}")
+    print(f"Copied to {copy}")

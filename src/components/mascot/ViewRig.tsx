@@ -3,6 +3,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, type MutableRefObject, type RefObject } from "react";
 import * as THREE from "three";
+import { SW } from "./switch-spot";
 import type { Bounds, Throw } from "./throw";
 
 /** Pixels per world unit: the same scale the 200×150 stage canvas had (150 px for 2.99 units). */
@@ -10,7 +11,6 @@ export const PPU = 150 / (2 * 4.6 * Math.tan(THREE.MathUtils.degToRad(18)));
 const CAM_Z = 4.6;
 const RADIUS = 1.3; // Bobby's body, hands and fur, for the screen edges
 const STAGE = { w: 220, h: 190 }; // box around Bobby, with room for hops and his hands
-const SWITCH_X = 1.15; // the wall switch, in scene units (MascotScene SW)
 export const BOBBY_HOME = new THREE.Vector2(-0.45, 0.05); // his spot inside the scene group
 
 /** Screen point (px) of the stage center, where the original scene was framed. */
@@ -85,7 +85,7 @@ export function ViewRig({ anchor, root, th, layout }: {
     const home = (f.mode === "home" || f.mode === "pending") && f.x === 0 && f.y === 0;
     if (home) {
       const bobbyX = bx * PPU, bobbyY = -by * PPU;
-      const swX = (rootX + SWITCH_X) * PPU, swY = -(rootY + BOBBY_HOME.y) * PPU;
+      const swX = (rootX + SW.x) * PPU, swY = -(rootY + BOBBY_HOME.y) * PPU;
       const x0 = Math.min(bobbyX - STAGE.w / 2, swX - 50), x1 = Math.max(bobbyX + STAGE.w / 2, swX + 50);
       const y0 = Math.min(bobbyY - STAGE.h / 2, swY - 70), y1 = Math.max(bobbyY + STAGE.h / 2, swY + 70);
       const box = [x0, y0, x1, y1].map(Math.round) as [number, number, number, number];

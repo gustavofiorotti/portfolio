@@ -31,6 +31,8 @@ de usar uma API.
 - A Vercel está ligada ao repositório: push em `main` publica em produção e cada PR ganha uma URL de
   prévia. O `vercel.json` fixa o framework como Next.js.
 - `.github/workflows/atualiza-github.yml` chama um Deploy Hook da Vercel (segredo `VERCEL_DEPLOY_HOOK_URL`) a cada 12 h, para a grade do GitHub se atualizar sem commit nem deploy manual.
+- A Vercel roda sem cache de build (`VERCEL_FORCE_NO_BUILD_CACHE=1` em Production e Preview): o cache
+  restaurado de outro deploy serviu um `globals.css` antigo em produção (15/11/2026). Não religar.
 - Não hospedar nada no Poke: ele não tem deploy por Git, rollback, headers nem backend. O `gus.poke.site`
   só redireciona para a Vercel.
 - Fluxo de branches: `feature/*` → PR para `develop` → PR de release `develop` → `main`.
@@ -42,15 +44,13 @@ de usar uma API.
 - Exportação estática: nada de Server Actions, cookies, proxy, redirects/rewrites do Next ou rotas
   dinâmicas sem `generateStaticParams`.
 - Cores só pelos tokens de `src/app/globals.css` (nunca preto ou branco puros).
-- Não expor clientes, ERPs, produtos internos, endpoints ou arquitetura (contrato de
-  confidencialidade). O produto se escreve "Gnexum".
+- Conteúdo de carreira: só texto aprovado pelo Gustavo; sem nomes de clientes ou sistemas de terceiros.
+- O produto se escreve Gnexum.
 - Nunca escrever `-webkit-backdrop-filter` à mão junto com `backdrop-filter`: o minificador de CSS (Lightning CSS) junta os dois e deixa só o prefixado, e o Chrome fica sem desfoque. Escreva só `backdrop-filter`; o prefixo do Safari é gerado no build.
 - Conferir toda mudança visual em Chromium, WebKit e Firefox lado a lado.
 - Ao trocar de branch, apagar `.next` antes do `pnpm build` (e reiniciar o `pnpm dev`): o cache reaproveita o CSS da branch anterior e o resultado engana.
 - Layout precisa funcionar em celular (sem scroll horizontal) e respeitar `prefers-reduced-motion`.
-- Antes de mexer em UI, carregar a skill `kit-gustavo`. Mockups aprovados: canvas da direção A em
-  https://claude.ai/artifact/3M4R5sjCV7gbGUNmcqsZoY. Protótipo do personagem e logo 3D em
-  `~/projetos/portfolio-materiais/` (fora do repo).
+- Antes de mexer em UI, carregar a skill `kit-gustavo` (direção A aprovada).
 
 ## graphify
 

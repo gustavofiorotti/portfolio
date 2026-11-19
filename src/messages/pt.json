@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "Gustavo Fiorotti · Desenvolvedor Fullstack",
-    "description": "Desenvolvedor Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV."
+    "description": "Desenvolvedor Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Estudante de Ciência da Computação na UVV.",
+    "shareTitle": "Gustavo Fiorotti: do banco de dados à interface",
+    "shareDescription": "Crio sistemas web completos, da API à tela, com código limpo e foco em produto que funciona em produção. Projetos, experiência e currículo em um só lugar."
   },
   "nav": {
     "switchLanguage": "English",
@@ -17,35 +19,45 @@
   "hero": {
     "lead": "Desenvolvedor Fullstack com <stack>TypeScript, React, Next.js, NestJS e PostgreSQL</stack>. Estudante de Ciência da Computação na UVV.",
     "seeProjects": "Ver projetos",
-    "seeResume": "Ver currículo",
-    "downloadResume": "Baixar currículo (PDF)"
+    "seeResume": "Ver currículo"
   },
   "theme": {
     "turnOff": "Apagar a luz (tema escuro)",
-    "turnOn": "Acender a luz (tema claro)"
+    "turnOn": "Acender a luz (tema claro)",
+    "switch": "Luz apagada (tema escuro)"
   },
   "cmd": {
-    "open": "Abrir menu de comandos (⌘K)",
+    "open": "Abrir menu de comandos",
+    "openKey": "Abrir menu de comandos ({key})",
     "label": "Menu de comandos",
     "placeholder": "O que você procura?",
     "empty": "Nada encontrado.",
     "goTo": "Ir para {section}",
+    "projectOnline": "{name}: ver online",
+    "projectCode": "{name}: ver código",
     "copyEmail": "Copiar e-mail",
     "emailCopied": "E-mail copiado",
+    "copySiteLink": "Copiar link do site",
+    "siteLinkCopied": "Link copiado",
+    "viewResume": "Ver currículo",
     "downloadResume": "Baixar currículo (PDF)",
     "lightOn": "Acender a luz (tema claro)",
     "lightOff": "Apagar a luz (tema escuro)",
     "openGithub": "Abrir GitHub",
     "openLinkedin": "Abrir LinkedIn",
+    "openX": "Abrir X",
+    "openInstagram": "Abrir Instagram",
     "otherLanguage": "English version",
     "hintNavigate": "navegar",
     "hintOpen": "abrir",
     "hintClose": "fechar",
+    "close": "Fechar",
     "groups": {
       "navigate": "navegar",
       "action": "ação",
       "link": "link",
-      "language": "idioma"
+      "language": "idioma",
+      "project": "projeto"
     }
   },
   "projects": {
@@ -134,7 +146,7 @@
     "oracle": "Certificação Oracle",
     "oracleName": "Database Foundations",
     "base": "Base",
-    "place": "Cariacica/ES, Brasil",
+    "place": "Espírito Santo, Brasil",
     "now": "UTC−3 · agora {time}",
     "skills": {
       "languages": {
@@ -218,9 +230,9 @@
       "shh"
     ],
     "idle": [
-      "🥚?",
       "✻ Matutando…",
       "psiu",
+      "🥚?",
       "tô de olho no interruptor",
       "✻ Ruminando…",
       "cadê o café?",
@@ -247,5 +259,15 @@
       "quem?",
       "tô acordado!"
     ]
+  },
+  "resume": {
+    "title": "Currículo",
+    "view": "Ver",
+    "download": "Baixar",
+    "downloadPdf": "Baixar currículo (PDF)",
+    "openNewTab": "Abrir em nova aba",
+    "close": "Fechar",
+    "page": "Currículo de Gustavo Fiorotti, página {n} de {total}",
+    "dialog": "Prévia do currículo"
   }
 }

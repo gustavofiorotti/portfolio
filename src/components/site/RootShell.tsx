@@ -7,6 +7,7 @@ import { themeInitScript } from "@/lib/theme";
 import { ToastHost } from "@/components/ui/Toast";
 import { Agentation } from "agentation";
 import { AnimatedFavicon } from "./AnimatedFavicon";
+import { ScrollJumps } from "./ScrollJumps";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const interTight = Inter_Tight({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-inter-tight" });
@@ -20,6 +21,7 @@ export async function RootShell({ locale, children }: { locale: Locale; children
     <html
       lang={locale === "pt" ? "pt-BR" : "en"}
       className={`${inter.variable} ${interTight.variable} ${mono.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body>
@@ -29,6 +31,7 @@ export async function RootShell({ locale, children }: { locale: Locale; children
           {children}
           <ToastHost />
           <AnimatedFavicon />
+          <ScrollJumps />
           {/* visual feedback toolbar for the agent, local dev only */}
           {process.env.NODE_ENV === "development" && <Agentation endpoint="http://localhost:4747" />}
         </NextIntlClientProvider>

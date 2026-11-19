@@ -77,8 +77,9 @@ describe("CommandMenu", () => {
     setup("MacIntel", true);
     await act(async () => fireEvent.click(screen.getByRole("button", { name: /Abrir menu de comandos/ })));
     await act(async () => fireEvent.click(screen.getByRole("option", { name: /^Ver currículo/ })));
+    // it opens only once the menu's exit is over (frames later), so the dialog gets the focus
+    await vi.waitFor(() => expect(opened).toHaveBeenCalledTimes(1));
     window.removeEventListener("resume:open", opened);
-    expect(opened).toHaveBeenCalledTimes(1);
     expect(open).not.toHaveBeenCalled();
   });
 

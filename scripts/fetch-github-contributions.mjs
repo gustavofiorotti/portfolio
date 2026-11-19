@@ -22,7 +22,7 @@ const QUERY = `query ($login: String!) {
   }
 }`;
 
-/** @typedef {{ total: number, fetchedAt: string, weeks: number[][] }} Contributions */
+/** @typedef {{ total: number, fetchedAt: string, weeks: (number | null)[][] }} Contributions */
 
 const LEVELS = {
   NONE: 0,
@@ -39,7 +39,9 @@ export function levelFromGitHub(level) {
 
 /**
  * Converts the GraphQL response into { total, fetchedAt, weeks } with exactly 53 weeks of 7 days
- * (Sunday first). Partial weeks are padded with 0 by weekday; extra leading weeks are dropped.
+ * (Sunday first). Days of partial weeks that are outside the calendar (before its first day, or
+ * after today in the current week) are null, so the grid leaves them out like GitHub does, and so
+ * are missing leading weeks; extra leading weeks are dropped.
  * Throws when the response does not have the expected shape.
  * @param {any} response
  * @param {Date} [fetchedAt]
@@ -53,7 +55,7 @@ export function toContributions(response, fetchedAt = new Date()) {
   }
 
   const weeks = calendar.weeks.map((week) => {
-    const days = new Array(DAYS).fill(0);
+    const days = new Array(DAYS).fill(null);
     for (const day of week.contributionDays ?? []) {
       if (Number.isInteger(day.weekday) && day.weekday >= 0 && day.weekday < DAYS) {
         days[day.weekday] = levelFromGitHub(day.contributionLevel);
@@ -63,7 +65,7 @@ export function toContributions(response, fetchedAt = new Date()) {
   });
 
   const lastWeeks = weeks.slice(-WEEKS);
-  const padding = Array.from({ length: WEEKS - lastWeeks.length }, () => new Array(DAYS).fill(0));
+  const padding = Array.from({ length: WEEKS - lastWeeks.length }, () => new Array(DAYS).fill(null));
 
   return {
     total: calendar.totalContributions,

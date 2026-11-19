@@ -5,6 +5,7 @@ import { eyesAt, frameKey } from "@/lib/favicon-eyes";
 
 const SIZE = 64;
 const S = SIZE / 32; // the eye keys are in the logo's 32×32 box
+const FRAME_MS = 33;
 
 /**
  * The tab icon blinks and glances like the header logo. SVG favicons do not animate in Chrome
@@ -60,7 +61,8 @@ export function AnimatedFavicon() {
           l.type = "image/png";
         }
       }
-      timer = setTimeout(draw, 66);
+      // ~30 fps: at 15 fps a 280 ms glance was only four pictures and looked stuck
+      timer = setTimeout(draw, FRAME_MS);
     };
     img.onload = () => {
       if (!cancelled) draw();

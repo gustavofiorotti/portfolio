@@ -42,6 +42,15 @@ function focusSection(el: HTMLElement | null) {
  * draws every frame while Bobby walks). The old requestAnimationFrame loop stuttered there.
  */
 let scrollCall = 0; // only the latest smoothScrollTo may move focus
+let smoothScrolling = 0; // smoothScrollTo calls still on their way
+
+/**
+ * Whether the page is in a smooth scroll started by smoothScrollTo (a tapped topic). In WebKit,
+ * touching another element's scroll position cancels it, so callers wait while this is true.
+ */
+export function isSmoothScrolling(): boolean {
+  return smoothScrolling > 0;
+}
 
 export function smoothScrollTo(id: string | null, offset = 0) {
   const call = ++scrollCall;
@@ -53,6 +62,7 @@ export function smoothScrollTo(id: string | null, offset = 0) {
     return;
   }
   window.scrollTo({ top: to, behavior: "smooth" });
+  smoothScrolling++;
   // focus once it arrives: scrollend where supported, a timer otherwise. WebKit on touch devices
   // can fire an early scrollend, and focusing mid-way (even with preventScroll) cancels its smooth
   // scroll, so a scrollend only counts when the page is really there.
@@ -68,6 +78,7 @@ export function smoothScrollTo(id: string | null, offset = 0) {
   const finish = (force: boolean) => {
     if (done || (!force && !arrived())) return;
     done = true;
+    smoothScrolling--;
     window.removeEventListener("scrollend", onEnd);
     if (call === scrollCall) focusSection(target); // a newer jump took over: leave focus to it
   };

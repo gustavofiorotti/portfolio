@@ -7,6 +7,7 @@ import type { Pointer } from "./MascotScene";
 import { clickSwitch, createPressRequest, type PressRequest } from "./press";
 import { createThrow } from "./throw";
 import { scrollProgress } from "./walk";
+import { Hearts, useHearts } from "./Hearts";
 import { SpeechBubble, useSpeech } from "./SpeechBubble";
 import type { Anchor, Layout } from "./ViewRig";
 
@@ -91,6 +92,7 @@ export function MascotStage() {
   }, []);
   const onFirstFrame = useCallback(() => setShown(true), []);
   const { line, say } = useSpeech();
+  const { bursts, add: addHearts } = useHearts();
   const greet = useRef(0); // the scene waves until this time (performance.now ms)
 
   // hello, once per visit, as soon as he shows up after the opening (sessionStorage)
@@ -276,12 +278,14 @@ export function MascotStage() {
               onBehind={onBehind}
               onFirstFrame={onFirstFrame}
               onSay={say}
+              onHearts={addHearts}
               greet={greet}
             />
           </SceneBoundary>
         </div>
       )}
       {ready && shown && <SpeechBubble line={line} layout={layout} />}
+      {ready && shown && <Hearts bursts={bursts} layout={layout} />}
       <div ref={stage} className="mascot-stage">
         {/* on desktop the button is an invisible hit area over the 3D switch: it joins the tab order
             only once the switch is visible (the theme is always reachable from the ⌘K menu) */}

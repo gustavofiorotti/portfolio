@@ -12,12 +12,13 @@ const REACTIONS: Say[] = ["poke", "angry", "pet", "thrown", "landed", "yawn", "d
 // "soothed" is the first happy stroke after the pokes: it answers at once, with the pet lines
 const URGENT: Say[] = ["hello", "angry", "egg", "eggStep", "wake", "soothed"]; // always replace what he was saying
 const SPIN = "✻ "; // lines starting with it get Claude Code's spinner in front
+const CROSS: Say[] = ["poke", "angry", "egg"]; // lines that belong to the angry face
 
 /**
  * Small, quiet speech bubble above Bobby. It follows his head (the scene writes the screen
  * point into layout every frame) and fades out by itself. Decorative: screen readers skip it.
  */
-type Line = { text: string; id: number; egg?: SayExtra };
+type Line = { text: string; id: number; egg?: SayExtra; kind?: Say };
 
 export function useSpeech() {
   const t = useTranslations("bobby");
@@ -27,6 +28,11 @@ export function useSpeech() {
 
   const say = useCallback(
     (what: Say, extra?: SayExtra) => {
+      if (what === "hush") {
+        // the angry face is gone (petting): its bubble goes with it; anything else stays
+        setLine((l) => (l?.kind && CROSS.includes(l.kind) ? null : l));
+        return;
+      }
       const now = performance.now();
       if (!URGENT.includes(what) && now - last.current < (REACTIONS.includes(what) ? REACT_GAP_MS : CALM_GAP_MS)) return;
       last.current = now;
@@ -43,7 +49,7 @@ export function useSpeech() {
       const i = turn.current[key] ?? 0;
       turn.current[key] = i + 1;
       const text = what === "angry" ? options[Math.min(i, options.length - 1)] : options[i % options.length];
-      setLine({ text, id: now });
+      setLine({ text, id: now, kind: what });
     },
     [t],
   );

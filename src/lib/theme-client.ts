@@ -19,30 +19,27 @@ let switchId = 0; // only the latest switch may turn element transitions back on
 
 function applyTheme(theme: Theme) {
   const html = document.documentElement;
-  html.classList.remove("theme-settling");
   html.classList.add("theme-switching");
   html.dataset.theme = theme;
   void html.offsetHeight; // commit the new colors while transitions are off
   window.dispatchEvent(new CustomEvent<Theme>(THEME_EVENT, { detail: theme }));
 }
 
-const SETTLE_MS = 900;
-
-function endSwitch(id: number, settle: boolean) {
+/**
+ * Turns element transitions back on two frames after the switch. Nothing touches the glass's
+ * backdrop-filter here: changing it (a one-frame blur radius bump used to "repaint" it after the
+ * dry switch) makes WebKit rebuild the backdrop layer, and for a moment the header showed the
+ * page through it, unblurred. Screenshots of WebKit (Playwright, portals) never draw
+ * backdrop-filter, so check this only on real compositing (Safari, or the iOS Simulator video).
+ */
+function endSwitch(id: number) {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       if (id !== switchId) return;
-      const html = document.documentElement;
-      html.classList.remove("theme-switching");
-      if (!settle) return;
-      // Safari takes a moment to repaint backdrop-filter after the crossfade and the glass showed
-      // see-through: it stays dense a little longer
-      html.classList.add("theme-settling");
-      setTimeout(() => id === switchId && html.classList.remove("theme-settling"), SETTLE_MS);
+      document.documentElement.classList.remove("theme-switching", "theme-snapshot");
     }),
   );
 }
-
 
 /** Applies and remembers the theme, and tells listeners once the page has it. */
 export function setTheme(theme: Theme) {
@@ -50,21 +47,22 @@ export function setTheme(theme: Theme) {
   const id = ++switchId;
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   // Chromium and Firefox crossfade the whole page; WebKit gets the dry switch (transitions off),
-  // which keeps the frosted header frosted. Re-evaluate when Safari keeps backdrop-filter in View
-  // Transition snapshots: in a real Safari (not headless), flip the theme with the header over
-  // content; if the header stays frosted through the crossfade and right after it, WebKit can
-  // crossfade too (drop the isWebKitEngine check)
+  // because its View Transition snapshots drop backdrop-filter and the header lost its glass.
+  // Re-evaluate when Safari keeps backdrop-filter in snapshots: in a real Safari (not headless),
+  // flip the theme with the header over content; if the glass keeps its blur through the
+  // crossfade, WebKit can crossfade too (drop the isWebKitEngine check)
   if (typeof document.startViewTransition === "function" && !reduce && !isWebKitEngine(navigator.userAgent)) {
     // before the old snapshot is taken: snapshots drop backdrop-filter, so the glass goes dense
-    // for the crossfade instead of turning see-through
-    document.documentElement.classList.add("theme-switching");
+    // for the crossfade instead of turning see-through (theme-snapshot: only on this path; the
+    // dry switch keeps the glass as it is, or the header jumped to the dense fill for a moment)
+    document.documentElement.classList.add("theme-switching", "theme-snapshot");
     const vt = document.startViewTransition(() => applyTheme(theme));
     // a switch started during another one skips the older transition: that rejection is expected
     vt.ready.catch(() => {});
-    vt.finished.catch(() => {}).finally(() => endSwitch(id, true));
+    vt.finished.catch(() => {}).finally(() => endSwitch(id));
   } else {
     applyTheme(theme);
-    endSwitch(id, false); // no crossfade snapshot here, so nothing to settle
+    endSwitch(id);
   }
   try {
     localStorage.setItem(THEME_KEY, theme);

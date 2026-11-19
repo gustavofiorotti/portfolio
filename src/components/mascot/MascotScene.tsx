@@ -11,7 +11,8 @@ import { step, type Throw } from "./throw";
 import { reachable, useGrab } from "./useGrab";
 import { PPU, ViewRig, type Anchor, type Layout } from "./ViewRig";
 import { walkOffsetPx } from "./walk";
-import { angerAt, calm, createFeel, eggProgress, endStroke, levelOf, poke as addPoke, stroke } from "./feelings";
+import { angerAt, calm, createFeel, EGG_EMPTY, eggProgress, endStroke, levelOf, nextEggCount, pettable, poke as addPoke, stroke } from "./feelings";
+import { heartsDue } from "./heart-burst";
 import { SLEEPY_AFTER, sleepLine, sleepPose, zzzNow, type SleepStage, type Zzz } from "./sleep";
 
 export type { PressRequest } from "./press";
@@ -26,7 +27,8 @@ type Mood = "normal" | "feliz" | "dor" | "irritado" | "bravo" | "furioso" | "sus
 /** What Bobby says in a bubble; the stage picks the words (messages bobby.*). */
 export type Say =
   | "hello" | "poke" | "angry" | "egg" | "eggStep" | "pet" | "soothed" | "thrown" | "landed" | "switchOn" | "switchOff" | "idle"
-  | "yawn" | "doze" | "jolt" | "asleep" | "wake";
+  | "yawn" | "doze" | "jolt" | "asleep" | "wake"
+  | "hush"; // not a line: the happy face came, so an angry bubble goes away with the angry face
 export type SayExtra = { filled: number; total: number; done: boolean };
 const PRESS_S = 0.6; // the whole reach-press-return; the theme flips halfway
 const CLICKS_KEY = "bobby-clicks";
@@ -51,7 +53,7 @@ type State = {
   pressT0: number; pressed: boolean; happyT: number; pokeAt: boolean; behind: boolean; shade: number;
   holdUntil: number; framed: boolean; walking: number; lastMode: string; nextIdle: number; petSaid: number;
   /** poked since the last time a stroke made him happy: that first happy stroke speaks at once */
-  needsSoothe: boolean;
+  needsSoothe: boolean; petFace: boolean; heartsAt: number;
   sleep: SleepStage | null; idleSaid: number;
 };
 
@@ -60,9 +62,13 @@ type SceneProps = {
   pointer: MutableRefObject<Pointer>; still: boolean; th: MutableRefObject<Throw>; anchor: MutableRefObject<Anchor>;
   layout: MutableRefObject<Layout>; onBehind: (behind: boolean) => void; onFirstFrame?: () => void;
   onSay?: (what: Say, extra?: SayExtra) => void;
+  /** a burst of hearts over his head (petting, rate-limited here) */
+  onHearts?: () => void;
   /** greeting wave: the left hand waves until this time (performance.now ms) */
   greet: MutableRefObject<number>;
 };
+
+const wallS = () => performance.now() / 1000;
 
 function readClicks(): number {
   try {
@@ -79,13 +85,14 @@ function writeClicks(n: number) {
   }
 }
 
-function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, greet }: SceneProps) {
+function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layout, onBehind, onFirstFrame, onSay, onHearts, greet }: SceneProps) {
   const feel = useRef(createFeel());
   const zzz = useRef<Zzz>({ count: 0, nextAt: 0 });
   const carrier = useRef<THREE.Group>(null);
   const scene = useRef<THREE.Group>(null);
   const drool = useRef<THREE.Mesh>(null);
-  const clicks = useRef<number | null>(null); // clicks this visit, towards the secret
+  const clicks = useRef<number | null>(null); // clicks in a row, towards the secret
+  const clickAt = useRef(-Infinity); // last click (wall clock s): a pause resets the count
   const clock = useThree((s) => s.clock);
   const { grab, hover, dragged } = useGrab({ th, layout, clock, still });
   const float = useRef<THREE.Group>(null);
@@ -100,7 +107,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const expr = useRef<EyeShape>({ ...MOODS.normal });
   const st = useRef<State>({
     squash: 1, vel: 0, hurtT: 0, pet: 0, surpriseT: 0, glanceT: 0,
-    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, sleep: null, idleSaid: 0,
+    glance: [0, 0], mood: "normal", shake: 0, pressT0: -10, pressed: false, happyT: 0, pokeAt: false, behind: false, shade: 1, holdUntil: 0, framed: false, walking: 0, lastMode: "home", nextIdle: 18, petSaid: -100, needsSoothe: false, petFace: false, heartsAt: -100, sleep: null, idleSaid: 0,
   });
 
   useFrame((state, delta) => {
@@ -155,7 +162,7 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (f.mode === "dizzy") onSay?.("landed");
       s.lastMode = f.mode;
     }
-    // he chats now and then by himself; the first line teases the secret (🥚?)
+    // he chats now and then by himself; the third line teases the secret (🥚?), never the first
     if (t > s.nextIdle) {
       s.nextIdle = t + 20 + Math.random() * 15;
       if (!away && lvl === 0 && !s.sleep && s.idleSaid < 6) {
@@ -195,6 +202,9 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
       if (s.sleep === "asleep" || s.sleep === "drop") onSay?.("wake");
     }
     const petting = s.pet > 0.35;
+    // the petting face just came: an angry bubble must not outlive the angry face
+    if (petting && !s.petFace) onSay?.("hush");
+    s.petFace = petting;
     const waving = performance.now() < greet.current; // hello when he first shows up
     let mood: Mood = "normal";
     if (pressing) mood = "normal";
@@ -326,15 +336,21 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
     if (dragged.current || !reachable(th.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY)) return; // a drag, or a control on top
     const s = st.current;
     const before = levelOf(angerAt(feel.current, clock.elapsedTime));
-    const lvl = addPoke(feel.current, clock.elapsedTime);
+    // hit while being petted: the happy face goes at once and he turns angry (feelings.ts)
+    const petting = s.pet > 0.35;
+    if (petting) s.pet = 0;
+    const lvl = addPoke(feel.current, clock.elapsedTime, petting, wallS());
     s.vel -= 3 + lvl * 0.6;
     s.shake = Math.min(1.6, 0.8 + lvl * 0.2);
     s.pokeAt = true;
     s.needsSoothe = true;
     if (clicks.current === null) clicks.current = readClicks();
-    clicks.current += 1;
-    writeClicks(clicks.current);
-    const egg = eggProgress(clicks.current);
+    // wall clock, not the scene clock: that one runs at ~1 fps while he is still
+    const next = nextEggCount(clicks.current, clickAt.current, wallS());
+    clickAt.current = wallS();
+    clicks.current = next.n;
+    writeClicks(next.n);
+    const egg = next.dropped ? EGG_EMPTY : eggProgress(next.n);
     if (egg) onSay?.("eggStep", egg); // the secret filling up beats any other line
     else if (lvl > before) onSay?.(lvl === 4 ? "egg" : lvl >= 2 ? "angry" : "poke");
     else if (lvl === 4) onSay?.("angry"); // still poking him while furious: the lines keep escalating
@@ -342,9 +358,14 @@ function Plush({ dark, onToggle, onSwitchClick, press, pointer, still, th, layou
   const petMove = (ev: ThreeEvent<PointerEvent>) => {
     const s = st.current;
     if (th.current.mode !== "home") return;
-    if (stroke(feel.current, ev.nativeEvent.clientX)) {
+    if (stroke(feel.current, ev.nativeEvent.clientX, ev.nativeEvent.clientY) && pettable(feel.current, wallS())) {
       s.pet = Math.min(1.4, s.pet + 0.3);
       calm(feel.current, clock.elapsedTime);
+      // he likes it: hearts float up with the happy face, now and then (heart-burst.ts)
+      if (s.pet > 0.35 && heartsDue(s.heartsAt, clock.elapsedTime)) {
+        s.heartsAt = clock.elapsedTime;
+        onHearts?.();
+      }
       if (s.needsSoothe && s.pet > 0.35) {
         // the first stroke that cheers him up after the pokes answers at once (one urgent line)
         s.needsSoothe = false;

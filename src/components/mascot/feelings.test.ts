@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { angerAt, createFeel, endStroke, levelOf, poke, stroke, STROKE_PX } from "./feelings";
+import { angerAt, createFeel, endStroke, GRUDGE_S, levelOf, pettable, poke, stroke, STROKE_PX } from "./feelings";
 
 describe("anger", () => {
   it("climbs one level after another with quick pokes", () => {
@@ -27,6 +27,15 @@ describe("petting", () => {
     expect(go(100, 100 + STROKE_PX + 6, 3)).toBe(0); // first sweep right
     expect(go(118, 90, -3)).toBe(1); // turns left: the right sweep counts
     expect(go(93, 140, 3)).toBe(1); // turns right again: the left sweep counts
+  });
+
+  it("counts up-and-down strokes too", () => {
+    const f = createFeel();
+    let counted = 0;
+    for (let y = 100; y <= 130; y += 3) if (stroke(f, 200, y)) counted++;
+    for (let y = 127; y >= 95; y -= 3) if (stroke(f, 200, y)) counted++;
+    for (let y = 98; y <= 130; y += 3) if (stroke(f, 200, y)) counted++;
+    expect(counted).toBe(2);
   });
 
   it("ignores tiny jitters", () => {
@@ -63,5 +72,41 @@ describe("calm and the secret", () => {
     expect(eggProgress(EGG_GOAL)).toEqual({ filled: 5, total: 5, done: true });
     expect(eggProgress(21)).toBeNull();
     expect(eggProgress(24)).toBeNull(); // the hatch shows only once
+  });
+});
+
+describe("hit while being petted", () => {
+  it("goes straight to angry, not just hurt", () => {
+    const f = createFeel();
+    expect(poke(f, 10)).toBe(1); // a plain first poke only hurts
+    const g = createFeel();
+    expect(poke(g, 10, true)).toBe(3);
+  });
+
+  it("refuses strokes for a moment, then takes them again", () => {
+    const f = createFeel();
+    poke(f, 10, true, 500); // scene clock 10 s, wall clock 500 s: the grudge follows the wall clock
+    expect(pettable(f, 500.5)).toBe(false);
+    expect(pettable(f, 500 + GRUDGE_S)).toBe(true);
+    expect(pettable(createFeel(), 0)).toBe(true);
+  });
+});
+
+describe("secret only with clicks in a row", () => {
+  it("counts quick clicks and starts over after a pause", async () => {
+    const { nextEggCount, EGG_PAUSE_S } = await import("./feelings");
+    expect(nextEggCount(0, -Infinity, 5)).toEqual({ n: 1, dropped: false });
+    expect(nextEggCount(3, 5, 5.4)).toEqual({ n: 4, dropped: false });
+    // a pause after the bar had shown: back to 1, and the bar comes back empty
+    expect(nextEggCount(9, 5, 5 + EGG_PAUSE_S + 0.1)).toEqual({ n: 1, dropped: true });
+    // first click after a reload with a saved count: starts over without an empty bar
+    expect(nextEggCount(9, -Infinity, 3)).toEqual({ n: 1, dropped: false });
+    // a pause before any bar: just starts over, quietly
+    expect(nextEggCount(2, 5, 9)).toEqual({ n: 1, dropped: false });
+  });
+
+  it("once hatched, a pause does not take it back", async () => {
+    const { nextEggCount, EGG_GOAL } = await import("./feelings");
+    expect(nextEggCount(EGG_GOAL, 0, 100).n).toBe(EGG_GOAL + 1);
   });
 });

@@ -18,6 +18,16 @@ describe("buildMetadata", () => {
     expect(m.title).toContain("Fullstack");
   });
 
+  it("the share card does not repeat what the image already says (name and role)", async () => {
+    for (const locale of ["pt", "en"] as const) {
+      const m = await buildMetadata(locale);
+      const og = m.openGraph as { title: string; description: string };
+      expect(og.title).not.toMatch(/fullstack/i);
+      expect(og.description).not.toMatch(/fullstack|gus\.poke\.site/i);
+      expect(m.twitter).toMatchObject({ title: og.title, description: og.description });
+    }
+  });
+
   it("points the English page to /en and back to Portuguese", async () => {
     const m = await buildMetadata("en");
     expect(m.openGraph).toMatchObject({ locale: "en_US", url: "/en" });

@@ -1,7 +1,9 @@
 {
   "meta": {
     "title": "Gustavo Fiorotti · Fullstack developer",
-    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV."
+    "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV.",
+    "shareTitle": "Gustavo Fiorotti: from database to interface",
+    "shareDescription": "I build complete web systems, from the API to the screen, with clean code and a focus on products that work in production. Projects, experience and résumé in one place."
   },
   "nav": {
     "switchLanguage": "Português",
@@ -25,7 +27,8 @@
     "turnOn": "Turn the light on (light theme)"
   },
   "cmd": {
-    "open": "Open command menu (⌘K)",
+    "open": "Open command menu",
+    "openKey": "Open command menu ({key})",
     "label": "Command menu",
     "placeholder": "What are you looking for?",
     "empty": "Nothing found.",
@@ -41,6 +44,7 @@
     "hintNavigate": "navigate",
     "hintOpen": "open",
     "hintClose": "close",
+    "close": "Close",
     "groups": {
       "navigate": "navigate",
       "action": "action",
@@ -134,7 +138,7 @@
     "oracle": "Oracle certification",
     "oracleName": "Database Foundations",
     "base": "Based in",
-    "place": "Cariacica, ES, Brazil",
+    "place": "Espírito Santo, Brazil",
     "now": "UTC−3 · now {time}",
     "skills": {
       "languages": {
@@ -218,9 +222,9 @@
       "shh"
     ],
     "idle": [
-      "🥚?",
       "✻ Pondering…",
       "psst",
+      "🥚?",
       "guarding the switch",
       "✻ Noodling…",
       "where's the coffee?",

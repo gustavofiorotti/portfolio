@@ -29,6 +29,7 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ended = useRef<((e: AnimationEvent) => void) | null>(null);
   const closed = useRef(onClosed);
+  const downOnEmpty = useRef(false);
   useEffect(() => {
     closed.current = onClosed;
   });
@@ -112,8 +113,20 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
           <Icon d={CLOSE} />
         </button>
       </div>
-      {/* the pictures load only once the preview opens */}
-      <div className="resume-pages">
+      {/* the pictures load only once the preview opens; a click or tap on the empty space around the
+          pages (not on a page) closes, through the same path as the X so the fade-out plays. Both
+          ends of the click must land on that space: a drag that starts on a page (selecting text)
+          and ends beside it would otherwise count as a click on the container */}
+      <div
+        className="resume-pages"
+        onPointerDown={(e) => {
+          downOnEmpty.current = e.target === e.currentTarget;
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget && downOnEmpty.current) onClose();
+          downOnEmpty.current = false;
+        }}
+      >
         {open &&
           pages.pages.map((p, i) => (
             // a static export has no image optimizer: the WebP is already sized for the preview

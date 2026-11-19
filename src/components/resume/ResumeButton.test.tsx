@@ -95,6 +95,20 @@ describe("ResumeButton", () => {
     expect(document.documentElement.classList.contains("resume-open")).toBe(false);
   });
 
+  it("a click or tap beside the pages closes it, a click on a page or a drag from it does not", () => {
+    renderButton();
+    mouseClick(screen.getByRole("button", { name: "Ver currículo" }));
+    const around = document.querySelector(".resume-pages")!;
+    const page = screen.getByRole("img", { name: /página 1/ });
+    mouseClick(page);
+    // a text selection that starts on the page and ends beside it: the click lands on the container
+    fireEvent.pointerDown(page);
+    fireEvent.click(around);
+    expect(dialog().open).toBe(true);
+    tap(around);
+    expect(dialog().open).toBe(false);
+  });
+
   it("with a mouse the side button downloads the PDF directly, its document morphing into an arrow on hover", () => {
     const { container } = renderButton();
     const side = screen.getByRole("link", { name: "Baixar currículo (PDF)" });

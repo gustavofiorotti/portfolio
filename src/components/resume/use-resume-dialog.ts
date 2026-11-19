@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 const STATE_KEY = "resumeDialog";
 /** Event that opens the résumé preview from anywhere (the ⌘K menu, for one). */
-export const OPEN_RESUME_EVENT = "resume:open";
+const OPEN_RESUME_EVENT = "resume:open";
 
 /** Opens the résumé preview owned by the hero's button, from any other control. */
 export function openResume() {

@@ -6,7 +6,7 @@ export const WELL = { w: 60 * 0.46, h: 92 * 0.45, r: 7, depth: 4 };
 /** the rocker: inset 6% of the well */
 export const KEY = { w: WELL.w * 0.88, h: WELL.h * 0.88, r: 5.4, depth: 4 };
 /** tilt of the rocker (deg): resting, hovered, pressed down */
-export const TILT = { rest: 20, hover: 16, active: 6 };
+const TILT = { rest: 20, hover: 16, active: 6 };
 /** extra room around the button for the plate's shadow */
 export const PAD = 18;
 

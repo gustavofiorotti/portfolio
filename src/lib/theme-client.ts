@@ -3,9 +3,9 @@ import { useSyncExternalStore } from "react";
 import { isWebKitEngine } from "./browser";
 import { THEME_KEY, type Theme } from "./theme";
 
-export const THEME_EVENT = "themechange";
+const THEME_EVENT = "themechange";
 
-export function currentTheme(): Theme {
+function currentTheme(): Theme {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 

@@ -86,7 +86,7 @@ export function sleepLine(prev: SleepStage | null, next: SleepStage | null): "ya
   return null;
 }
 
-export const ZZZ_MAX = 3; // "Zzz" bubbles per nap
+const ZZZ_MAX = 3; // "Zzz" bubbles per nap
 const ZZZ_EVERY = 5; // s between them
 
 export type Zzz = { count: number; nextAt: number };

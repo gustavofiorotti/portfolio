@@ -111,12 +111,44 @@
 .site-credits-dot {
   opacity: 0.5;
 }
-/* up to 720 px the pill is too wide to clear the floating switch in the corner (60 × 92, 24 px
-   from the bottom): under the Gufi, not over his eyes, and above the switch at the very end */
-@media (max-width: 720px) {
+/* the floating switch (globals.css, z-index 15) stays above the credits while they scroll past it:
+   it is a button, the pill is only text. Up to 1023 px there is no 3D Gufi to clear (canvas 16) */
+@media (max-width: 1023px) {
+  .contact-dock,
   .site-credits {
-    margin-top: 12px;
+    z-index: 14;
+  }
+}
+/* phones: his whole body (still-full.webp, a square render: fur from 7.8% to 99.5% of its height,
+   eyes down to 33%), cut by the page's end through his belly instead of an empty strip under him
+   (Gustavo, 20/11). The credits sit on the belly, high enough to clear the floating switch in the
+   corner at the very end (60 × 92, 24 px from the bottom: 128 px of room) */
+@media (max-width: 720px) {
+  .gufi-stage {
+    /* the cut at 86% of the render, or lower on narrow screens so the pill stays 24 px under his
+       eyes: eyes (0.364 ball) + 24 px + the credits' 186 px */
+    aspect-ratio: auto;
+    height: max(var(--ball) * 0.946, var(--ball) * 0.364 + 210px);
+    margin-top: calc(var(--ball) * -0.086 - var(--dip));
+    overflow: hidden;
+  }
+  .gufi-still {
+    bottom: auto;
+    aspect-ratio: 1;
+  }
+  .site-credits {
+    --credits: 186px;
+    box-sizing: border-box;
+    align-items: flex-end;
+    height: var(--credits);
+    margin-top: calc(-1 * var(--credits));
     padding-bottom: 128px;
+  }
+  /* the closed eyes measured on the square render (eyes 500–939 × 274–476 of 1440, box 1.6×) */
+  .gufi-still .gufi-blink {
+    left: 25.625%;
+    top: 14.861%;
+    width: 48.75%;
   }
 }
 @media (max-width: 520px) {

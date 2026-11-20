@@ -1,7 +1,9 @@
 /* Closing scene: the question, the dock floating in front of the top of a giant Gufi (the header
-   logo's character, only his upper half) and the credits over him (Contact.tsx). On desktop with
-   3D he is drawn live in Bobby's canvas (FooterGufi), which sits over the page (z-index 16): the
-   dock and the credits go above it (17). */
+   logo's character) and the credits over him (Contact.tsx). From 721 px only his upper half shows;
+   up to 720 px his whole body, cut by the page's end through his belly. On desktop with 3D
+   (1024 px and up) he is drawn live in Bobby's canvas (FooterGufi), which sits over the page
+   (z-index 16): the dock and the credits go above it (17). Below 1024 px there is no canvas, and
+   they drop to 14, under the floating wall switch (15). */
 .contact-stage,
 .site-credits {
   /* the ball's width on screen; the stage is 10% wider and shows its upper half. On short screens

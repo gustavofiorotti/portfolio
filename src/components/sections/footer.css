@@ -26,6 +26,13 @@
   /* the stage can be wider than the screen: cut it sideways, never scroll */
   overflow-x: clip;
 }
+/* phones: the gap from Sobre to the title keeps the desktop's proportion to the title (168 px for
+   a 96 px title there; 88 px for a 44 px one here) instead of the same 168 px (Gustavo, 20/11) */
+@media (max-width: 720px) {
+  .contact-stage {
+    padding-top: 24px;
+  }
+}
 .contact-dock {
   position: relative;
   z-index: 17;

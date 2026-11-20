@@ -18,12 +18,11 @@ describe("buildMetadata", () => {
     expect(m.title).toContain("Fullstack");
   });
 
-  it("the share card is the image alone: no title or description of its own", async () => {
+  it("the share card's title is just the name, the same in both languages, without the role", async () => {
     for (const locale of ["pt", "en"] as const) {
       const m = await buildMetadata(locale);
-      expect(m.openGraph).not.toHaveProperty("title");
-      expect(m.openGraph).not.toHaveProperty("description");
-      expect(m.twitter).toEqual({ card: "summary_large_image" });
+      expect(m.openGraph).toMatchObject({ title: "Gustavo Fiorotti" });
+      expect(m.twitter).toEqual({ card: "summary_large_image", title: "Gustavo Fiorotti" });
     }
   });
 

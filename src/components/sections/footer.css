@@ -64,12 +64,17 @@
   height: auto;
   opacity: 0;
   mask-image: radial-gradient(farthest-side, #000 90%, transparent 100%);
-  animation: gufi-blink 4.6s steps(1, end) infinite 1.2s;
+  /* its own layer: the mask is drawn once and only the opacity changes per frame */
+  will-change: opacity;
+  animation: gufi-blink 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite 1.2s;
 }
+/* about 180 ms like the live one: closes in 60 ms, stays shut 30 ms, opens in 90 ms. Eased fades
+   instead of a cut, which read as the picture freezing (Gustavo, 20/11) */
 @keyframes gufi-blink {
-  0%, 96.5% { opacity: 0; }
-  97% { opacity: 1; }
-  99.5% { opacity: 0; }
+  0%, 95.4% { opacity: 0; }
+  96.7% { opacity: 1; }
+  97.4% { opacity: 1; }
+  99.4%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .gufi-still .gufi-blink { animation: none; }

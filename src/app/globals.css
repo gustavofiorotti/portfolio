@@ -152,11 +152,6 @@ html { scroll-behavior: smooth; }
   --glyph-inner: #fafaf9;
   --glyph-inner-opacity: 0.2;
   --glyph-glow: rgb(24 24 27 / 0.28);
-  /* the contact dock's glass, lightly tinted with Gufi's red (footer.css) */
-  --dock-tint: color-mix(in srgb, var(--accent) 5%, var(--glass));
-  --dock-tint-solid: color-mix(in srgb, var(--accent) 5%, var(--surface));
-  --dock-tint-border: color-mix(in srgb, var(--accent) 20%, transparent);
-  --dock-tint-glow: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 :root[data-theme="dark"] {
   --glass: rgb(28 28 31 / 0.55);
@@ -172,11 +167,6 @@ html { scroll-behavior: smooth; }
   --glyph-inner: #0a0a0c;
   --glyph-inner-opacity: 0.38;
   --glyph-glow: rgb(250 250 249 / 0.35);
-  /* on graphite the logo red reads too dark: the band's lighter step (--sw-band) */
-  --dock-tint: color-mix(in srgb, var(--sw-band) 3%, var(--glass));
-  --dock-tint-solid: color-mix(in srgb, var(--sw-band) 4%, var(--surface));
-  --dock-tint-border: color-mix(in srgb, var(--sw-band) 26%, transparent);
-  --dock-tint-glow: color-mix(in srgb, var(--sw-band) 16%, transparent);
 }
 
 @layer components {

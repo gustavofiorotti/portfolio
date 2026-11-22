@@ -41,6 +41,19 @@
   /* room between the title and the dock: 48 px on phones, 64 px on desktop */
   margin-top: clamp(48px, 4.5vw, 64px);
 }
+/* the dock's glass takes a light tint of his red: the colour it borrowed from his fur when it
+   floated over him, now that it sits on the page (Gustavo, 21/11) */
+.contact-dock .dock {
+  background: var(--dock-tint);
+  border-color: var(--dock-tint-border);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 12px 32px -14px var(--dock-tint-glow);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .contact-dock .dock {
+    background: var(--dock-tint-solid);
+  }
+}
+
 .site-credits {
   position: relative;
   z-index: 17;

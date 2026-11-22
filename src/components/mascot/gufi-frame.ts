@@ -6,14 +6,17 @@ export const BALL_R = 1.12;
 export const STAGE_OVER_BALL = 1.1;
 
 /**
- * Camera for a stage w × h px that shows the upper half of the ball: as wide as the stage allows
- * (STAGE_OVER_BALL), its equator on the stage's bottom edge. Returns the vertical field of view
- * (degrees) and the height the camera looks at, for a camera `dist` units away.
+ * Camera for a stage w × h px that shows the top of the ball: as wide as the stage allows
+ * (STAGE_OVER_BALL), the stage's top edge where a 2:1 stage showing his upper half would put it.
+ * A 2:1 stage ends on the equator; a shorter one cuts him higher (the footer cuts him a little under
+ * his eyes). Returns the vertical field of view (degrees) and the height the camera looks at, for a
+ * camera `dist` units away.
  */
 export function frameUpperHalf(w: number, h: number, dist: number): { fov: number; y: number } {
   const unitsPerPx = (2 * BALL_R) / (w / STAGE_OVER_BALL);
   const visible = h * unitsPerPx;
-  return { fov: (2 * Math.atan(visible / 2 / dist) * 180) / Math.PI, y: visible / 2 };
+  const top = (w / 2) * unitsPerPx;
+  return { fov: (2 * Math.atan(visible / 2 / dist) * 180) / Math.PI, y: top - visible / 2 };
 }
 
 /** Turn around the vertical axis for a scroll progress 0..1: his back, then his face at the end. */

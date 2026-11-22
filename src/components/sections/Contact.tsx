@@ -7,9 +7,10 @@ import "./sections.css";
 import "./footer.css";
 
 /**
- * Contact and footer as one closing scene: the big question, the dock floating in front of a giant
- * Gufi (the header logo's character, upper half only) and the credits on glass over him. On desktop
- * with 3D he is live in Bobby's canvas (FooterGufi); otherwise a still picture that blinks.
+ * Contact and footer as one closing scene: the big question, the dock under it, the credits in quiet
+ * text and a giant Gufi (the header logo's character) peeking from the page's bottom edge, cut a
+ * little under his eyes (SiteFooter). On desktop with 3D he is live in Bobby's canvas (FooterGufi);
+ * otherwise a still picture that blinks.
  */
 export async function Contact({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "contact" });
@@ -19,23 +20,23 @@ export async function Contact({ locale }: { locale: Locale }) {
       <div className="contact-dock">
         <Dock />
       </div>
-      <div className="gufi-stage">
-        <GufiStill />
-      </div>
     </section>
   );
 }
 
-/** Credits and the year, on glass over the Gufi; no navigation repeated, no back to top (kit-gustavo). */
+/** Credits and the year over the peeking Gufi; no navigation repeated, no back to top (kit-gustavo). */
 export async function SiteFooter({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "contact" });
   return (
     <footer className="site-credits">
-      <p className="glass site-credits-pill">
+      <p className="site-credits-text">
         <span>{t.rich("copyright", { year: () => <CurrentYear fallback={new Date().getFullYear()} /> })}</span>
         <span aria-hidden="true" className="site-credits-dot">·</span>
         <span>{t("madeWith")}</span>
       </p>
+      <div className="gufi-stage">
+        <GufiStill />
+      </div>
     </footer>
   );
 }

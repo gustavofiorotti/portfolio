@@ -2,8 +2,7 @@
   "meta": {
     "title": "Gustavo Fiorotti · Fullstack developer",
     "description": "Fullstack developer working with TypeScript, React, Next.js, NestJS and PostgreSQL. Computer Science student at UVV.",
-    "shareTitle": "Gustavo Fiorotti: from database to interface",
-    "shareDescription": "I build complete web systems, from the API to the screen, with clean code and a focus on products that work in production. Projects, experience and résumé in one place."
+    "shareTitle": "Gustavo Fiorotti"
   },
   "nav": {
     "switchLanguage": "Português",

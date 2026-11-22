@@ -18,13 +18,11 @@ describe("buildMetadata", () => {
     expect(m.title).toContain("Fullstack");
   });
 
-  it("the share card does not repeat what the image already says (name and role)", async () => {
+  it("the share card's title is just the name, the same in both languages, without the role", async () => {
     for (const locale of ["pt", "en"] as const) {
       const m = await buildMetadata(locale);
-      const og = m.openGraph as { title: string; description: string };
-      expect(og.title).not.toMatch(/fullstack/i);
-      expect(og.description).not.toMatch(/fullstack|gus\.poke\.site/i);
-      expect(m.twitter).toMatchObject({ title: og.title, description: og.description });
+      expect(m.openGraph).toMatchObject({ title: "Gustavo Fiorotti" });
+      expect(m.twitter).toEqual({ card: "summary_large_image", title: "Gustavo Fiorotti" });
     }
   });
 

@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
-import { RESUME_URL } from "@/lib/resume";
-import pages from "@/lib/resume-pages.json";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/locales";
+import { resumeFor } from "@/lib/resume";
 import "./resume.css";
 
 const DOWNLOAD = "M12 4 L12 15 M7 10 L12 15 L17 10 M5 20 L19 20";
@@ -25,6 +25,7 @@ function Icon({ d }: { d: string }) {
  */
 export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClose: () => void; onClosed?: () => void }) {
   const t = useTranslations("resume");
+  const { url, pages } = resumeFor(useLocale() as Locale);
   const ref = useRef<HTMLDialogElement>(null);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ended = useRef<((e: AnimationEvent) => void) | null>(null);
@@ -85,7 +86,7 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
 
   useEffect(() => () => document.documentElement.classList.remove("resume-open"), []);
 
-  const total = pages.pages.length;
+  const total = pages.length;
   return (
     <dialog
       ref={ref}
@@ -101,11 +102,11 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
       <div className="resume-bar">
         <span className="resume-title font-display">{t("title")}</span>
         <div className="resume-actions">
-          <a href={RESUME_URL} target="_blank" rel="noopener" className="btn btn-ghost resume-action">
+          <a href={url} target="_blank" rel="noopener" className="btn btn-ghost resume-action">
             <Icon d={OPEN} />
             {t("openNewTab")}
           </a>
-          <a href={RESUME_URL} download className="btn btn-solid resume-action resume-action-solid">
+          <a href={url} download className="btn btn-solid resume-action resume-action-solid">
             <Icon d={DOWNLOAD} />
             {t("download")}
           </a>
@@ -134,7 +135,7 @@ export function ResumeDialog({ open, onClose, onClosed }: { open: boolean; onClo
         }}
       >
         {open &&
-          pages.pages.map((p, i) => (
+          pages.map((p, i) => (
             // a static export has no image optimizer: the WebP is already sized for the preview
             // eslint-disable-next-line @next/next/no-img-element
             <img

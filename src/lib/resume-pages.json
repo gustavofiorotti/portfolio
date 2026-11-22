@@ -1,10 +1,22 @@
 {
-  "pages": [
-    {
-      "height": 2104,
-      "src": "/curriculo/pagina-1.webp",
-      "width": 1488
-    }
-  ],
-  "pdfSha256": "43449003a3fd4495769b81019aa23b9c337ad0f0bb1b60f5abc6ea8d769e2d63"
+  "pt": {
+    "pages": [
+      {
+        "height": 2104,
+        "src": "/curriculo/pagina-1.webp",
+        "width": 1488
+      }
+    ],
+    "pdfSha256": "0e69f74abfeb22d51b6b5609c631df766ae1e20e0120c93c5926616c60201e2b"
+  },
+  "en": {
+    "pages": [
+      {
+        "height": 2104,
+        "src": "/curriculo/en/pagina-1.webp",
+        "width": 1488
+      }
+    ],
+    "pdfSha256": "420c2d7fd028c4971c2484c70f456bbdf0c096512676ce9991cde8b59703ece1"
+  }
 }

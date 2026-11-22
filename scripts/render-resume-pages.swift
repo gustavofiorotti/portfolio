@@ -1,13 +1,14 @@
-// Renders every page of the résumé PDF to a PNG (2.5x the PDF's size; resume-pages.mjs turns it into WebP) for the in-site preview,
-// and writes a manifest with the PDF's SHA-256 so a test notices when the PDF changes without
-// new pictures. macOS only (PDFKit). Run through: pnpm resume:pages
+// Renders every page of one résumé PDF to a PNG (2.5x the PDF's size; resume-pages.mjs turns it
+// into WebP) for the in-site preview, and writes its manifest entry with the PDF's SHA-256 so a
+// test notices when the PDF changes without new pictures. macOS only (PDFKit).
+// Usage (through pnpm resume:pages): swift render-resume-pages.swift <pdf> <outDir> <srcPrefix> <entry.json>
 import AppKit
 import CryptoKit
 import PDFKit
 
-let pdfPath = "public/curriculo-gustavo-fiorotti.pdf"
-let outDir = "public/curriculo"
-let manifestPath = "src/lib/resume-pages.json"
+let args = CommandLine.arguments
+guard args.count == 5 else { fatalError("usage: <pdf> <outDir> <srcPrefix> <entry.json>") }
+let (pdfPath, outDir, srcPrefix, manifestPath) = (args[1], args[2], args[3], args[4])
 let scale: CGFloat = 2.5
 
 guard let data = FileManager.default.contents(atPath: pdfPath), let doc = PDFDocument(data: data) else {
@@ -31,7 +32,7 @@ for i in 0..<doc.pageCount {
   NSGraphicsContext.restoreGraphicsState()
   let name = "pagina-\(i + 1).png"
   try! rep.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "\(outDir)/\(name)"))
-  pages.append(["src": "/curriculo/\(name)", "width": w, "height": h])
+  pages.append(["src": "\(srcPrefix)/\(name)", "width": w, "height": h])
 }
 let manifest: [String: Any] = ["pdfSha256": sha, "pages": pages]
 let json = try! JSONSerialization.data(withJSONObject: manifest, options: [.prettyPrinted, .sortedKeys])

@@ -40,7 +40,7 @@
       "title": "Portfólio",
       "dates": "nov/2026 – atual",
       "url": "gus.poke.site",
-      "desc": "Site pessoal bilíngue (PT/EN) com Next.js, TypeScript e Tailwind CSS: personagens 3D interativos em React Three Fiber com qualidade adaptativa ao desempenho do dispositivo, menu de comandos, integração com o GitHub, layout responsivo e acessível e deploy na Vercel."
+      "desc": "Site pessoal bilíngue (PT/EN) com Next.js, TypeScript e Tailwind CSS: personagens 3D interativos em React Three Fiber com qualidade adaptativa ao desempenho do dispositivo, menu de comandos, integração com o GitHub, layout responsivo e acessível e deploy na Vercel. Inclui um jogo de plataforma em desenvolvimento."
     },
     {
       "title": "juridiQue",

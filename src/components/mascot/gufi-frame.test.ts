@@ -11,6 +11,14 @@ describe("footer Gufi framing", () => {
     const ballPx = ((2 * BALL_R) / visible) * h;
     expect(ballPx).toBeCloseTo(w / STAGE_OVER_BALL);
   });
+  it("a shorter stage keeps the same top and ball size, cutting him higher", () => {
+    const w = 836, dist = 9;
+    const half = frameUpperHalf(w, w / 2, dist);
+    const cut = frameUpperHalf(w, 324, dist);
+    const view = (f: { fov: number }) => 2 * dist * Math.tan(((f.fov / 2) * Math.PI) / 180);
+    expect(cut.y + view(cut) / 2).toBeCloseTo(half.y + view(half) / 2); // same top edge
+    expect(view(cut) / 324).toBeCloseTo(view(half) / (w / 2)); // same units per px: same ball
+  });
   it("turns from his back to his face with the scroll, clamped", () => {
     expect(turnAt(0)).toBeCloseTo(-Math.PI);
     expect(turnAt(1)).toBe(-0);

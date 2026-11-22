@@ -16,9 +16,9 @@ const DIST = 9;
 
 /**
  * The footer's Gufi, live: the header logo's character drawn in Bobby's canvas over the footer
- * stage (.gufi-stage), only its upper half, looking up at the dock, breathing and blinking, and
- * turning to face you as the page reaches its end. While it runs, <html data-gufi3d> hides the
- * still picture that stands in for it on phones and without 3D.
+ * stage (.gufi-stage), peeking from the page's bottom edge cut a little under his eyes,
+ * breathing and blinking, and turning to face you as the page reaches its end. While it runs,
+ * <html data-gufi3d> hides the still picture that stands in for it on phones and without 3D.
  */
 export function FooterGufi({ still }: { still: boolean }) {
   const gl = useThree((s) => s.gl);

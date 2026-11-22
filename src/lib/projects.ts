@@ -1,5 +1,5 @@
 /** Project data that does not depend on the locale. Texts live in messages under `projects.items.<id>`. */
-export type ProjectImage =
+type ProjectImage =
   | { kind: "self" }
   | { kind: "single"; src: string; fit: "cover" | "contain" }
   | { kind: "themed"; light: string; dark: string; fit: "cover" | "contain" };

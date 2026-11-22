@@ -22,11 +22,11 @@ export type Throw = {
 /** Limits around home, in the same offset coords. Bobby's center may not go past them. */
 export type Bounds = { left: number; right: number; floor: number };
 
-export const GRAVITY = 34;
-export const RUN_SPEED = 11;
+const GRAVITY = 34;
+const RUN_SPEED = 11;
 export const MAX_THROW = 38;
-export const DRAG_START = 0.12; // ~6 px before a press becomes a drag
-export const DIZZY_FOR = 0.9;
+const DRAG_START = 0.12; // ~6 px before a press becomes a drag
+const DIZZY_FOR = 0.9;
 
 export function createThrow(): Throw {
   return { mode: "home", x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, downX: 0, downY: 0, grabX: 0, grabY: 0, modeT: 0, impact: 0 };

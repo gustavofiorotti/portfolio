@@ -1,7 +1,7 @@
 {
   "pdfTitle": "Resume - Gustavo Fiorotti",
-  "role": "Junior Fullstack Developer",
-  "location": "Espírito Santo",
+  "role": "Junior Full-Stack Developer",
+  "location": "ES, Brazil",
   "headings": {
     "summary": "Summary",
     "experience": "Experience",
@@ -10,10 +10,10 @@
     "skills": "Skills",
     "languages": "Languages and certifications"
   },
-  "summary": "Computer Science student with experience in Fullstack development with TypeScript, React, Next.js, NestJS and PostgreSQL. I worked on the evolution of a systems integration platform, from the frontend to deployment on client servers. I started in IT support and moved into development. Looking for a junior software development position.",
+  "summary": "Computer Science student with experience in Full-Stack development with TypeScript, React, Next.js, NestJS and PostgreSQL. I worked on the evolution of a systems integration platform, from the frontend to deployment on client servers. I started in IT support and moved into development. Looking for a junior software development position.",
   "experience": [
     {
-      "title": "Globalsys · Fullstack Intern",
+      "title": "Globalsys · Full-Stack Intern",
       "dates": "Jun 2026 – Aug 2026",
       "sub": "Vila Velha, ES · Internal transfer from support to the development team of Gnexum, a platform for creating and managing APIs and integrating databases and ERPs",
       "bullets": [
@@ -40,7 +40,7 @@
       "title": "Portfolio",
       "dates": "Nov 2026 – present",
       "url": "gus.poke.site",
-      "desc": "Bilingual (PT/EN) personal website with Next.js, TypeScript and Tailwind CSS: interactive 3D characters in React Three Fiber with quality that adapts to the device's performance, a command menu, GitHub integration, a responsive and accessible layout, and deployment on Vercel."
+      "desc": "Bilingual (PT/EN) personal website with Next.js, TypeScript and Tailwind CSS: interactive 3D characters in React Three Fiber with quality that adapts to the device's performance, a command menu, GitHub integration, a responsive and accessible layout, and deployment on Vercel. Includes a platformer game."
     },
     {
       "title": "juridiQue",
@@ -80,6 +80,7 @@
     ["AI in development", "Claude Code, AI agents and MCP (Model Context Protocol)"]
   ],
   "languages": [
+    ["Portuguese", "native"],
     ["Advanced English", "EF SET C1 (70/100) and TOEIC Bridge (94/100)"],
     ["Oracle", "Database Foundations"]
   ]

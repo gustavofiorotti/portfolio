@@ -75,7 +75,7 @@
     "items": {
       "portfolio": {
         "period": "Nov 2026 – now",
-        "desc": "This site: Next.js with static export, PT/EN, a 3D character, a ⌘K menu and animations with Motion.",
+        "desc": "This site: Next.js with static export, PT/EN, interactive 3D characters with adaptive quality, a ⌘K menu, GitHub activity and animations with Motion.",
         "alt": "Portfolio logo"
       },
       "juridique": {

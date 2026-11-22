@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { RESUME_URL } from "@/lib/resume";
+import { useLocale, useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/locales";
+import { RESUME_URLS } from "@/lib/resume";
 import { MorphIcon } from "@/components/ui/MorphIcon";
 import { ResumeDialog } from "./ResumeDialog";
 import { useResumeDialog } from "./use-resume-dialog";
@@ -25,6 +26,7 @@ const isTap = (type: string, detail: number) => detail > 0 && (type === "touch" 
  */
 export function ResumeButton() {
   const t = useTranslations("resume");
+  const url = RESUME_URLS[useLocale() as Locale];
   const tHero = useTranslations("hero");
   const dialog = useResumeDialog();
   const [hover, setHover] = useState(false);
@@ -113,7 +115,7 @@ export function ResumeButton() {
         </button>
         <span className="resume-split-slot" aria-hidden={!split || undefined} inert={!split || undefined}>
           <span className="resume-split-clip">
-            <a href={RESUME_URL} download onClick={markSaved} tabIndex={split ? undefined : -1} className="btn btn-ghost resume-pill resume-split-dl">
+            <a href={url} download onClick={markSaved} tabIndex={split ? undefined : -1} className="btn btn-ghost resume-pill resume-split-dl">
               <MorphIcon from={DOC} to={saved ? CHECK : DOWNLOAD} active={arrow || saved} size={18} strokeWidth={2} />
               {t("download")}
             </a>
@@ -121,7 +123,7 @@ export function ResumeButton() {
         </span>
         {/* mouse only (touch splits the pill instead): waits behind the pill, slides out on hover */}
         <a
-          href={RESUME_URL}
+          href={url}
           download
           aria-label={t("downloadPdf")}
           title={t("downloadPdf")}

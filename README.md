@@ -88,13 +88,17 @@ o JSON versionado e o build segue normalmente.
 
 ## Currículo em PDF
 
-`public/curriculo-gustavo-fiorotti.pdf` é gerado por `scripts/build_cv.py` (Python 3.10+ e
-[reportlab](https://pypi.org/project/reportlab/)). Com o [uv](https://docs.astral.sh/uv/), as
-dependências vêm do próprio script:
+Há duas versões: `public/curriculo-gustavo-fiorotti.pdf` (português, servido em `/`) e
+`public/curriculo-gustavo-fiorotti-en.pdf` (inglês, servido em `/en`). Ambas são geradas por
+`scripts/build_cv.py` (Python 3.10+ e [reportlab](https://pypi.org/project/reportlab/)), com os
+textos em `scripts/cv/pt.json` e `scripts/cv/en.json`. Só a versão em português é copiada para o
+iCloud Drive. Com o [uv](https://docs.astral.sh/uv/), as dependências vêm do próprio script:
 
 ```sh
-uv run scripts/build_cv.py    # grava public/curriculo-gustavo-fiorotti.pdf
-uv run scripts/check_cv.py    # confere: 1 página e nenhum telefone no texto
+uv run scripts/build_cv.py              # grava o PDF em português
+uv run scripts/build_cv.py --lang en    # grava o PDF em inglês
+uv run scripts/check_cv.py              # confere os dois: 1 página, idioma certo e nenhum telefone
+pnpm resume:pages                       # refaz as imagens da prévia no site, por idioma (macOS)
 ```
 
 Sem o uv: `pip install reportlab pypdf`, depois `python3 scripts/build_cv.py` e

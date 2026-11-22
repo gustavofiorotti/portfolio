@@ -1,0 +1,86 @@
+{
+  "pdfTitle": "Currículo - Gustavo Fiorotti",
+  "role": "Desenvolvedor Fullstack Júnior",
+  "location": "Espírito Santo",
+  "headings": {
+    "summary": "Resumo",
+    "experience": "Experiência",
+    "projects": "Projetos",
+    "education": "Formação",
+    "skills": "Competências",
+    "languages": "Idiomas e certificações"
+  },
+  "summary": "Estudante de Ciência da Computação com experiência em desenvolvimento Fullstack com TypeScript, React, Next.js, NestJS e PostgreSQL. Atuei na evolução de uma plataforma de integração de sistemas, do frontend ao deploy em servidores de clientes. Comecei em suporte de TI e migrei para o desenvolvimento. Busco vaga júnior em desenvolvimento de software.",
+  "experience": [
+    {
+      "title": "Globalsys · Estagiário Fullstack",
+      "dates": "jun/2026 – ago/2026",
+      "sub": "Vila Velha, ES · Transferência interna do suporte para o time de desenvolvimento do Gnexum, plataforma para criar e gerenciar APIs e integrar bancos de dados e ERPs",
+      "bullets": [
+        "Desenvolvi melhorias e correções na API com NestJS e PostgreSQL.",
+        "Conectei a plataforma a ERPs por APIs, criando rotas de integração, inclusive pelo MCP (Model Context Protocol) do Gnexum.",
+        "Reformulei telas, melhorei UI e contraste e padronizei as mensagens de erro da interface com React e Next.js.",
+        "Configurei a plataforma em servidores de clientes com SSH, Docker, Nginx e Cloudflare, e ambientes no Azure DevOps.",
+        "Dei suporte a clientes em dúvidas e problemas no uso da plataforma."
+      ]
+    },
+    {
+      "title": "Globalsys · Estagiário de Suporte N1",
+      "dates": "nov/2025 – jun/2026",
+      "bullets": [
+        "Suporte a colaboradores de um cliente por portal de chamados, e-mail e chat, com acesso remoto, VPN e instalação de softwares.",
+        "Gestão de acessos com Active Directory, Google Admin Console e Google Workspace.",
+        "Atualizei a documentação técnica da equipe, com sistemas e procedimentos de atendimento.",
+        "Recebi proposta de efetivação como Analista de TI e optei por seguir como estagiário para migrar para desenvolvimento."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Portfólio",
+      "dates": "nov/2026 – atual",
+      "url": "gus.poke.site",
+      "desc": "Site pessoal bilíngue (PT/EN) com Next.js, TypeScript e Tailwind CSS: personagens 3D interativos em React Three Fiber com qualidade adaptativa ao desempenho do dispositivo, menu de comandos, integração com o GitHub, layout responsivo e acessível e deploy na Vercel."
+    },
+    {
+      "title": "juridiQue",
+      "dates": "mai/2026 – jul/2026",
+      "url": "github.com/gustavofiorotti/juridiQue",
+      "desc": "Aplicação web que traduz documentos jurídicos em PDF para linguagem simples com IA generativa. Python, Flask, SQL Server e Google Gemini."
+    },
+    {
+      "title": "Mão na Obra",
+      "dates": "set/2025 – dez/2025",
+      "url": "maonaobra.vercel.app",
+      "desc": "App que conecta clientes a profissionais de serviços locais, com cadastro e login por perfil. Projeto de grupo na UVV, no qual propus a ideia e fiz o desenvolvimento, com React, TypeScript e testes com Vitest."
+    },
+    {
+      "title": "UVVendas",
+      "dates": "ago/2025 – dez/2025",
+      "url": "ecommerce-uvv.vercel.app",
+      "desc": "E-commerce com catálogo, carrinho e painel do vendedor, feito em grupo na UVV. Contribuí na interface e na identidade visual, com React, TypeScript e Tailwind CSS."
+    },
+    {
+      "title": "Banestes",
+      "dates": "abr/2025 – mai/2025",
+      "url": "gustavofiorotti.github.io/projetoBanestes",
+      "desc": "Painel de consulta de clientes, contas e agências, feito para um processo seletivo, com React e TypeScript, usando dados fictícios."
+    }
+  ],
+  "education": {
+    "title": "Universidade Vila Velha (UVV) · Bacharelado em Ciência da Computação",
+    "dates": "jan/2024 – dez/2027",
+    "sub": "6º período, turno noturno"
+  },
+  "skills": [
+    ["Linguagens", "TypeScript, JavaScript, Python, C#, SQL"],
+    ["Frontend", "React, Next.js, Tailwind CSS, HTML e CSS"],
+    ["Backend e dados", "NestJS, Flask, APIs REST, PostgreSQL, SQL Server, MySQL"],
+    ["Infra e ferramentas", "Docker, Nginx, Cloudflare, SSH, Git, Azure DevOps"],
+    ["IA no desenvolvimento", "Claude Code, agentes de IA e MCP (Model Context Protocol)"]
+  ],
+  "languages": [
+    ["Inglês avançado", "EF SET C1 (70/100) e TOEIC Bridge (94/100)"],
+    ["Oracle", "Database Foundations"]
+  ]
+}

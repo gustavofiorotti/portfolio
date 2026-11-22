@@ -1,7 +1,7 @@
 /** Pure math for the card tilt on touch screens (no mouse to follow). */
 
-export const FEATURE_ZONE = 0.32; // |offset| below this: the card is "in focus" (centered on screen)
-export const TILT_ZONE = 0.75; // |offset| below this: the card tilts with the scroll
+const FEATURE_ZONE = 0.32; // |offset| below this: the card is "in focus" (centered on screen)
+const TILT_ZONE = 0.75; // |offset| below this: the card tilts with the scroll
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 

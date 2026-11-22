@@ -1,15 +1,16 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import en from "@/messages/en.json";
 import pt from "@/messages/pt.json";
 import { CHECK, DOC, DOWNLOAD, ResumeButton } from "./ResumeButton";
 import { openResume } from "./use-resume-dialog";
 
 const shape = (d: string) => d.replace(/-?\d*\.?\d+/g, "#");
 
-function renderButton() {
+function renderButton(locale: "pt" | "en" = "pt") {
   return render(
-    <NextIntlClientProvider locale="pt" messages={pt}>
+    <NextIntlClientProvider locale={locale} messages={locale === "pt" ? pt : en}>
       <ResumeButton />
     </NextIntlClientProvider>,
   );
@@ -60,6 +61,18 @@ describe("ResumeButton", () => {
     expect(screen.getByRole("link", { name: "Baixar" }).hasAttribute("download")).toBe(true);
     expect(screen.getByRole("link", { name: "Abrir em nova aba" }).getAttribute("target")).toBe("_blank");
     expect(document.activeElement).toBe(dialog());
+  });
+
+  it("each language offers its own résumé: the Portuguese PDF on /, the English one on /en", () => {
+    renderButton();
+    expect(screen.getByRole("link", { name: "Baixar currículo (PDF)" }).getAttribute("href")).toBe("/curriculo-gustavo-fiorotti.pdf");
+    cleanup();
+    renderButton("en");
+    expect(screen.getByRole("link", { name: "Download résumé (PDF)" }).getAttribute("href")).toBe("/curriculo-gustavo-fiorotti-en.pdf");
+    mouseClick(screen.getByRole("button", { name: "See résumé" }));
+    expect(screen.getByRole("link", { name: "Download" }).getAttribute("href")).toBe("/curriculo-gustavo-fiorotti-en.pdf");
+    expect(screen.getByRole("link", { name: "Open in new tab" }).getAttribute("href")).toBe("/curriculo-gustavo-fiorotti-en.pdf");
+    expect(screen.getByRole("img", { name: /page 1 of 1/ }).getAttribute("src")).toBe("/curriculo/en/pagina-1.webp");
   });
 
   it("Enter on the button (a click with detail 0) opens the preview even after a tap elsewhere", () => {
